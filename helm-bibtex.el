@@ -26,12 +26,11 @@
 ;;
 ;; FIXME Matching is done on the transformed entries.  These do not
 ;; include the full information.  Match in the raw data.
+;; FIXME Add dependencies to the Package-Requires field in the header.
 
 ;; Below is a list of planned features:
 ;;
-;; TODO Action open PDF if available.
 ;; TODO Action edit notes for entry.
-;; TODO Action insert LaTeX cite macro.
 ;; TODO Action show entry in BíbTeX file.
 ;; TODO Icon showing whether there is a PDF for an entry.
 ;; TODO Icon showing whether there are notes for an entry.
@@ -68,15 +67,29 @@
 (require 'cl-lib)
 (require 'dash)
 (require 's)
+(require 'f)
 
 (defgroup helm-bibtex nil
   "Helm plugin for searching entries in a BibTeX bibliography."
   :group 'helm)
 
-(defcustom helm-bibtex-bibliography "/home/malsburg/Documents/Uni/Bibliographie/bibliography.bib"
+(defcustom helm-bibtex-bibliography nil
   "The BibTeX file that is used for searching."
   :group 'helm-bibtex
   :type 'file)
+
+(defcustom helm-bibtex-library-path nil
+  "The directory in which PDFs are stored.  Helm-bibtex
+assumes that the names of these PDFs are composed of the
+BibTeX-key plus a \".pdf\" suffix."
+  :group 'helm-bibtex
+  :type 'directory)
+
+(defcustom helm-bibtex-pdf-open-function 'find-file
+  "The function used for opening PDF files.  This can be an arbitrary
+function that takes one argument: the path to the PDF file."
+  :group 'helm-bibtex
+  :type 'function)
 
 
 (defun helm-bibtex-init ()
@@ -141,6 +154,7 @@ list containing the fields of the entry."
   (cl-loop
     for cand in candidates
     for cand = (cdr cand)
+    for entry-key = (helm-bibtex-get-default 'entry-key cand nil) 
     for cand = (--map (helm-bibtex-clean-string
                        (helm-bibtex-get-default it cand "-"))
                       '(author title year entry-type))
@@ -150,7 +164,7 @@ list containing the fields of the entry."
     (cons (s-format "$0 $1 $2 $3" 'elt
             (-zip-with (lambda (f w) (truncate-string-to-width f w 0 ?\s))
                        cand (list 36 (- width 50) 4 7)))
-          (-last-item cand))))
+          entry-key)))
 
 
 (defun helm-bibtex-clean-string (s)
@@ -176,10 +190,22 @@ key.  If no such element exists, default is returned instead."
     (if e (cdr e) default)))
 
 
-(defvar helm-source-bibtex
+(defun helm-bibtex-open-pdf (entry)
+  (let ((path (f-join helm-bibtex-library-path (s-concat entry ".pdf"))))
+    (if (f-exists? path)
+        (funcall helm-bibtex-pdf-open-function path)
+      (message "No PDF for this entry: %s" entry))))
+
+(defun helm-bibtex-insert-key (entry)
+  (insert entry))
+
+
+(setq helm-source-bibtex
   '((name . "Search BibTeX entries")
     (candidates . helm-bibtex-init)
-    (candidate-transformer . helm-bibtex-candidates-formatter)))
+    (candidate-transformer . helm-bibtex-candidates-formatter)
+    (action . (("Open PDF file (if present)" . helm-bibtex-open-pdf)
+               ("Insert BibTeX key at point" . helm-bibtex-insert-key)))))
 
 ;;;###autoload
 (defun helm-bibtex ()
