@@ -3,9 +3,7 @@ helm-bibtex
 
 A helm source for searching entries in BibTeX bibliographies.
 
-Development is in the early stages.  So expect to encounter bugs.  For
-parsing of BibTeX files the helm-bibtex uses functions from the Ebib
-package.
+Development is in the early stages.  So expect to encounter bugs.  For parsing of BibTeX files, functions from the Ebib package are used plus some code that was adapted from Ebib.
 
 Here is a screenshot showing a search for entries containing the word *reading*:
 
@@ -21,9 +19,7 @@ Planned features:
 
 ## Installation
 
-Have Emacs 24 or higher.  Put the file `helm-bibtex.el` in a
-directory included in your load-path.  Add the following line to your
-start-up file (typically init.el):
+Have Emacs 24 or higher.  Put the file `helm-bibtex.el` in a directory included in your load-path.  Add the following line to your start-up file (typically init.el):
 
     (autoload 'helm-bibtex "helm-bibtex" "" t)
 
