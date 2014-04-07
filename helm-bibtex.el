@@ -22,21 +22,6 @@
 
 ;;; Commentary:
 
-;; Bugs:
-;;
-;; FIXME Matching is done on the transformed entries.  These do not
-;; include the full information.  Match in the raw data.
-;; FIXME Add dependencies to the Package-Requires field in the header.
-
-;; Below is a list of planned features:
-;;
-;; TODO Action show entry in BíbTeX file.
-;; TODO Icon showing whether there is a PDF for an entry.
-;; TODO Icon showing whether there are notes for an entry.
-;; TODO Sort according to a column.
-;; TODO Make sort column configurable.
-;; TODO Make column with and column order configurable.
-
 ;;; Install:
 
 ;; Put this file on your Emacs-Lisp load path and add the following in
