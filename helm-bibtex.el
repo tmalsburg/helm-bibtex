@@ -218,6 +218,12 @@ specified in `helm-bibtex-pdf-open-function',"
   (let ((path (f-join helm-bibtex-notes-path (s-concat entry helm-bibtex-notes-extension))))
     (find-file path)))
 
+(defun helm-bibtex-show-entry (entry)
+  "Show the entry in the BibTeX file."
+  (find-file helm-bibtex-bibliography)
+  (goto-char (point-min))
+  (search-forward entry))
+
 
 (defvar helm-source-bibtex
   '((name . "Search BibTeX entries")
@@ -225,7 +231,8 @@ specified in `helm-bibtex-pdf-open-function',"
     (candidate-transformer . helm-bibtex-candidates-formatter)
     (action . (("Open PDF file (if present)" . helm-bibtex-open-pdf)
                ("Insert BibTeX key at point" . helm-bibtex-insert-key)
-               ("Edit notes"                 . helm-bibtex-edit-notes)))))
+               ("Edit notes"                 . helm-bibtex-edit-notes)
+               ("Show entry in BibTex file"  . helm-bibtex-show-entry)))))
 
 ;;;###autoload
 (defun helm-bibtex ()
