@@ -3,7 +3,9 @@ helm-bibtex
 
 A helm source for searching entries in BibTeX bibliographies.
 
-Development is in the early stages and the source is perhaps not yet ready for daily use.  For parsing of BibTeX files the source uses functions from the Ebib package.
+Development is in the early stages.  So expect to encounter bugs.  For
+parsing of BibTeX files the helm-bibtex uses functions from the Ebib
+package.
 
 Here is a screenshot showing a search for entries containing the word *reading*:
 
