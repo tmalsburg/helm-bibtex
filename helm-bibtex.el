@@ -30,7 +30,6 @@
 
 ;; Below is a list of planned features:
 ;;
-;; TODO Action edit notes for entry.
 ;; TODO Action show entry in BíbTeX file.
 ;; TODO Icon showing whether there is a PDF for an entry.
 ;; TODO Icon showing whether there are notes for an entry.
@@ -90,6 +89,18 @@ BibTeX-key plus a \".pdf\" suffix."
 function that takes one argument: the path to the PDF file."
   :group 'helm-bibtex
   :type 'function)
+
+(defcustom helm-bibtex-notes-path nil
+  "The directory in which notes are stored.  Helm-bibtex assumes
+that the names of these notes are composed of the BibTeX-key plus
+a suffix that is specified in `helm-bibtex-notes-extension'."
+  :group 'helm-bibtex
+  :type 'directory)
+
+(defcustom helm-bibtex-notes-extension ".org"
+  "The extension of the files containing notes."
+  :group 'helm-bibtex
+  :type 'string)
 
 
 (defun helm-bibtex-init ()
@@ -191,21 +202,30 @@ key.  If no such element exists, default is returned instead."
 
 
 (defun helm-bibtex-open-pdf (entry)
+  "Open the PDF associated with the entry using the function
+specified in `helm-bibtex-pdf-open-function',"
   (let ((path (f-join helm-bibtex-library-path (s-concat entry ".pdf"))))
     (if (f-exists? path)
         (funcall helm-bibtex-pdf-open-function path)
       (message "No PDF for this entry: %s" entry))))
 
 (defun helm-bibtex-insert-key (entry)
+  "Insert the BibTeX key at point."
   (insert entry))
 
+(defun helm-bibtex-edit-notes (entry)
+  "Open the notes associated with the entry using `find-file'."
+  (let ((path (f-join helm-bibtex-notes-path (s-concat entry helm-bibtex-notes-extension))))
+    (find-file path)))
+
 
-(setq helm-source-bibtex
+(defvar helm-source-bibtex
   '((name . "Search BibTeX entries")
     (candidates . helm-bibtex-init)
     (candidate-transformer . helm-bibtex-candidates-formatter)
     (action . (("Open PDF file (if present)" . helm-bibtex-open-pdf)
-               ("Insert BibTeX key at point" . helm-bibtex-insert-key)))))
+               ("Insert BibTeX key at point" . helm-bibtex-insert-key)
+               ("Edit notes"                 . helm-bibtex-edit-notes)))))
 
 ;;;###autoload
 (defun helm-bibtex ()
