@@ -13,9 +13,9 @@ Planned features:
 
 - Icon showing whether there is a PDF for an entry.
 - Icon showing whether there are notes for an entry.
+- Sort according to a column.
 - Make sort column configurable.
 - Make column with and column order configurable.
-- Sort according to a column.
 
 ## Requirements
 
