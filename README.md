@@ -54,3 +54,5 @@ The command `helm-bibtex` starts a new search.  There are several actions for Bi
 - Insert a LaTeX cite macro at point.
 - Edit notes associated with an entry.
 - Show the entry in the BibTeX file.
+
+To execute an action, select an entry and press `TAB` to see the list of available actions.
