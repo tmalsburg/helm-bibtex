@@ -17,6 +17,16 @@ Planned features:
 - Make column with and column order configurable.
 - Sort according to a column.
 
+## Requirements
+
+In order to run helm-bibtex, a number of packages have to be installed on your system.  The easiest way to get these packages is perhaps through [MELPA](http://melpa.milkbox.net/#/).
+
+- [Helm](http://melpa.milkbox.net/#/helm): incremental search framework (helm-bibtex is a plug-in for Helm)
+- [Ebib](http://melpa.milkbox.net/#/ebib): a BibTeX database manager for Emacs
+- [dash](http://melpa.milkbox.net/#/dash): a powerful list-processing library
+- [s](http://melpa.milkbox.net/#/s): the long lost Emacs string manipulation library.
+- [f](http://melpa.milkbox.net/#/f): a modern API for working with files and directories
+
 ## Installation
 
 Have Emacs 24 or higher.  Put the file `helm-bibtex.el` in a directory included in your load-path.  Add the following line to your start-up file (typically init.el):
