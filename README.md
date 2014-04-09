@@ -51,7 +51,7 @@ Helm-bibtex assumes that PDFs and notes have the BibTeX key of their associated 
 The command `helm-bibtex` starts a new search.  There are several actions for BibTeX entries:
 
 - Open the PDF file associated with an entry if available (default).
-- Insert a BibTeX key at point.
+- Insert BibTeX key at point.
 - Edit notes associated with an entry.
 - Show the entry in the BibTeX file.
 
