@@ -145,7 +145,7 @@ list containing the fields of the entry."
     (cons (cons 'entry-key entry-key) record)))
 
 
-(defun helm-bibtex-candidates-formatter (candidates)
+(defun helm-bibtex-candidates-formatter (candidates source)
   "Formats BibTeX entries for display in results list."
   (cl-loop
     for cand in candidates
@@ -211,9 +211,9 @@ specified in `helm-bibtex-pdf-open-function',"
 
 
 (defvar helm-source-bibtex
-  '((name . "Search BibTeX entries")
-    (candidates . helm-bibtex-init)
-    (candidate-transformer . helm-bibtex-candidates-formatter)
+  '((name                                    . "Search BibTeX entries")
+    (candidates                              . helm-bibtex-init)
+    (filtered-candidate-transformer          . helm-bibtex-candidates-formatter)
     (action . (("Open PDF file (if present)" . helm-bibtex-open-pdf)
                ("Insert BibTeX key at point" . helm-bibtex-insert-key)
                ("Edit notes"                 . helm-bibtex-edit-notes)
