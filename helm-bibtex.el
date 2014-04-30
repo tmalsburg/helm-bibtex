@@ -5,7 +5,7 @@
 ;; Author: Titus von der Malsburg <malsburg@posteo.de>
 ;; Maintainer: Titus von der Malsburg <malsburg@posteo.de>
 ;; Version: 1.0.0
-;; Package-Requires: ((helm "1.5.5") (s "1.9.0") (dash "2.6.0") (f "0.16.2") (cl-lib "1.0"))
+;; Package-Requires: ((helm "1.5.5") (s "1.9.0") (dash "2.6.0") (f "0.16.2") (cl-lib "0.5"))
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -329,7 +329,7 @@ specified in `helm-bibtex-pdf-open-function',"
         :full-frame t
         :candidate-number-limit 500))
 
-;(helm-bibtex)
+(provide 'helm-bibtex)
 
 ;; Local Variables:
 ;; byte-compile-warnings: (not cl-functions obsolete)
