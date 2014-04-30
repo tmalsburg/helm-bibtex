@@ -31,7 +31,7 @@ In order to run helm-bibtex, a number of packages have to be installed on your s
 
 ## Installation
 
-Have Emacs 24 or higher.  Put the file `helm-bibtex.el` in a directory included in your load-path.  Add the following line to your start-up file (typically init.el):
+Helm-bibtex can be installed via [MELPA](http://melpa.milkbox.net/).  Alternatively, put the file `helm-bibtex.el` in a directory included in your load-path.  Add the following line to your start-up file (typically init.el):
 
     (autoload 'helm-bibtex "helm-bibtex" "" t)
 
