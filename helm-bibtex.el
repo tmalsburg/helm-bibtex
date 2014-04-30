@@ -47,6 +47,8 @@
 ;;; Code:
 
 (require 'helm)
+(require 'helm-net)
+(require 'helm-plugin)
 (require 'ebib)
 (require 'cl-lib)
 (require 'dash)
@@ -86,6 +88,60 @@ a suffix that is specified in `helm-bibtex-notes-extension'."
   "The extension of the files containing notes."
   :group 'helm-bibtex
   :type 'string)
+
+(defcustom helm-bibtex-fallback-options
+  '(("Google Scholar" . "http://scholar.google.co.uk/scholar?q=%s")
+    ("Pubmed" . "http://www.ncbi.nlm.nih.gov/pubmed/?term=%s")
+    ("arXiv" . helm-bibtex-arxiv-url)
+    ("Create new entry" . helm-bibtex-create-new-entry))
+  "Alist of online sources that can be used to search for
+publications.  The key of each entry is the name of the online
+source.  The value is the URL used for retrieving results.  This
+URL must contain a %s in the position where the search term
+should be inserted.  Alternatively, the value can be a function
+that will be called when the entry is selected.")
+
+(defcustom helm-bibtex-browser-function nil
+  "The browser that is used to access online resources.  If
+nil (default), the value of `browse-url-browser-function' is
+used.  If that value is nil, Helm uses the first available
+browser in `helm-browse-url-default-browser-alist'"
+  :group 'helm-dictionary
+  :type '(choice
+          (const         :tag "Default" :value nil)
+          (function-item :tag "Emacs interface to w3m" :value w3m-browse-url)
+          (function-item :tag "Emacs W3" :value  browse-url-w3)
+          (function-item :tag "W3 in another Emacs via `gnudoit'"
+                         :value  browse-url-w3-gnudoit)
+          (function-item :tag "Mozilla" :value  browse-url-mozilla)
+          (function-item :tag "Firefox" :value browse-url-firefox)
+          (function-item :tag "Chromium" :value browse-url-chromium)
+          (function-item :tag "Galeon" :value  browse-url-galeon)
+          (function-item :tag "Epiphany" :value  browse-url-epiphany)
+          (function-item :tag "Netscape" :value  browse-url-netscape)
+          (function-item :tag "eww" :value  eww-browse-url)
+          (function-item :tag "Mosaic" :value  browse-url-mosaic)
+          (function-item :tag "Mosaic using CCI" :value  browse-url-cci)
+          (function-item :tag "Text browser in an xterm window"
+                         :value browse-url-text-xterm)
+          (function-item :tag "Text browser in an Emacs window"
+                         :value browse-url-text-emacs)
+          (function-item :tag "KDE" :value browse-url-kde)
+          (function-item :tag "Elinks" :value browse-url-elinks)
+          (function-item :tag "Specified by `Browse Url Generic Program'"
+                         :value browse-url-generic)
+          (function-item :tag "Default Windows browser"
+                         :value browse-url-default-windows-browser)
+          (function-item :tag "Default Mac OS X browser"
+                         :value browse-url-default-macosx-browser)
+          (function-item :tag "GNOME invoking Mozilla"
+                         :value browse-url-gnome-moz)
+          (function-item :tag "Default browser"
+                         :value browse-url-default-browser)
+          (function      :tag "Your own function")
+          (alist         :tag "Regexp/function association list"
+                         :key-type regexp :value-type function))
+)
 
 
 (defun helm-bibtex-init ()
@@ -209,6 +265,34 @@ specified in `helm-bibtex-pdf-open-function',"
   (goto-char (point-min))
   (search-forward entry))
 
+(defun helm-bibtex-fallback-action (cand)
+  (let ((browse-url-browser-function
+          (or helm-bibtex-browser-function
+              browse-url-browser-function))
+        (cand1 (cdr (assoc cand helm-bibtex-fallback-options))))
+    (cond 
+      ((stringp cand1)
+        (helm-browse-url (format cand1 (url-hexify-string helm-pattern))))
+      ((functionp cand1)
+        (funcall cand1))
+      (t (error "Don't know how to interpret this: %s" cand1)))))
+
+(defun helm-bibtex-arxiv-url ()
+  "Search for the current `helm-pattern' in arXiv."
+  (let* ((browse-url-browser-function
+          (or helm-bibtex-browser-function
+              browse-url-browser-function))
+         (terms (s-split "\s+" helm-pattern))
+         (terms (-map 'url-hexify-string terms))
+         (terms (if (> (length terms) 1) (cons "AND" terms) terms)))
+    (helm-browse-url (format "http://arxiv.org/find/all/1/all:+%s/0/1/0/all/0/1"
+                             (s-join "+" terms)))))
+
+(defun helm-bibtex-create-new-entry ()
+  "Open the BibTeX and place point at the end."
+  (find-file helm-bibtex-bibliography)
+  (goto-char (point-max)))
+
 
 (defvar helm-source-bibtex
   '((name                                    . "Search BibTeX entries")
@@ -219,11 +303,20 @@ specified in `helm-bibtex-pdf-open-function',"
                ("Edit notes"                 . helm-bibtex-edit-notes)
                ("Show entry in BibTex file"  . helm-bibtex-show-entry)))))
 
+(defvar helm-source-fallback-options
+  '((name            . "Fallback options")
+    (match             (lambda (_candidate) t))
+    (candidates      . (lambda () (-map 'car helm-bibtex-fallback-options)))
+    (no-matchplugin)
+    (nohighlight)
+    (action          . helm-bibtex-fallback-action))
+  "Source for online look-up.")
+
 ;;;###autoload
 (defun helm-bibtex ()
   "Search BibTeX entries."
   (interactive)
-  (helm :sources '(helm-source-bibtex)
+  (helm :sources '(helm-source-bibtex helm-source-fallback-options)
         :full-frame t
         :candidate-number-limit 500))
 

@@ -3,11 +3,13 @@ helm-bibtex
 
 A helm source for searching entries in BibTeX bibliographies.
 
-Development is in the early stages.  So expect to encounter bugs.  For parsing of BibTeX files, functions from the Ebib package are used plus some code that was adapted from Ebib.
+For parsing of BibTeX files, functions from the Ebib package are used plus some code that was adapted from Ebib.
 
 Here is a screenshot showing a search for entries containing the word *reading*:
 
 ![A search for entries containing the word correlation](screenshot.png)
+
+There are also dummy entries at the bottom of the list of matches that can be used to search online, for example in arXiv, Google Scholar, etc.
 
 Planned features:
 
@@ -15,7 +17,7 @@ Planned features:
 - Icon showing whether there are notes for an entry.
 - Sort according to a column.
 - Make sort column configurable.
-- Make column with and column order configurable.
+- Make column width and column order configurable.
 
 ## Requirements
 
@@ -43,6 +45,8 @@ Other customization variables are:
 - `helm-bibtex-pdf-open-function`: Function used for opening PDFs (the default function opens them in Emacs)
 - `helm-bibtex-notes-path`: Location where notes are stored (one file per entry)
 - `helm-bibtex-notes-extension`: File extension of the files containing the notes
+- `helm-bibtex-fallback-options`: Online databases for which dummy entries are provided
+- `helm-bibtex-browser-function`: The browser that is used to access online databases
 
 Helm-bibtex assumes that PDFs and notes have the BibTeX key of their associated entries as their base names plus ".pdf" for PDFs and whatever extension is configured for notes (".org" by default).
 
