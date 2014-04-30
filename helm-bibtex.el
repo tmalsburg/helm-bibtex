@@ -22,6 +22,15 @@
 
 ;;; Commentary:
 
+;; A helm source for searching entries in BibTeX
+;; bibliographies.  There are also dummy entries at the bottom of the
+;; list of matches that can be used to search online, for example in
+;; arXiv, Google Scholar, etc.
+;;
+;; See the github page for details:
+;;
+;;    https://github.com/tmalsburg/helm-bibtex
+
 ;;; Install:
 
 ;; Put this file on your Emacs-Lisp load path and add the following in
@@ -38,11 +47,11 @@
 
 ;;; Usage:
 
-;; In the current version, you can only search entries using the
-;; command `helm-bibtex'.  Future versions will add actions that will
-;; allow you to edit an entry, to open the associated PDF file, to add
-;; notes to an entry, etc.
-
+;; You can search entries using the command `helm-bibtex'.  Select an
+;; entry and press TAB to access all available actions.  At the end of
+;; the list of matches you find some dummy entries that can be used
+;; for searching in online databases.  Apart from that, familiarize
+;; yourself with Helm.  It's more powerful that you might think.
 
 ;;; Code:
 
