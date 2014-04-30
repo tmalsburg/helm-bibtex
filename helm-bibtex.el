@@ -223,7 +223,7 @@ list containing the fields of the entry."
   "Removes quoting and superfluous white space from BibTeX field
 values."
   (replace-regexp-in-string "[\n\t ]+" " "
-    (replace-regexp-in-string "[\"{}]+" "" s)))
+    (replace-regexp-in-string "[\\\"{}]+" "" s)))
 
 (defun helm-bibtex-shorten-authors (authors)
   "Returns a comma-separated list of the surnames in authors."
