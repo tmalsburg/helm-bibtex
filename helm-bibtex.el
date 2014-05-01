@@ -99,9 +99,14 @@ a suffix that is specified in `helm-bibtex-notes-extension'."
   :type 'string)
 
 (defcustom helm-bibtex-fallback-options
-  '(("Google Scholar" . "http://scholar.google.co.uk/scholar?q=%s")
-    ("Pubmed" . "http://www.ncbi.nlm.nih.gov/pubmed/?term=%s")
-    ("arXiv" . helm-bibtex-arxiv-url)
+  '(("Search in Google Scholar" . "http://scholar.google.co.uk/scholar?q=%s")
+    ("Search in Pubmed" . "http://www.ncbi.nlm.nih.gov/pubmed/?term=%s")
+    ("Search in arXiv" . helm-bibtex-arxiv)
+    ("Search in Bodleian Library" . "http://solo.bodleian.ox.ac.uk/primo_library/libweb/action/search.do?vl(freeText0)=%s&fn=search&tab=all")
+    ("Search in Library of Congress" . "http://www.loc.gov/search/?q=%s&all=true&st=list")
+    ("Search in Deutsche Nationalbibliothek" . "https://portal.dnb.de/opac.htm?query=%s")
+    ("Search in British National Library" . "http://explore.bl.uk/primo_library/libweb/action/search.do?&vl(freeText0)=%s&fn=search")
+    ("Search in Bibliothèque nationale de France" . "http://catalogue.bnf.fr/servlet/RechercheEquation?host=catalogue?historique1=Recherche+par+mots+de+la+notice&niveau1=1&url1=/jsp/recherchemots_simple.jsp?host=catalogue&maxNiveau=1&categorieRecherche=RechercheMotsSimple&NomPageJSP=/jsp/recherchemots_simple.jsp?host=catalogue&RechercheMotsSimpleAsauvegarder=0&ecranRechercheMot=/jsp/recherchemots_simple.jsp&resultatsParPage=20&x=40&y=22&nbElementsHDJ=6&nbElementsRDJ=7&nbElementsRCL=12&FondsNumerise=M&CollectionHautdejardin=TVXZROM&HDJ_DAV=R&HDJ_D2=V&HDJ_D1=T&HDJ_D3=X&HDJ_D4=Z&HDJ_SRB=O&CollectionRezdejardin=UWY1SPQM&RDJ_DAV=S&RDJ_D2=W&RDJ_D1=U&RDJ_D3=Y&RDJ_D4=1&RDJ_SRB=P&RDJ_RLR=Q&RICHELIEU_AUTRE=ABCDEEGIKLJ&RCL_D1=A&RCL_D2=K&RCL_D3=D&RCL_D4=E&RCL_D5=E&RCL_D6=C&RCL_D7=B&RCL_D8=J&RCL_D9=G&RCL_D10=I&RCL_D11=L&ARSENAL=H&LivrePeriodique=IP&partitions=C&images_fixes=F&son=S&images_animees=N&Disquette_cederoms=E&multimedia=M&cartes_plans=D&manuscrits=BT&monnaies_medailles_objets=JO&salle_spectacle=V&Monographie_TN=M&Periodique_TN=S&Recueil_TN=R&CollectionEditorial_TN=C&Ensemble_TN=E&Spectacle_TN=A&NoticeB=%s")
     ("Create new entry" . helm-bibtex-create-new-entry))
   "Alist of online sources that can be used to search for
 publications.  The key of each entry is the name of the online
@@ -286,7 +291,7 @@ specified in `helm-bibtex-pdf-open-function',"
         (funcall cand1))
       (t (error "Don't know how to interpret this: %s" cand1)))))
 
-(defun helm-bibtex-arxiv-url ()
+(defun helm-bibtex-arxiv ()
   "Search for the current `helm-pattern' in arXiv."
   (let* ((browse-url-browser-function
           (or helm-bibtex-browser-function
