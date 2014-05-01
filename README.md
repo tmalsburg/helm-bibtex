@@ -76,6 +76,10 @@ Conference presentation in 2013:
 
     2013 inproceedings
 
+Publications from 2010 and 2011:
+
+    \(2010\|2011\)
+
 Articles co-authored by David Caplan and Gloria Waters:
 
     article waters caplan
