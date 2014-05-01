@@ -56,7 +56,7 @@ Helm-bibtex assumes that PDFs and notes have the BibTeX key of their associated 
 
 The command `helm-bibtex` starts a new search.  It is recommended to bind it to a convenient key for quick access.  For filtering the following fields are used: author, title, year, and entry-type.  Regular expressions can be used as search terms.  Example searches:
 
-Everything ever published by Keith Rayner:
+Everything ever published by Janet Fodor:
 
     janet fodor
 
