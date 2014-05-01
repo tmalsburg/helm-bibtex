@@ -22,10 +22,13 @@
 
 ;;; Commentary:
 
-;; A helm source for searching entries in BibTeX
-;; bibliographies.  There are also dummy entries at the bottom of the
-;; list of matches that can be used to search online, for example in
-;; arXiv, Google Scholar, etc.
+;; A helm source for searching entries in a BibTeX bibliography.  It
+;; provides functions for opening PDF files associated with entries,
+;; for taking notes about entries, for inserting BibTeX keys in
+;; documents, and for editing BibTeX entries.  There are also dummy
+;; entries at the bottom of the list of matches that can be used to
+;; search online databases such as arXiv, Google Scholar, Library of
+;; Congress, etc.
 ;;
 ;; See the github page for details:
 ;;
@@ -107,6 +110,7 @@ a suffix that is specified in `helm-bibtex-notes-extension'."
     ("Search in Deutsche Nationalbibliothek" . "https://portal.dnb.de/opac.htm?query=%s")
     ("Search in British National Library" . "http://explore.bl.uk/primo_library/libweb/action/search.do?&vl(freeText0)=%s&fn=search")
     ("Search in Bibliothèque nationale de France" . "http://catalogue.bnf.fr/servlet/RechercheEquation?host=catalogue?historique1=Recherche+par+mots+de+la+notice&niveau1=1&url1=/jsp/recherchemots_simple.jsp?host=catalogue&maxNiveau=1&categorieRecherche=RechercheMotsSimple&NomPageJSP=/jsp/recherchemots_simple.jsp?host=catalogue&RechercheMotsSimpleAsauvegarder=0&ecranRechercheMot=/jsp/recherchemots_simple.jsp&resultatsParPage=20&x=40&y=22&nbElementsHDJ=6&nbElementsRDJ=7&nbElementsRCL=12&FondsNumerise=M&CollectionHautdejardin=TVXZROM&HDJ_DAV=R&HDJ_D2=V&HDJ_D1=T&HDJ_D3=X&HDJ_D4=Z&HDJ_SRB=O&CollectionRezdejardin=UWY1SPQM&RDJ_DAV=S&RDJ_D2=W&RDJ_D1=U&RDJ_D3=Y&RDJ_D4=1&RDJ_SRB=P&RDJ_RLR=Q&RICHELIEU_AUTRE=ABCDEEGIKLJ&RCL_D1=A&RCL_D2=K&RCL_D3=D&RCL_D4=E&RCL_D5=E&RCL_D6=C&RCL_D7=B&RCL_D8=J&RCL_D9=G&RCL_D10=I&RCL_D11=L&ARSENAL=H&LivrePeriodique=IP&partitions=C&images_fixes=F&son=S&images_animees=N&Disquette_cederoms=E&multimedia=M&cartes_plans=D&manuscrits=BT&monnaies_medailles_objets=JO&salle_spectacle=V&Monographie_TN=M&Periodique_TN=S&Recueil_TN=R&CollectionEditorial_TN=C&Ensemble_TN=E&Spectacle_TN=A&NoticeB=%s")
+    ("Search in Gallica Bibliothèque Numérique" . "http://gallica.bnf.fr/Search?q=%s")
     ("Create new entry" . helm-bibtex-create-new-entry))
   "Alist of online sources that can be used to search for
 publications.  The key of each entry is the name of the online
