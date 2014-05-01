@@ -1,27 +1,29 @@
 helm-bibtex
 ===========
 
-A helm source for searching entries in BibTeX bibliographies.
-
-For parsing of BibTeX files, functions from the Ebib package are used plus some code that was adapted from Ebib.
+A helm source for searching entries in a BibTeX bibliography.  It provides functions for opening PDF files associated with entries, for taking notes about entries, for inserting BibTeX keys in documents, and for editing BibTeX entries.
 
 Here is a screenshot showing a search for entries containing the word *reading*:
 
 ![A search for entries containing the word correlation](screenshot.png)
 
-There are also dummy entries at the bottom of the list of matches that can be used to search online, for example in arXiv, Google Scholar, etc.
+At the bottom of the list are dummy entries that can be used to search online databases.  The following databases are preconfigured:
 
-Planned features:
+- Google Scholar
+- arXiv
+- Pubmed
+- Bodleian Library
+- Library of Congress
+- Deutsche Nationalbibliothek
+- British National Library
+- Bibliothèque National de France
+- Gallica Bibliothèque Numérique
 
-- Icon showing whether there is a PDF for an entry.
-- Icon showing whether there are notes for an entry.
-- Sort according to a column.
-- Make sort column configurable.
-- Make column width and column order configurable.
+This list can be extended using the configuration variable `helm-bibtex-fallback-options`.
 
 ## Requirements
 
-In order to run helm-bibtex, a number of packages have to be installed on your system.  The easiest way to get these packages is perhaps through [MELPA](http://melpa.milkbox.net/#/).
+In order to run helm-bibtex, a number of packages have to be installed on your system.  The easiest way to get these packages is through [MELPA](http://melpa.milkbox.net/#/).
 
 - [Helm](http://melpa.milkbox.net/#/helm): incremental search framework (helm-bibtex is a plug-in for Helm)
 - [Ebib](http://melpa.milkbox.net/#/ebib): a BibTeX database manager for Emacs
@@ -52,7 +54,7 @@ Helm-bibtex assumes that PDFs and notes have the BibTeX key of their associated 
 
 ## Usage
 
-The command `helm-bibtex` starts a new search.  There are several actions for BibTeX entries:
+The command `helm-bibtex` starts a new search.  It's recommended to bind it to a convenient key for quick access.  There are several actions for BibTeX entries:
 
 - Open the PDF file associated with an entry if available (default).
 - Insert BibTeX key at point.
@@ -60,3 +62,4 @@ The command `helm-bibtex` starts a new search.  There are several actions for Bi
 - Show the entry in the BibTeX file.
 
 To execute an action, select an entry and press `TAB` to see the list of available actions.
+
