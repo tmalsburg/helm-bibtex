@@ -54,7 +54,33 @@ Helm-bibtex assumes that PDFs and notes have the BibTeX key of their associated 
 
 ## Usage
 
-The command `helm-bibtex` starts a new search.  It's recommended to bind it to a convenient key for quick access.  There are several actions for BibTeX entries:
+The command `helm-bibtex` starts a new search.  It is recommended to bind it to a convenient key for quick access.  For filtering the following fields are used: author, title, year, and entry-type.  Regular expressions can be used as search terms.  Example searches:
+
+Everything ever published by Keith Rayner:
+
+    janet fodor
+
+All phdtheses:
+
+    phdthesis
+
+Lyn Frazier's PhD thesis:
+
+    phdthesis frazier
+
+Publications about eyetracking (regular expression used to match various spellings: *eyetracking*, *eye tracking*, *eye-tracking*):
+
+    eye.?tracking
+
+Conference presentation in 2013:
+
+    2013 inproceedings
+
+Articles co-authored by David Caplan and Gloria Waters:
+
+    article waters caplan
+
+There are several actions for matching BibTeX entries:
 
 - Open the PDF file associated with an entry if available (default).
 - Insert BibTeX key at point.
