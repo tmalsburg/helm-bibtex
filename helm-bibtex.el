@@ -50,8 +50,8 @@
 ;;
 ;;     (autoload 'helm-bibtex "helm-bibtex" "" t)
 ;;
-;; In order to specify a bibliography, set the variable
-;; `helm-bibtex-bibliography' to point to a BibTeX file.
+;; In order to specify a (list) bibliography, set the variable
+;; `helm-bibtex-bibliography' to point to a list of BibTeX file.
 
 ;;; Usage:
 
@@ -77,7 +77,8 @@
   :group 'helm)
 
 (defcustom helm-bibtex-bibliography nil
-  "The BibTeX file that is used for searching."
+  "The list of BibTeX file that is used for searching. The first
+one will be used for creating new entry by default."
   :group 'helm-bibtex
   :type 'file)
 
@@ -174,8 +175,8 @@ containing authors, title, year, entry-type, and -key of the
 entry.  The second element is an alists containing the full
 entry."
   ; Open bibliography in buffer:
-  (with-temp-buffer
-    (insert-file-contents helm-bibtex-bibliography)
+    (with-temp-buffer
+      (mapc 'insert-file-contents helm-bibtex-bibliography)
     ; Iterate over entries:
     (goto-char (point-min))
     (let (entries (list))
@@ -284,9 +285,12 @@ specified in `helm-bibtex-pdf-open-function',"
 
 (defun helm-bibtex-show-entry (entry)
   "Show the entry in the BibTeX file."
-  (find-file helm-bibtex-bibliography)
-  (goto-char (point-min))
-  (search-forward entry))
+  (catch 'break
+    (dolist (bibtex-file helm-bibtex-bibliography)
+      (find-file bibtex-file)
+      (goto-char (point-min))
+      (when (search-forward entry nil t)
+        (throw 'break t)))))
 
 (defun helm-bibtex-fallback-action (cand)
   (let ((browse-url-browser-function
@@ -313,7 +317,7 @@ specified in `helm-bibtex-pdf-open-function',"
 
 (defun helm-bibtex-create-new-entry ()
   "Open the BibTeX and place point at the end."
-  (find-file helm-bibtex-bibliography)
+  (find-file (first helm-bibtex-bibliography))
   (goto-char (point-max)))
 
 
