@@ -50,7 +50,7 @@
 ;;
 ;;     (autoload 'helm-bibtex "helm-bibtex" "" t)
 ;;
-;; In order to specify a (list) bibliography, set the variable
+;; In order to specify a (list of) bibliography, set the variable
 ;; `helm-bibtex-bibliography' to point to a list of BibTeX file.
 
 ;;; Usage:
@@ -174,28 +174,28 @@ each entry.  The first element of these conses is a string
 containing authors, title, year, entry-type, and -key of the
 entry.  The second element is an alists containing the full
 entry."
-  ; Open bibliography in buffer:
+    ;; Open bibliography in buffer:
     (with-temp-buffer
       (mapc 'insert-file-contents helm-bibtex-bibliography)
-    ; Iterate over entries:
-    (goto-char (point-min))
-    (let (entries (list))
-      (while (re-search-forward "^@" nil t) ; find the next entry
-        (let ((beg (point)))
-          (if (ebib-looking-at-goto-end
-                (concat "\\(" ebib-bibtex-identifier "\\)[[:space:]]*[\(\{]") 1)
-            (let ((entry-type (downcase
-                                (buffer-substring-no-properties beg (point)))))
-              (ebib-looking-at-goto-end "[[:space:]]*[\(\{]")
-              (if (assoc (intern-soft entry-type) ebib-entry-types)
-                  (setq entries (cons (helm-bibtex-read-entry entry-type)
-                                      entries))
-                (ebib-match-paren-forward (point-max))))
-            (error "Error: illegal entry type at line %d."
-                   (line-number-at-pos)))))
-      (--map (cons (helm-bibtex-clean-string
-                     (s-join " " (-map 'cdr it))) it)
-            entries))))
+      ;; Iterate over entries:
+      (goto-char (point-min))
+      (let (entries (list))
+        (while (re-search-forward "^@" nil t) ; find the next entry
+          (let ((beg (point)))
+            (if (ebib-looking-at-goto-end
+                 (concat "\\(" ebib-bibtex-identifier "\\)[[:space:]]*[\(\{]") 1)
+                (let ((entry-type (downcase
+                                   (buffer-substring-no-properties beg (point)))))
+                  (ebib-looking-at-goto-end "[[:space:]]*[\(\{]")
+                  (if (assoc (intern-soft entry-type) ebib-entry-types)
+                      (setq entries (cons (helm-bibtex-read-entry entry-type)
+                                          entries))
+                    (ebib-match-paren-forward (point-max))))
+              (error "Error: illegal entry type at line %d."
+                     (line-number-at-pos)))))
+        (--map (cons (helm-bibtex-clean-string
+                      (s-join " " (-map 'cdr it))) it)
+               entries))))
 
 (defun helm-bibtex-read-entry (entry-type)
   "Read the entry starting at point and return an association
