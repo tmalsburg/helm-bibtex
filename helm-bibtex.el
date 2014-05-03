@@ -50,8 +50,8 @@
 ;;
 ;;     (autoload 'helm-bibtex "helm-bibtex" "" t)
 ;;
-;; In order to specify a bibliography, set the variable
-;; `helm-bibtex-bibliography' to point to a BibTeX file.
+;; In order to specify a (list of) bibliography, set the variable
+;; `helm-bibtex-bibliography' to point to a list of BibTeX file.
 
 ;;; Usage:
 
@@ -77,9 +77,10 @@
   :group 'helm)
 
 (defcustom helm-bibtex-bibliography nil
-  "The BibTeX file that is used for searching."
+  "The list of BibTeX files that is used for searching. The first
+one will be used when creating new entries."
   :group 'helm-bibtex
-  :type 'file)
+  :type '(choice file (repeat file)))
 
 (defcustom helm-bibtex-library-path nil
   "The directory in which PDFs are stored.  Helm-bibtex
@@ -172,33 +173,36 @@ browser in `helm-browse-url-default-browser-alist'"
 
 
 (defun helm-bibtex-init ()
-    "Reads a BibTeX file and returns a list of conses, one for
+  "Reads the BibTeX files and returns a list of conses, one for
 each entry.  The first element of these conses is a string
-containing authors, title, year, entry-type, and -key of the
-entry.  The second element is an alists containing the full
-entry."
-  ; Open bibliography in buffer:
+containing authors, title, year, type, and key of the
+entry.  This is string is used for matching.  The second element
+is an alists containing the full entry."
+  ;; Open bibliography in buffer:
   (with-temp-buffer
-    (insert-file-contents helm-bibtex-bibliography)
-    ; Iterate over entries:
+    (mapc 'insert-file-contents 
+          (if (listp helm-bibtex-bibliography)
+              helm-bibtex-bibliography
+            (list helm-bibtex-bibliography)))
+    ;; Iterate over entries:
     (goto-char (point-min))
     (let (entries (list))
       (while (re-search-forward "^@" nil t) ; find the next entry
         (let ((beg (point)))
           (if (ebib-looking-at-goto-end
-                (concat "\\(" ebib-bibtex-identifier "\\)[[:space:]]*[\(\{]") 1)
-            (let ((entry-type (downcase
-                                (buffer-substring-no-properties beg (point)))))
-              (ebib-looking-at-goto-end "[[:space:]]*[\(\{]")
-              (if (assoc (intern-soft entry-type) ebib-entry-types)
-                  (setq entries (cons (helm-bibtex-read-entry entry-type)
-                                      entries))
-                (t (ebib-match-paren-forward (point-max)))))
+               (concat "\\(" ebib-bibtex-identifier "\\)[[:space:]]*[\(\{]") 1)
+              (let ((entry-type (downcase
+                                 (buffer-substring-no-properties beg (point)))))
+                (ebib-looking-at-goto-end "[[:space:]]*[\(\{]")
+                (if (assoc (intern-soft entry-type) ebib-entry-types)
+                    (setq entries (cons (helm-bibtex-read-entry entry-type)
+                                        entries))
+                  (ebib-match-paren-forward (point-max))))
             (error "Error: illegal entry type at line %d."
                    (line-number-at-pos)))))
       (--map (cons (helm-bibtex-clean-string
-                     (s-join " " (-map 'cdr it))) it)
-            entries))))
+                    (s-join " " (-map 'cdr it))) it)
+             entries))))
 
 (defun helm-bibtex-read-entry (entry-type)
   "Read the entry starting at point and return an association
@@ -286,11 +290,21 @@ specified in `helm-bibtex-pdf-open-function',"
   (let ((path (f-join helm-bibtex-notes-path (s-concat entry helm-bibtex-notes-extension))))
     (find-file path)))
 
+(defun helm-bibtex-buffer-visiting (file)
+  (or (get-file-buffer file)
+      (find-buffer-visiting file)))
+
 (defun helm-bibtex-show-entry (entry)
   "Show the entry in the BibTeX file."
-  (find-file helm-bibtex-bibliography)
-  (goto-char (point-min))
-  (search-forward entry))
+  (catch 'break
+    (dolist (bibtex-file helm-bibtex-bibliography)
+      (let ((buf (helm-bibtex-buffer-visiting bibtex-file)))
+        (find-file bibtex-file)
+        (goto-char (point-min))
+        (if (search-forward entry nil t)
+            (throw 'break t)
+          (unless buf
+            (kill-buffer)))))))
 
 (defun helm-bibtex-fallback-action (cand)
   (let ((browse-url-browser-function
@@ -317,7 +331,7 @@ specified in `helm-bibtex-pdf-open-function',"
 
 (defun helm-bibtex-create-new-entry ()
   "Open the BibTeX and place point at the end."
-  (find-file helm-bibtex-bibliography)
+  (find-file (first helm-bibtex-bibliography))
   (goto-char (point-max)))
 
 
