@@ -28,9 +28,10 @@
 ;;
 ;; - Quick access to your bibliography from within Emacs
 ;; - Provides instant search results as you type
+;; - Support for multiple BibTeX files
 ;; - Insert BibTeX key of selected entry in your current document
 ;; - Open the PDF associated with an entry
-;; - Take notes about selected entry
+;; - Add notes to an entry
 ;; - Edit selected entry
 ;; - Quick access to online bibliographic databases such as Pubmed,
 ;;   arXiv, Google Scholar, Library of Congress, etc.
