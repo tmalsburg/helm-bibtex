@@ -4,7 +4,8 @@
 
 ;; Author: Titus von der Malsburg <malsburg@posteo.de>
 ;; Maintainer: Titus von der Malsburg <malsburg@posteo.de>
-;; Version: 1.0.0
+;; Version: 20140501.623
+;; X-Original-Version: 1.0.0
 ;; Package-Requires: ((helm "1.5.5") (s "1.9.0") (dash "2.6.0") (f "0.16.2") (cl-lib "0.5"))
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -218,28 +219,35 @@ list containing the fields of the entry."
           (skip-chars-forward "^,"))) ; move to the comma after the entry key
     (setq record (cl-loop for field = (ebib-find-bibtex-field limit)
              while field 
-             if (member (car field) '(author title year))
+             if (member (car field) '(author title year url doi))
               collect field))
     (setq record (cons (cons 'entry-type (symbol-name entry-type)) record))
     (cons (cons 'entry-key entry-key) record)))
 
 
+
+(defun helm-bibtex-candidate-formatter (candidate)
+  (let* ((entry-key (helm-bibtex-get-default 'entry-key cand nil))
+        (url (helm-bibtex-get-default 'url cand nil))
+        (doi (helm-bibtex-get-default 'doi cand nil))
+        (width (save-excursion (with-helm-window (window-width))))
+        (fields (--map (helm-bibtex-clean-string
+                        (helm-bibtex-get-default it cand "-"))
+                       '(author title year entry-type)))
+        (authors (helm-bibtex-shorten-authors (car fields)))
+        (other-fields (cdr fields)))
+    (cons (s-format "$0 $1 $2 $3" 'elt
+            (-zip-with (lambda (f w) (truncate-string-to-width f w 0 ?\s))
+                       (cons authors other-fields) (list 36 (- width 50) 4 7)))
+          `(key ,entry-key url ,(if url (helm-bibtex-clean-string url) nil)
+                doi ,(if doi (helm-bibtex-clean-string doi))))))
+  
 (defun helm-bibtex-candidates-formatter (candidates source)
   "Formats BibTeX entries for display in results list."
   (cl-loop
     for cand in candidates
-    for cand = (cdr cand)
-    for entry-key = (helm-bibtex-get-default 'entry-key cand nil) 
-    for cand = (--map (helm-bibtex-clean-string
-                       (helm-bibtex-get-default it cand "-"))
-                      '(author title year entry-type))
-    for cand = (cons (helm-bibtex-shorten-authors (car cand)) (cdr cand))
-    for width = (save-excursion (with-helm-window (window-width)))
     collect
-    (cons (s-format "$0 $1 $2 $3" 'elt
-            (-zip-with (lambda (f w) (truncate-string-to-width f w 0 ?\s))
-                       cand (list 36 (- width 50) 4 7)))
-          entry-key)))
+    (helm-bibtex-candidate-formatter (cdr cand))))
 
 
 (defun helm-bibtex-clean-string (s)
@@ -268,25 +276,35 @@ key.  If no such element exists, default is returned instead."
 (defun helm-bibtex-open-pdf (entry)
   "Open the PDF associated with the entry using the function
 specified in `helm-bibtex-pdf-open-function',"
-  (let ((path (f-join helm-bibtex-library-path (s-concat entry ".pdf"))))
+  (let* ((key (plist-get entry 'key))
+         (path (f-join helm-bibtex-library-path (s-concat key ".pdf"))))
     (if (f-exists? path)
         (funcall helm-bibtex-pdf-open-function path)
-      (message "No PDF for this entry: %s" entry))))
+      (message "No PDF for this entry: %s" key))))
 
 (defun helm-bibtex-insert-key (entry)
   "Insert the BibTeX key at point."
-  (insert entry))
+  (insert (plist-get entry 'key)))
 
 (defun helm-bibtex-edit-notes (entry)
   "Open the notes associated with the entry using `find-file'."
-  (let ((path (f-join helm-bibtex-notes-path (s-concat entry helm-bibtex-notes-extension))))
+  (let ((path (f-join helm-bibtex-notes-path (s-concat (plist-get entry 'key)
+                                                       helm-bibtex-notes-extension))))
     (find-file path)))
 
 (defun helm-bibtex-show-entry (entry)
   "Show the entry in the BibTeX file."
   (find-file helm-bibtex-bibliography)
   (goto-char (point-min))
-  (search-forward entry))
+  (search-forward (plist-get entry 'key)))
+
+(defun helm-bibtex-open-in-browser (entry)
+  "Open the associated DOI or URL using helm-browse-url."
+  (let ((url (plist-get entry 'url))
+        (doi (plist-get entry 'doi)))
+    (if url (helm-browse-url url)
+      (if doi (helm-browse-url (s-concat "http://dx.doi.org/" doi)))
+      (message "No URL or DOI for this entry: %s" (plist-get entry 'key)))))
 
 (defun helm-bibtex-fallback-action (cand)
   (let ((browse-url-browser-function
@@ -318,13 +336,14 @@ specified in `helm-bibtex-pdf-open-function',"
 
 
 (defvar helm-source-bibtex
-  '((name                                    . "Search BibTeX entries")
-    (candidates                              . helm-bibtex-init)
-    (filtered-candidate-transformer          . helm-bibtex-candidates-formatter)
-    (action . (("Open PDF file (if present)" . helm-bibtex-open-pdf)
-               ("Insert BibTeX key at point" . helm-bibtex-insert-key)
-               ("Edit notes"                 . helm-bibtex-edit-notes)
-               ("Show entry in BibTex file"  . helm-bibtex-show-entry)))))
+  '((name                                               . "Search BibTeX entries")
+    (candidates                                         . helm-bibtex-init)
+    (filtered-candidate-transformer                     . helm-bibtex-candidates-formatter)
+    (action . (("Open PDF file (if present)"            . helm-bibtex-open-pdf)
+               ("Insert BibTeX key at point"            . helm-bibtex-insert-key)
+               ("Show associated URL or doi in browser" . helm-bibtex-open-in-browser)
+               ("Edit notes"                            . helm-bibtex-edit-notes)
+               ("Show entry in BibTex file"             . helm-bibtex-show-entry)))))
 
 (defvar helm-source-fallback-options
   '((name            . "Fallback options")
