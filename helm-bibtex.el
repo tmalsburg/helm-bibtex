@@ -189,7 +189,7 @@ entry."
               (if (assoc (intern-soft entry-type) ebib-entry-types)
                   (setq entries (cons (helm-bibtex-read-entry entry-type)
                                       entries))
-                (t (ebib-match-paren-forward (point-max)))))
+                (ebib-match-paren-forward (point-max))))
             (error "Error: illegal entry type at line %d."
                    (line-number-at-pos)))))
       (--map (cons (helm-bibtex-clean-string
