@@ -343,7 +343,8 @@ specified in `helm-bibtex-pdf-open-function',"
     (action . (("Open PDF file (if present)" . helm-bibtex-open-pdf)
                ("Insert BibTeX key at point" . helm-bibtex-insert-key)
                ("Edit notes"                 . helm-bibtex-edit-notes)
-               ("Show entry in BibTex file"  . helm-bibtex-show-entry)))))
+               ("Show entry in BibTex file"  . helm-bibtex-show-entry))))
+  "Source for searching in BibTeX files.")
 
 (defvar helm-source-fallback-options
   '((name            . "Fallback options")
