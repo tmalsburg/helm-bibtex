@@ -297,7 +297,7 @@ specified in `helm-bibtex-pdf-open-function',"
         (if (search-forward entry nil t)
             (throw 'break t)
           (unless buf
-            (kill-buffer buf)))))))
+            (kill-buffer)))))))
 
 (defun helm-bibtex-fallback-action (cand)
   (let ((browse-url-browser-function
