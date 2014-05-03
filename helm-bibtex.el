@@ -80,7 +80,7 @@
   "The list of BibTeX files that is used for searching. The first
 one will be used when creating new entries."
   :group 'helm-bibtex
-  :type 'file)
+  :type '(choice file (repeat file)))
 
 (defcustom helm-bibtex-library-path nil
   "The directory in which PDFs are stored.  Helm-bibtex
@@ -176,7 +176,10 @@ entry.  This is string is used for matching.  The second element
 is an alists containing the full entry."
   ;; Open bibliography in buffer:
   (with-temp-buffer
-    (mapc 'insert-file-contents helm-bibtex-bibliography)
+    (mapc 'insert-file-contents 
+          (if (listp helm-bibtex-bibliography)
+              helm-bibtex-bibliography
+            (list helm-bibtex-bibliography)))
     ;; Iterate over entries:
     (goto-char (point-min))
     (let (entries (list))
