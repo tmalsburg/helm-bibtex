@@ -77,8 +77,8 @@
   :group 'helm)
 
 (defcustom helm-bibtex-bibliography nil
-  "The list of BibTeX file that is used for searching. The first
-one will be used for creating new entry by default."
+  "The list of BibTeX files that is used for searching. The first
+one will be used when creating new entries."
   :group 'helm-bibtex
   :type 'file)
 
@@ -169,11 +169,11 @@ browser in `helm-browse-url-default-browser-alist'"
 
 
 (defun helm-bibtex-init ()
-  "Reads a BibTeX file and returns a list of conses, one for
+  "Reads the BibTeX files and returns a list of conses, one for
 each entry.  The first element of these conses is a string
-containing authors, title, year, entry-type, and -key of the
-entry.  The second element is an alists containing the full
-entry."
+containing authors, title, year, type, and key of the
+entry.  This is string is used for matching.  The second element
+is an alists containing the full entry."
   ;; Open bibliography in buffer:
   (with-temp-buffer
     (mapc 'insert-file-contents helm-bibtex-bibliography)
