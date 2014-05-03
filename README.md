@@ -31,7 +31,7 @@ At the bottom of the list are dummy entries that can be used to search online da
 - Bibliothèque National de France
 - Gallica Bibliothèque Numérique
 
-This list can be extended using the configuration variable `helm-bibtex-fallback-options`.
+This list can be extended using the customization variable `helm-bibtex-fallback-options`.
 
 ## Requirements
 
@@ -76,7 +76,7 @@ Everything ever published by Janet Fodor:
 
     janet fodor
 
-All phdtheses:
+All PhD theses:
 
     phdthesis
 
