@@ -117,8 +117,7 @@ a suffix that is specified in `helm-bibtex-notes-extension'."
     ("Search in Deutsche Nationalbibliothek" . "https://portal.dnb.de/opac.htm?query=%s")
     ("Search in British National Library" . "http://explore.bl.uk/primo_library/libweb/action/search.do?&vl(freeText0)=%s&fn=search")
     ("Search in Bibliothèque nationale de France" . "http://catalogue.bnf.fr/servlet/RechercheEquation?host=catalogue?historique1=Recherche+par+mots+de+la+notice&niveau1=1&url1=/jsp/recherchemots_simple.jsp?host=catalogue&maxNiveau=1&categorieRecherche=RechercheMotsSimple&NomPageJSP=/jsp/recherchemots_simple.jsp?host=catalogue&RechercheMotsSimpleAsauvegarder=0&ecranRechercheMot=/jsp/recherchemots_simple.jsp&resultatsParPage=20&x=40&y=22&nbElementsHDJ=6&nbElementsRDJ=7&nbElementsRCL=12&FondsNumerise=M&CollectionHautdejardin=TVXZROM&HDJ_DAV=R&HDJ_D2=V&HDJ_D1=T&HDJ_D3=X&HDJ_D4=Z&HDJ_SRB=O&CollectionRezdejardin=UWY1SPQM&RDJ_DAV=S&RDJ_D2=W&RDJ_D1=U&RDJ_D3=Y&RDJ_D4=1&RDJ_SRB=P&RDJ_RLR=Q&RICHELIEU_AUTRE=ABCDEEGIKLJ&RCL_D1=A&RCL_D2=K&RCL_D3=D&RCL_D4=E&RCL_D5=E&RCL_D6=C&RCL_D7=B&RCL_D8=J&RCL_D9=G&RCL_D10=I&RCL_D11=L&ARSENAL=H&LivrePeriodique=IP&partitions=C&images_fixes=F&son=S&images_animees=N&Disquette_cederoms=E&multimedia=M&cartes_plans=D&manuscrits=BT&monnaies_medailles_objets=JO&salle_spectacle=V&Monographie_TN=M&Periodique_TN=S&Recueil_TN=R&CollectionEditorial_TN=C&Ensemble_TN=E&Spectacle_TN=A&NoticeB=%s")
-    ("Search in Gallica Bibliothèque Numérique" . "http://gallica.bnf.fr/Search?q=%s")
-    ("Create new entry" . helm-bibtex-create-new-entry))
+    ("Search in Gallica Bibliothèque Numérique" . "http://gallica.bnf.fr/Search?q=%s"))
   "Alist of online sources that can be used to search for
 publications.  The key of each entry is the name of the online
 source.  The value is the URL used for retrieving results.  This
@@ -307,17 +306,16 @@ specified in `helm-bibtex-pdf-open-function',"
           (unless buf
             (kill-buffer)))))))
 
-(defun helm-bibtex-fallback-action (cand)
+(defun helm-bibtex-fallback-action (url-or-function)
   (let ((browse-url-browser-function
           (or helm-bibtex-browser-function
-              browse-url-browser-function))
-        (cand1 (cdr (assoc cand helm-bibtex-fallback-options))))
+              browse-url-browser-function)))
     (cond 
-      ((stringp cand1)
-        (helm-browse-url (format cand1 (url-hexify-string helm-pattern))))
-      ((functionp cand1)
-        (funcall cand1))
-      (t (error "Don't know how to interpret this: %s" cand1)))))
+      ((stringp url-or-function)
+        (helm-browse-url (format url-or-function (url-hexify-string helm-pattern))))
+      ((functionp url-or-function)
+        (funcall url-or-function))
+      (t (error "Don't know how to interpret this: %s" url-or-function)))))
 
 (defun helm-bibtex-arxiv ()
   "Search for the current `helm-pattern' in arXiv."
@@ -330,10 +328,17 @@ specified in `helm-bibtex-pdf-open-function',"
     (helm-browse-url (format "http://arxiv.org/find/all/1/all:+%s/0/1/0/all/0/1"
                              (s-join "+" terms)))))
 
-(defun helm-bibtex-create-new-entry ()
-  "Open the BibTeX and place point at the end."
-  (find-file (first helm-bibtex-bibliography))
-  (goto-char (point-max)))
+(defun helm-bibtex-fallback-candidates ()
+  "Compile list of fallback options.  These consist of the online
+resources defined in `helm-bibtex-fallback-options' plus one
+entry for each BibTeX file that will open that file for editing."
+  (let ((bib-files (if (listp helm-bibtex-bibliography)
+                       helm-bibtex-bibliography
+                     (list helm-bibtex-bibliography))))
+    (-concat helm-bibtex-fallback-options
+      (--map (cons (s-concat "Create new entry in " (f-filename it))
+                   `(lambda () (find-file ,it) (goto-char (point-max))))
+             bib-files))))
 
 
 (defvar helm-source-bibtex
@@ -349,7 +354,7 @@ specified in `helm-bibtex-pdf-open-function',"
 (defvar helm-source-fallback-options
   '((name            . "Fallback options")
     (match             (lambda (_candidate) t))
-    (candidates      . (lambda () (-map 'car helm-bibtex-fallback-options)))
+    (candidates      . helm-bibtex-fallback-candidates)
     (no-matchplugin)
     (nohighlight)
     (action          . helm-bibtex-fallback-action))
