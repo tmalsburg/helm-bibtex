@@ -283,14 +283,21 @@ specified in `helm-bibtex-pdf-open-function',"
   (let ((path (f-join helm-bibtex-notes-path (s-concat entry helm-bibtex-notes-extension))))
     (find-file path)))
 
+(defun helm-bibtex-buffer-visiting (file)
+  (or (get-file-buffer file)
+      (find-buffer-visiting file)))
+
 (defun helm-bibtex-show-entry (entry)
   "Show the entry in the BibTeX file."
   (catch 'break
     (dolist (bibtex-file helm-bibtex-bibliography)
-      (find-file bibtex-file)
-      (goto-char (point-min))
-      (when (search-forward entry nil t)
-        (throw 'break t)))))
+      (let ((buf (helm-bibtex-buffer-visiting bibtex-file)))
+        (find-file bibtex-file)
+        (goto-char (point-min))
+        (if (search-forward entry nil t)
+            (throw 'break t)
+          (unless buf
+            (kill-buffer buf)))))))
 
 (defun helm-bibtex-fallback-action (cand)
   (let ((browse-url-browser-function
