@@ -51,7 +51,11 @@ Helm-bibtex can be installed via [MELPA](http://melpa.milkbox.net/#/helm-bibtex)
 
 Tell helm-bibtex where your BibTeX file is by setting the customization variable `helm-bibtex-bibliography`.
 
-    (setq helm-bibtex-bibliography "path/to/your/bibtex-file.bib")
+    (setq helm-bibtex-bibliography "/path/to/bibtex-file.bib")
+
+Alternatively, you can specify a list of BibTeX files.
+
+    (setq helm-bibtex-bibliography '("/path/to/bibtex-file-1.bib" "/path/to/bibtex-file-2.bib"))
 
 Other customization variables are:
 
