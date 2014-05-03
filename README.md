@@ -5,7 +5,7 @@ A helm source for searching entries in a BibTeX bibliography.
 
 ## Key features:
 
-- Quick access to you Bibliography from within Emacs
+- Quick access to your bibliography from within Emacs
 - Provides instant search results as you type
 - Insert BibTeX key of selected entry in your current document
 - Open the PDF associated with an entry
