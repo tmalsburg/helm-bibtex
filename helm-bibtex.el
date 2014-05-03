@@ -173,7 +173,7 @@ browser in `helm-browse-url-default-browser-alist'"
 )
 
 
-(defun helm-bibtex-init ()
+(defun helm-bibtex-candidates ()
   "Reads the BibTeX files and returns a list of conses, one for
 each entry.  The first element of these conses is a string
 containing authors, title, year, type, and key of the
@@ -338,7 +338,7 @@ specified in `helm-bibtex-pdf-open-function',"
 
 (defvar helm-source-bibtex
   '((name                                    . "Search BibTeX entries")
-    (candidates                              . helm-bibtex-init)
+    (candidates                              . helm-bibtex-candidates)
     (filtered-candidate-transformer          . helm-bibtex-candidates-formatter)
     (action . (("Open PDF file (if present)" . helm-bibtex-open-pdf)
                ("Insert BibTeX key at point" . helm-bibtex-insert-key)
