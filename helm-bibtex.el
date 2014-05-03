@@ -172,6 +172,16 @@ browser in `helm-browse-url-default-browser-alist'"
 )
 
 
+(defun helm-bibtex-init ()
+  "Checks that the files and directories specified by the user
+actually exist."
+  (mapc (lambda (file)
+          (unless (f-exists? file)
+                  (error "BibTeX file %s could not be found." file)))
+        (if (listp helm-bibtex-bibliography)
+            helm-bibtex-bibliography
+          (list helm-bibtex-bibliography))))
+
 (defun helm-bibtex-candidates ()
   "Reads the BibTeX files and returns a list of conses, one for
 each entry.  The first element of these conses is a string
@@ -343,6 +353,7 @@ entry for each BibTeX file that will open that file for editing."
 
 (defvar helm-source-bibtex
   '((name                                    . "Search BibTeX entries")
+    (init                                    . helm-bibtex-init)
     (candidates                              . helm-bibtex-candidates)
     (filtered-candidate-transformer          . helm-bibtex-candidates-formatter)
     (action . (("Open PDF file (if present)" . helm-bibtex-open-pdf)
