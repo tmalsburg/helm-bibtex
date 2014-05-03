@@ -22,13 +22,18 @@
 
 ;;; Commentary:
 
-;; A helm source for searching entries in a BibTeX bibliography.  It
-;; provides functions for opening PDF files associated with entries,
-;; for taking notes about entries, for inserting BibTeX keys in
-;; documents, and for editing BibTeX entries.  There are also dummy
-;; entries at the bottom of the list of matches that can be used to
-;; search online databases such as arXiv, Google Scholar, Library of
-;; Congress, etc.
+;; A helm source for searching entries in a BibTeX bibliography.
+;;
+;; Key features:
+;;
+;; - Quick access to your bibliography from within Emacs
+;; - Provides instant search results as you type
+;; - Insert BibTeX key of selected entry in your current document
+;; - Open the PDF associated with an entry
+;; - Take notes about selected entry
+;; - Edit selected entry
+;; - Quick access to online bibliographic databases such as Pubmed,
+;;   arXiv, Google Scholar, Library of Congress, etc.
 ;;
 ;; See the github page for details:
 ;;
