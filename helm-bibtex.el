@@ -122,14 +122,18 @@ publications.  The key of each entry is the name of the online
 source.  The value is the URL used for retrieving results.  This
 URL must contain a %s in the position where the search term
 should be inserted.  Alternatively, the value can be a function
-that will be called when the entry is selected.")
+that will be called when the entry is selected."
+  :group 'helm-bibtex
+  :type '(alist :key-type string
+                :value-type (choice (string :tag "URL")
+                            (function :tag "Function"))))
 
 (defcustom helm-bibtex-browser-function nil
   "The browser that is used to access online resources.  If
 nil (default), the value of `browse-url-browser-function' is
 used.  If that value is nil, Helm uses the first available
 browser in `helm-browse-url-default-browser-alist'"
-  :group 'helm-dictionary
+  :group 'helm-bibtex
   :type '(choice
           (const         :tag "Default" :value nil)
           (function-item :tag "Emacs interface to w3m" :value w3m-browse-url)
