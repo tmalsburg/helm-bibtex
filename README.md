@@ -1,7 +1,17 @@
 helm-bibtex
 ===========
 
-A helm source for searching entries in a BibTeX bibliography.  It provides functions for opening PDF files associated with entries, for taking notes about entries, for inserting BibTeX keys in documents, and for editing BibTeX entries.
+A helm source for searching entries in a BibTeX bibliography.
+
+## Key features:
+
+- Quick access to you Bibliography from within Emacs
+- Provides instant search results as you type
+- Insert BibTeX key of selected entry in your current document
+- Open the PDF associated with an entry
+- Take notes about selected entry
+- Edit selected entry
+- Quick access to online bibliographic databases
 
 Here is a screenshot showing a search for entries containing the word *reading*:
 
