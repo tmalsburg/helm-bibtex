@@ -96,6 +96,12 @@ function that takes one argument: the path to the PDF file."
   :group 'helm-bibtex
   :type 'function)
 
+(defcustom helm-bibtex-format-insert-key-function 'identity
+  "The function used for format key when insertting. You can, for
+  example, format the key as \cite{key} or ebib:key"
+  :group 'helm-bibtex
+  :type 'function)
+
 (defcustom helm-bibtex-notes-path nil
   "The directory in which notes are stored.  Helm-bibtex assumes
 that the names of these notes are composed of the BibTeX-key plus
@@ -293,7 +299,7 @@ specified in `helm-bibtex-pdf-open-function',"
 
 (defun helm-bibtex-insert-key (entry)
   "Insert the BibTeX key at point."
-  (insert entry))
+  (insert (funcall helm-bibtex-format-insert-key-function entry)))
 
 (defun helm-bibtex-edit-notes (entry)
   "Open the notes associated with the entry using `find-file'."
