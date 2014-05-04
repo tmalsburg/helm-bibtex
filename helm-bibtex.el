@@ -289,17 +289,24 @@ key.  If no such element exists, default is returned instead."
     (if e (cdr e) default)))
 
 
-(defun helm-bibtex-open-pdf (entry)
+(defun helm-bibtex-open-pdf (_)
   "Open the PDF associated with the entry using the function
 specified in `helm-bibtex-pdf-open-function',"
-  (let ((path (f-join helm-bibtex-library-path (s-concat entry ".pdf"))))
-    (if (f-exists? path)
-        (funcall helm-bibtex-pdf-open-function path)
-      (message "No PDF for this entry: %s" entry))))
+  (let ((cands (helm-marked-candidates :with-wildcard t)))
+    (dolist (entry cands)
+      (let ((path (f-join helm-bibtex-library-path (s-concat entry ".pdf"))))
+        (if (f-exists? path)
+            (funcall helm-bibtex-pdf-open-function path)
+          (message "No PDF for this entry: %s" entry))))))
 
-(defun helm-bibtex-insert-key (entry)
+(defun helm-bibtex-insert-key (_)
   "Insert the BibTeX key at point."
-  (insert (funcall helm-bibtex-format-insert-key-function entry)))
+  (let* ((cands (helm-marked-candidates :with-wildcard t))
+         (output-list (mapcar
+                       (lambda (e) (funcall helm-bibtex-format-insert-key-function e))
+                       cands)))
+    (insert
+     (mapconcat 'identity output-list ", "))))
 
 (defun helm-bibtex-edit-notes (entry)
   "Open the notes associated with the entry using `find-file'."
