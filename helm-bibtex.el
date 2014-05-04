@@ -168,8 +168,7 @@ browser in `helm-browse-url-default-browser-alist'"
                          :value browse-url-default-browser)
           (function      :tag "Your own function")
           (alist         :tag "Regexp/function association list"
-                         :key-type regexp :value-type function))
-)
+                         :key-type regexp :value-type function)))
 
 
 (defun helm-bibtex-init ()
