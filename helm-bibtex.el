@@ -96,9 +96,14 @@ function that takes one argument: the path to the PDF file."
   :group 'helm-bibtex
   :type 'function)
 
-(defcustom helm-bibtex-format-insert-key-function 'identity
+(defcustom helm-bibtex-format-insert-key-function 'helm-bibtex-format-insert-key-default
   "The function used for format key when insertting. You can, for
-  example, format the key as \cite{key} or ebib:key"
+  example, format the key as \cite{key} or ebib:key. Note that
+  the function should accept a list of keys as input, with
+  multiple marked entries one can insert multiple keys at once,
+  e.g. \cite{key1,key2}. See the functions
+  `helm-bibtex-format-insert-key-ebib' and
+  `helm-bibtex-format-insert-key-cite' as examples."
   :group 'helm-bibtex
   :type 'function)
 
@@ -299,14 +304,29 @@ specified in `helm-bibtex-pdf-open-function',"
             (funcall helm-bibtex-pdf-open-function path)
           (message "No PDF for this entry: %s" entry))))))
 
+(defun helm-bibtex-join-list (lst delimiter)
+  "Join a list of string with delimiter in between."
+  (mapconcat 'identity lst delimiter))
+
+(defun helm-bibtex-format-insert-key-default (cands)
+  "Default formatter for keys, separate keys with comma."
+  (helm-bibtex-join-list cands ","))
+
+(defun helm-bibtex-format-insert-key-cite (cands)
+  "formatter for latex tyle citation."
+  (format "\cite{%s}" (helm-bibtex-join-list cands ",")))
+
+(defun helm-bibtex-format-insert-key-ebib (cands)
+  "formatter for ebib style citation."
+  (helm-bibtex-join-list
+   (mapcar (lambda (s) (format "ebib:%s" s)) cands)
+   ", "))
+
 (defun helm-bibtex-insert-key (_)
   "Insert the BibTeX key at point."
-  (let* ((cands (helm-marked-candidates :with-wildcard t))
-         (output-list (mapcar
-                       (lambda (e) (funcall helm-bibtex-format-insert-key-function e))
-                       cands)))
+  (let ((cands (helm-marked-candidates :with-wildcard t)))
     (insert
-     (mapconcat 'identity output-list ", "))))
+     (funcall helm-bibtex-format-insert-key-function cands))))
 
 (defun helm-bibtex-edit-notes (entry)
   "Open the notes associated with the entry using `find-file'."
