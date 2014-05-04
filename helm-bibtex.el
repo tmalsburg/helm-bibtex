@@ -98,12 +98,12 @@ function that takes one argument: the path to the PDF file."
 
 (defcustom helm-bibtex-format-insert-citation-function 'helm-bibtex-format-insert-citation-default
   "The function used for format key when insertting. You can, for
-  example, format the key as \cite{key} or ebib:key. Note that
-  the function should accept a list of keys as input, with
-  multiple marked entries one can insert multiple keys at once,
-  e.g. \cite{key1,key2}. See the functions
-  `helm-bibtex-format-insert-citation-ebib' and
-  `helm-bibtex-format-insert-citation-cite' as examples."
+example, format the key as \cite{key} or ebib:key. Note that the
+function should accept a list of keys as input, with multiple
+marked entries one can insert multiple keys at once,
+e.g. \cite{key1,key2}. See the functions
+`helm-bibtex-format-insert-citation-ebib' and
+`helm-bibtex-format-insert-citation-cite' as examples."
   :group 'helm-bibtex
   :type 'function)
 
