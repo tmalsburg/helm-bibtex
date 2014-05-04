@@ -96,6 +96,17 @@ function that takes one argument: the path to the PDF file."
   :group 'helm-bibtex
   :type 'function)
 
+(defcustom helm-bibtex-format-insert-key-function 'helm-bibtex-format-insert-key-default
+  "The function used for format key when insertting. You can, for
+  example, format the key as \cite{key} or ebib:key. Note that
+  the function should accept a list of keys as input, with
+  multiple marked entries one can insert multiple keys at once,
+  e.g. \cite{key1,key2}. See the functions
+  `helm-bibtex-format-insert-key-ebib' and
+  `helm-bibtex-format-insert-key-cite' as examples."
+  :group 'helm-bibtex
+  :type 'function)
+
 (defcustom helm-bibtex-notes-path nil
   "The directory in which notes are stored.  Helm-bibtex assumes
 that the names of these notes are composed of the BibTeX-key plus
@@ -283,17 +294,39 @@ key.  If no such element exists, default is returned instead."
     (if e (cdr e) default)))
 
 
-(defun helm-bibtex-open-pdf (entry)
+(defun helm-bibtex-open-pdf (_)
   "Open the PDF associated with the entry using the function
 specified in `helm-bibtex-pdf-open-function',"
-  (let ((path (f-join helm-bibtex-library-path (s-concat entry ".pdf"))))
-    (if (f-exists? path)
-        (funcall helm-bibtex-pdf-open-function path)
-      (message "No PDF for this entry: %s" entry))))
+  (let ((cands (helm-marked-candidates :with-wildcard t)))
+    (dolist (entry cands)
+      (let ((path (f-join helm-bibtex-library-path (s-concat entry ".pdf"))))
+        (if (f-exists? path)
+            (funcall helm-bibtex-pdf-open-function path)
+          (message "No PDF for this entry: %s" entry))))))
 
-(defun helm-bibtex-insert-key (entry)
+(defun helm-bibtex-join-list (lst delimiter)
+  "Join a list of string with delimiter in between."
+  (mapconcat 'identity lst delimiter))
+
+(defun helm-bibtex-format-insert-key-default (cands)
+  "Default formatter for keys, separate keys with comma."
+  (helm-bibtex-join-list cands ","))
+
+(defun helm-bibtex-format-insert-key-cite (cands)
+  "formatter for latex tyle citation."
+  (format "\\cite{%s}" (helm-bibtex-join-list cands ",")))
+
+(defun helm-bibtex-format-insert-key-ebib (cands)
+  "formatter for ebib style citation."
+  (helm-bibtex-join-list
+   (mapcar (lambda (s) (format "ebib:%s" s)) cands)
+   ", "))
+
+(defun helm-bibtex-insert-key (_)
   "Insert the BibTeX key at point."
-  (insert entry))
+  (let ((cands (helm-marked-candidates :with-wildcard t)))
+    (insert
+     (funcall helm-bibtex-format-insert-key-function cands))))
 
 (defun helm-bibtex-edit-notes (entry)
   "Open the notes associated with the entry using `find-file'."
