@@ -304,23 +304,18 @@ specified in `helm-bibtex-pdf-open-function',"
             (funcall helm-bibtex-pdf-open-function path)
           (message "No PDF for this entry: %s" entry))))))
 
-(defun helm-bibtex-join-list (lst delimiter)
-  "Join a list of string with delimiter in between."
-  (mapconcat 'identity lst delimiter))
-
 (defun helm-bibtex-format-insert-citation-default (cands)
   "Default formatter for keys, separate keys with comma."
-  (helm-bibtex-join-list cands ","))
+  (s-join ", " cands))
 
 (defun helm-bibtex-format-insert-citation-cite (cands)
   "formatter for latex tyle citation."
-  (format "\\cite{%s}" (helm-bibtex-join-list cands ",")))
+  (format "\\cite{%s}" (s-join ", " cands)))
 
 (defun helm-bibtex-format-insert-citation-ebib (cands)
   "formatter for ebib style citation."
-  (helm-bibtex-join-list
-   (mapcar (lambda (s) (format "ebib:%s" s)) cands)
-   ", "))
+  (s-join ", "
+   (--map (format "ebib:%s" it) cands)))
 
 (defun helm-bibtex-insert-citation (_)
   "Insert the BibTeX key at point."
