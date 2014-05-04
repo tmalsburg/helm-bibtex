@@ -96,16 +96,20 @@ function that takes one argument: the path to the PDF file."
   :group 'helm-bibtex
   :type 'function)
 
-(defcustom helm-bibtex-format-insert-citation-function 'helm-bibtex-format-insert-citation-default
-  "The function used for format key when insertting. You can, for
-example, format the key as \cite{key} or ebib:key. Note that the
-function should accept a list of keys as input, with multiple
-marked entries one can insert multiple keys at once,
+(defcustom helm-bibtex-format-citation-functions
+  '((org-mode   . helm-bibtex-format-citation-ebib)
+    (latex-mode . helm-bibtex-format-citation-cite)
+    (default    . helm-bibtex-format-citation-default))
+  "The functions used for formatting citations.  The publication
+can be cited, for example, as \cite{key} or ebib:key depending on
+the major mode of the current buffer.  Note that the functions
+should accept a list of keys as input.  With multiple marked
+entries one can insert multiple keys at once,
 e.g. \cite{key1,key2}. See the functions
-`helm-bibtex-format-insert-citation-ebib' and
-`helm-bibtex-format-insert-citation-cite' as examples."
+`helm-bibtex-format-citation-ebib' and
+`helm-bibtex-format-citation-cite' as examples."
   :group 'helm-bibtex
-  :type 'function)
+  :type '(alist :key-type symbol :value-type function))
 
 (defcustom helm-bibtex-notes-path nil
   "The directory in which notes are stored.  Helm-bibtex assumes
@@ -304,24 +308,28 @@ specified in `helm-bibtex-pdf-open-function',"
             (funcall helm-bibtex-pdf-open-function path)
           (message "No PDF for this entry: %s" entry))))))
 
-(defun helm-bibtex-format-insert-citation-default (cands)
+(defun helm-bibtex-format-citation-default (cands)
   "Default formatter for keys, separate keys with comma."
   (s-join ", " cands))
 
-(defun helm-bibtex-format-insert-citation-cite (cands)
-  "formatter for latex tyle citation."
+(defun helm-bibtex-format-citation-cite (cands)
+  "Formatter for LaTeX citation macro."
   (format "\\cite{%s}" (s-join ", " cands)))
 
-(defun helm-bibtex-format-insert-citation-ebib (cands)
-  "formatter for ebib style citation."
+(defun helm-bibtex-format-citation-ebib (cands)
+  "Formatter for ebib reference."
   (s-join ", "
    (--map (format "ebib:%s" it) cands)))
 
 (defun helm-bibtex-insert-citation (_)
-  "Insert the BibTeX key at point."
-  (let ((cands (helm-marked-candidates :with-wildcard t)))
+  "Insert a citation at point.  The format depends on
+`helm-bibtex-format-citation-functions'."
+  (let ((cands (helm-marked-candidates :with-wildcard t))
+        (format-function
+         (cdr (or (assoc major-mode helm-bibtex-format-citation-functions)
+                  (assoc 'default   helm-bibtex-format-citation-functions)))))
     (insert
-     (funcall helm-bibtex-format-insert-citation-function cands))))
+     (funcall format-function cands))))
 
 (defun helm-bibtex-edit-notes (entry)
   "Open the notes associated with the entry using `find-file'."
