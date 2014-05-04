@@ -61,6 +61,7 @@ Other customization variables are:
 
 - `helm-bibtex-library-path`: Location where PDFs of the entries are stored
 - `helm-bibtex-pdf-open-function`: Function used for opening PDFs (the default function opens them in Emacs)
+- `helm-bibtex-format-insert-citation-functions`: The functions used for formatting citations.  The publication can be cited, for example, as \cite{key} or ebib:key depending on the major mode of the current buffer.  Note that the functions should accept a list of keys as input.  With multiple marked entries one can insert multiple keys at once, e.g. \cite{key1,key2}.  See the functions `helm-bibtex-format-citation-ebib` and `helm-bibtex-format-citation-cite` as examples.
 - `helm-bibtex-notes-path`: Location where notes are stored (one file per entry)
 - `helm-bibtex-notes-extension`: File extension of the files containing the notes
 - `helm-bibtex-fallback-options`: Online databases for which dummy entries are provided
