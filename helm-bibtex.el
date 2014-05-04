@@ -314,7 +314,7 @@ specified in `helm-bibtex-pdf-open-function',"
 
 (defun helm-bibtex-format-insert-key-cite (cands)
   "formatter for latex tyle citation."
-  (format "\cite{%s}" (helm-bibtex-join-list cands ",")))
+  (format "\\cite{%s}" (helm-bibtex-join-list cands ",")))
 
 (defun helm-bibtex-format-insert-key-ebib (cands)
   "formatter for ebib style citation."
