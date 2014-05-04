@@ -330,6 +330,12 @@ specified in `helm-bibtex-pdf-open-function',"
     (insert
      (funcall format-function cands))))
 
+(defun helm-bibtex-insert-key (_)
+  "Insert BibTeX key at point."
+  (let ((cands (helm-marked-candidates :with-wildcard t)))
+    (insert
+      (funcall 'helm-bibtex-format-citation-default cands))))
+
 (defun helm-bibtex-edit-notes (entry)
   "Open the notes associated with the entry using `find-file'."
   (let ((path (f-join helm-bibtex-notes-path (s-concat entry helm-bibtex-notes-extension))))
@@ -393,6 +399,7 @@ entry for each BibTeX file that will open that file for editing."
     (filtered-candidate-transformer          . helm-bibtex-candidates-formatter)
     (action . (("Open PDF file (if present)" . helm-bibtex-open-pdf)
                ("Insert citation at point"   . helm-bibtex-insert-citation)
+               ("Insert BibTeX key at point" . helm-bibtex-insert-key)
                ("Edit notes"                 . helm-bibtex-edit-notes)
                ("Show entry in BibTex file"  . helm-bibtex-show-entry))))
   "Source for searching in BibTeX files.")
