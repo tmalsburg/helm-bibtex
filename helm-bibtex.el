@@ -30,7 +30,7 @@
 ;; - Provides instant search results as you type
 ;; - Support for multiple BibTeX files
 ;; - Insert cite command in LaTeX document or ebib link in org files
-;; - Insert BibTeX key
+;;   or plain BibTeX key
 ;; - Open the PDF associated with an entry
 ;; - Add notes to an entry
 ;; - Edit selected entry
