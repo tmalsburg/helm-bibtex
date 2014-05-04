@@ -8,7 +8,8 @@ A helm source for searching entries in a BibTeX bibliography.
 - Quick access to your bibliography from within Emacs
 - Provides instant search results as you type
 - Support for multiple BibTeX files
-- Insert BibTeX key of selected entry in your current document
+- Insert cite command in LaTeX document or ebib link in org files
+- Insert BibTeX key
 - Open the PDF associated with an entry
 - Add notes to an entry
 - Edit selected entry
