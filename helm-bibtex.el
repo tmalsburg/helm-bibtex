@@ -99,6 +99,12 @@ function that takes one argument: the path to the PDF file."
   :group 'helm-bibtex
   :type 'function)
 
+(defcustom helm-bibtex-pdf-symbol "⌘"
+  "Symbol used to indicate that a PDF file is available for a
+publication.  This should be a single character."
+  :group 'helm-bibtex
+  :type 'string)
+
 (defcustom helm-bibtex-format-citation-functions
   '((org-mode   . helm-bibtex-format-citation-ebib)
     (latex-mode . helm-bibtex-format-citation-cite)
@@ -123,6 +129,12 @@ a suffix that is specified in `helm-bibtex-notes-extension'."
 
 (defcustom helm-bibtex-notes-extension ".org"
   "The extension of the files containing notes."
+  :group 'helm-bibtex
+  :type 'string)
+
+(defcustom helm-bibtex-notes-symbol "✎"
+  "Symbol used to indicate that a publication has notes.  This
+should be a single character."
   :group 'helm-bibtex
   :type 'string)
 
@@ -256,6 +268,11 @@ list containing the fields of the entry."
              if (member (car field) '(author title year))
               collect field))
     (setq record (cons (cons 'entry-type (symbol-name entry-type)) record))
+    (if (f-exists? (f-join helm-bibtex-library-path (s-concat entry-key ".pdf")))
+        (setq record (cons (cons 'has-pdf helm-bibtex-pdf-symbol) record)))
+    (if (f-exists? (f-join helm-bibtex-notes-path
+                           (s-concat entry-key helm-bibtex-notes-extension)))
+         (setq record (cons (cons 'has-note helm-bibtex-notes-symbol) record)))
     (cons (cons 'entry-key entry-key) record)))
 
 
@@ -266,14 +283,14 @@ list containing the fields of the entry."
     for cand = (cdr cand)
     for entry-key = (helm-bibtex-get-default 'entry-key cand nil) 
     for cand = (--map (helm-bibtex-clean-string
-                       (helm-bibtex-get-default it cand "-"))
-                      '(author title year entry-type))
+                       (helm-bibtex-get-default it cand " "))
+                      '(author title year has-pdf has-note entry-type))
     for cand = (cons (helm-bibtex-shorten-authors (car cand)) (cdr cand))
     for width = (save-excursion (with-helm-window (window-width)))
     collect
-    (cons (s-format "$0 $1 $2 $3" 'elt
+    (cons (s-format "$0 $1 $2 $3$4 $5" 'elt
             (-zip-with (lambda (f w) (truncate-string-to-width f w 0 ?\s))
-                       cand (list 36 (- width 50) 4 7)))
+                       cand (list 36 (- width 53) 4 1 1 7)))
           entry-key)))
 
 
