@@ -31,8 +31,6 @@
 ;; - Support for multiple BibTeX files
 ;; - Insert LaTeX cite command or ebib link or plain BibTeX key
 ;;   depending on document type
-;; - Insert cite command in LaTeX document or ebib link in org files
-;;   or plain BibTeX key
 ;; - Open the PDF associated with an entry
 ;; - Add notes to an entry
 ;; - Edit selected entry
@@ -199,6 +197,8 @@ browser in `helm-browse-url-default-browser-alist'"
           (function      :tag "Your own function")
           (alist         :tag "Regexp/function association list"
                          :key-type regexp :value-type function)))
+
+(easy-menu-add-item nil '("Tools" "Helm" "Tools") ["BibTeX" helm-bibtex t])
 
 
 (defun helm-bibtex-init ()
