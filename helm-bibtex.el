@@ -269,11 +269,13 @@ list containing the fields of the entry."
              if (member (car field) '(author title year))
               collect field))
     (setq record (cons (cons 'entry-type (symbol-name entry-type)) record))
-    (if (f-exists? (f-join helm-bibtex-library-path (s-concat entry-key ".pdf")))
+    (if (and helm-bibtex-library-path
+             (f-exists? (f-join helm-bibtex-library-path (s-concat entry-key ".pdf"))))
         (setq record (cons (cons 'has-pdf helm-bibtex-pdf-symbol) record)))
-    (if (f-exists? (f-join helm-bibtex-notes-path
-                           (s-concat entry-key helm-bibtex-notes-extension)))
-         (setq record (cons (cons 'has-note helm-bibtex-notes-symbol) record)))
+    (if (and helm-bibtex-notes-path
+             (f-exists? (f-join helm-bibtex-notes-path
+                                (s-concat entry-key helm-bibtex-notes-extension))))
+        (setq record (cons (cons 'has-note helm-bibtex-notes-symbol) record)))
     (cons (cons 'entry-key entry-key) record)))
 
 
