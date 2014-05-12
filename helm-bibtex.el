@@ -369,7 +369,9 @@ specified in `helm-bibtex-pdf-open-function',"
 (defun helm-bibtex-show-entry (entry)
   "Show the entry in the BibTeX file."
   (catch 'break
-    (dolist (bibtex-file helm-bibtex-bibliography)
+    (dolist (bibtex-file (if (listp helm-bibtex-bibliography)
+                             helm-bibtex-bibliography
+                           (list helm-bibtex-bibliography)))
       (let ((buf (helm-bibtex-buffer-visiting bibtex-file)))
         (find-file bibtex-file)
         (goto-char (point-min))
