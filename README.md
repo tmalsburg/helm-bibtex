@@ -16,23 +16,11 @@ A helm source for searching entries in a BibTeX bibliography.
 - Quick access to online bibliographic databases such as Pubmed,
   arXiv, Google Scholar, Library of Congress, etc.
 
-Here is a screenshot showing a search for entries containing the word *reading*:
+Here is a screenshot showing a search for entries containing the word *verbs*:
 
-![A search for entries containing the word correlation](screenshot.png)
+![A search for publications containing the word "verbs"](screenshot.png)
 
-At the bottom of the list are dummy entries that can be used to search online databases.  The following databases are preconfigured:
-
-- Google Scholar
-- arXiv
-- Pubmed
-- Bodleian Library
-- Library of Congress
-- Deutsche Nationalbibliothek
-- British National Library
-- Bibliothèque National de France
-- Gallica Bibliothèque Numérique
-
-This list can be extended using the customization variable `helm-bibtex-fallback-options`.
+A looped square symbol (⌘) next to an entry indicated that a PDF is available for this entry.  A pen symbol (✎) means that notes were added to an entry.  At the bottom there are dummy entries that can be used to search online databases.  This list can be extended using the customization variable `helm-bibtex-fallback-options`.
 
 ## Requirements
 
@@ -72,7 +60,7 @@ Helm-bibtex assumes that PDFs and notes have the BibTeX key of their associated 
 
 ## Usage
 
-The command `helm-bibtex` starts a new search.  It is recommended to bind it to a convenient key for quick access.  For filtering the following fields are used: author, title, year, and entry-type.  Regular expressions can be used as search terms.  Example searches:
+The command `helm-bibtex` starts a new search.  It is recommended to bind it to a convenient key for quick access.  For filtering, the following fields are used: author, title, year, and entry-type.  Regular expressions can be used as search terms.  Example searches:
 
 Everything ever published by Janet Fodor:
 
@@ -105,6 +93,7 @@ Articles co-authored by David Caplan and Gloria Waters:
 There are several actions for matching BibTeX entries:
 
 - Open the PDF file associated with an entry if available (default).
+- Insert citation at point.
 - Insert BibTeX key at point.
 - Edit notes associated with an entry.
 - Show the entry in the BibTeX file.
