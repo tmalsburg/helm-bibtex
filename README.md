@@ -16,11 +16,11 @@ A helm source for searching entries in a BibTeX bibliography.
 - Quick access to online bibliographic databases such as Pubmed,
   arXiv, Google Scholar, Library of Congress, etc.
 
-Here is a screenshot showing a search for entries containing the word *verbs*:
+Here is a screenshot showing a search for entries containing the word "verbs":
 
 ![A search for publications containing the word "verbs"](screenshot.png)
 
-A looped square symbol (⌘) next to an entry indicated that a PDF is available for this entry.  A pen symbol (✎) means that notes were added to an entry.  At the bottom there are dummy entries that can be used to search online databases.  This list can be extended using the customization variable `helm-bibtex-fallback-options`.
+A looped square symbol (⌘) next to an entry indicates that a PDF is available.  A pen symbol (✎) means that notes were added.  At the bottom, there are dummy entries that can be used to search online databases.  This list can be extended using the customization variable `helm-bibtex-fallback-options`.
 
 ## Requirements
 
