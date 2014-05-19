@@ -245,7 +245,30 @@ is an alists containing the full entry."
                       (s-join " " (-map 'cdr it))) it)
                entries)))))
 
-(defun helm-bibtex-read-entry (entry-type fields)
+(defun helm-bibtex-get-entry (entry-key)
+  "Given a BibTeX key this function scans all bibliographies
+listed in `helm-bibtex-bibliography' and returns an alist of the
+record with that key."
+  (with-temp-buffer
+    (with-syntax-table ebib-syntax-table
+      (mapc 'insert-file-contents 
+            (if (listp helm-bibtex-bibliography)
+                helm-bibtex-bibliography
+              (list helm-bibtex-bibliography)))
+      (goto-char (point-min))
+      (re-search-forward (concat "^@" ebib-bibtex-identifier
+                                 "[[:space:]]*[\(\{][[:space:]]*"
+                                 entry-key))
+      (goto-char (match-beginning 0))
+      (let ((beg (+ 1 (point))))
+        (if (ebib-looking-at-goto-end
+             (concat "^@\\(" ebib-bibtex-identifier "\\)[[:space:]]*[\(\{]") 1)
+            (let ((entry-type (downcase
+                               (buffer-substring-no-properties beg (point)))))
+              (ebib-looking-at-goto-end "[[:space:]]*[\(\{]")
+              (helm-bibtex-read-entry entry-type)))))))
+
+(defun helm-bibtex-read-entry (entry-type &optional fields)
   "Read the entry starting at point and return an association
 list containing the fields of the entry."
   (setq entry-type (intern-soft entry-type))
