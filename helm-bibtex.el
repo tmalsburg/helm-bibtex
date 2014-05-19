@@ -378,6 +378,26 @@ specified in `helm-bibtex-pdf-open-function',"
     (insert
       (funcall 'helm-bibtex-format-citation-default keys))))
 
+(defun helm-bibtex-insert-bibtex (_)
+  "Insert BibTeX key at point."
+  (let ((keys (helm-marked-candidates :with-wildcard t)))
+    (insert (s-join "\n" (--map (helm-bibtex-make-bibtex it) keys)))))
+
+(defun helm-bibtex-make-bibtex (key)
+  (let* ((entry (helm-bibtex-get-entry key))
+         (entry-type (cdr (assoc 'entry-type entry))))
+    (format "@%s{%s,\n%s\n}\n"
+            entry-type key
+            (s-join "\n"
+                    (cl-loop
+                      for field in entry
+                      for name = (car field)
+                      for value = (cdr field)
+                      unless (member name '(entry-type entry-key has-pdf
+                                            has-note))
+                      collect
+                      (format "  %s = %s," name value))))))
+
 (defun helm-bibtex-edit-notes (key)
   "Open the notes associated with the entry using `find-file'."
   (let ((path (f-join helm-bibtex-notes-path (s-concat key helm-bibtex-notes-extension))))
@@ -437,15 +457,16 @@ entry for each BibTeX file that will open that file for editing."
 
 
 (defvar helm-source-bibtex
-  '((name                                    . "Search BibTeX entries")
-    (init                                    . helm-bibtex-init)
-    (candidates                              . helm-bibtex-candidates)
-    (filtered-candidate-transformer          . helm-bibtex-candidates-formatter)
-    (action . (("Open PDF file (if present)" . helm-bibtex-open-pdf)
-               ("Insert citation at point"   . helm-bibtex-insert-citation)
-               ("Insert BibTeX key at point" . helm-bibtex-insert-key)
-               ("Edit notes"                 . helm-bibtex-edit-notes)
-               ("Show entry in BibTex file"  . helm-bibtex-show-entry))))
+  '((name                                      . "Search BibTeX entries")
+    (init                                      . helm-bibtex-init)
+    (candidates                                . helm-bibtex-candidates)
+    (filtered-candidate-transformer            . helm-bibtex-candidates-formatter)
+    (action . (("Open PDF file (if present)"   . helm-bibtex-open-pdf)
+               ("Insert citation at point"     . helm-bibtex-insert-citation)
+               ("Insert BibTeX key at point"   . helm-bibtex-insert-key)
+               ("Insert BibTeX entry at point" . helm-bibtex-insert-bibtex)
+               ("Edit notes"                   . helm-bibtex-edit-notes)
+               ("Show entry in BibTex file"    . helm-bibtex-show-entry))))
   "Source for searching in BibTeX files.")
 
 (defvar helm-source-fallback-options
