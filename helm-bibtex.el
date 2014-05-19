@@ -349,6 +349,22 @@ specified in `helm-bibtex-pdf-open-function',"
             (funcall helm-bibtex-pdf-open-function path)
           (message "No PDF for this entry: %s" key))))))
 
+(defun helm-bibtex-open-url-or-doi (_)
+  "Open the associated URL or DOI in a browser."
+  (let ((keys (helm-marked-candidates :with-wildcard t)))
+    (dolist (key keys)
+      (let* ((entry (helm-bibtex-get-entry key))
+             (url (s-chop-prefix "{" (s-chop-suffix "}" (cdr (assoc 'url entry)))))
+             (doi (s-chop-prefix "{" (s-chop-suffix "}" (cdr (assoc 'doi entry)))))
+             (browse-url-browser-function
+               (or helm-bibtex-browser-function
+                   browse-url-browser-function)))
+        (if url (browse-url-browser-function url)
+          (if doi (helm-browse-url
+                   (s-concat "http://dx.doi.org/" doi)))
+          (message "No URL or DOI found for this entry: %s"
+                   key))))))
+
 (defun helm-bibtex-format-citation-default (keys)
   "Default formatter for keys, separate keys with comma."
   (s-join ", " keys))
@@ -462,6 +478,7 @@ entry for each BibTeX file that will open that file for editing."
     (candidates                                . helm-bibtex-candidates)
     (filtered-candidate-transformer            . helm-bibtex-candidates-formatter)
     (action . (("Open PDF file (if present)"   . helm-bibtex-open-pdf)
+               ("Open URL or DOI in browser"   . helm-bibtex-open-url-or-doi)
                ("Insert citation at point"     . helm-bibtex-insert-citation)
                ("Insert BibTeX key at point"   . helm-bibtex-insert-key)
                ("Insert BibTeX entry at point" . helm-bibtex-insert-bibtex)
