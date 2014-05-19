@@ -307,18 +307,18 @@ list containing the fields of the entry."
 (defun helm-bibtex-candidates-formatter (candidates source)
   "Formats BibTeX entries for display in results list."
   (cl-loop
-    for cand in candidates
-    for cand = (cdr cand)
-    for entry-key = (helm-bibtex-get-default 'entry-key cand nil) 
-    for cand = (--map (helm-bibtex-clean-string
-                       (helm-bibtex-get-default it cand " "))
-                      '(author title year has-pdf has-note entry-type))
-    for cand = (cons (helm-bibtex-shorten-authors (car cand)) (cdr cand))
+    for entry in candidates
+    for entry = (cdr entry)
+    for entry-key = (or (cdr (assoc 'entry-key entry)) nil) 
+    for fields = (--map (helm-bibtex-clean-string
+                        (or (cdr (assoc it entry)) " "))
+                       '(author title year has-pdf has-note entry-type))
+    for fields = (-update-at 0 'helm-bibtex-shorten-authors fields)
     for width = (save-excursion (with-helm-window (window-width)))
     collect
     (cons (s-format "$0 $1 $2 $3$4 $5" 'elt
             (-zip-with (lambda (f w) (truncate-string-to-width f w 0 ?\s))
-                       cand (list 36 (- width 53) 4 1 1 7)))
+                       fields (list 36 (- width 53) 4 1 1 7)))
           entry-key)))
 
 
@@ -337,12 +337,6 @@ values."
                collect (-last-item (s-split " +" (car p) t))
              else
                collect (car p))))
-
-(defun helm-bibtex-get-default (key alist default)
-  "Returns the cdr of the element that has a car matching
-key.  If no such element exists, default is returned instead."
-  (let ((e (assoc key alist)))
-    (if e (cdr e) default)))
 
 
 (defun helm-bibtex-open-pdf (_)
