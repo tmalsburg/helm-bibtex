@@ -342,52 +342,52 @@ values."
 (defun helm-bibtex-open-pdf (_)
   "Open the PDF associated with the entry using the function
 specified in `helm-bibtex-pdf-open-function',"
-  (let ((cands (helm-marked-candidates :with-wildcard t)))
-    (dolist (entry cands)
-      (let ((path (f-join helm-bibtex-library-path (s-concat entry ".pdf"))))
+  (let ((keys (helm-marked-candidates :with-wildcard t)))
+    (dolist (key keys)
+      (let ((path (f-join helm-bibtex-library-path (s-concat key ".pdf"))))
         (if (f-exists? path)
             (funcall helm-bibtex-pdf-open-function path)
-          (message "No PDF for this entry: %s" entry))))))
+          (message "No PDF for this entry: %s" key))))))
 
-(defun helm-bibtex-format-citation-default (cands)
+(defun helm-bibtex-format-citation-default (keys)
   "Default formatter for keys, separate keys with comma."
-  (s-join ", " cands))
+  (s-join ", " keys))
 
-(defun helm-bibtex-format-citation-cite (cands)
+(defun helm-bibtex-format-citation-cite (keys)
   "Formatter for LaTeX citation macro."
-  (format "\\cite{%s}" (s-join ", " cands)))
+  (format "\\cite{%s}" (s-join ", " keys)))
 
-(defun helm-bibtex-format-citation-ebib (cands)
+(defun helm-bibtex-format-citation-ebib (keys)
   "Formatter for ebib reference."
   (s-join ", "
-   (--map (format "ebib:%s" it) cands)))
+   (--map (format "ebib:%s" it) keys)))
 
 (defun helm-bibtex-insert-citation (_)
   "Insert a citation at point.  The format depends on
 `helm-bibtex-format-citation-functions'."
-  (let ((cands (helm-marked-candidates :with-wildcard t))
+  (let ((keys (helm-marked-candidates :with-wildcard t))
         (format-function
          (cdr (or (assoc major-mode helm-bibtex-format-citation-functions)
                   (assoc 'default   helm-bibtex-format-citation-functions)))))
     (insert
-     (funcall format-function cands))))
+     (funcall format-function keys))))
 
 (defun helm-bibtex-insert-key (_)
   "Insert BibTeX key at point."
-  (let ((cands (helm-marked-candidates :with-wildcard t)))
+  (let ((keys (helm-marked-candidates :with-wildcard t)))
     (insert
-      (funcall 'helm-bibtex-format-citation-default cands))))
+      (funcall 'helm-bibtex-format-citation-default keys))))
 
-(defun helm-bibtex-edit-notes (entry)
+(defun helm-bibtex-edit-notes (key)
   "Open the notes associated with the entry using `find-file'."
-  (let ((path (f-join helm-bibtex-notes-path (s-concat entry helm-bibtex-notes-extension))))
+  (let ((path (f-join helm-bibtex-notes-path (s-concat key helm-bibtex-notes-extension))))
     (find-file path)))
 
 (defun helm-bibtex-buffer-visiting (file)
   (or (get-file-buffer file)
       (find-buffer-visiting file)))
 
-(defun helm-bibtex-show-entry (entry)
+(defun helm-bibtex-show-entry (key)
   "Show the entry in the BibTeX file."
   (catch 'break
     (dolist (bibtex-file (if (listp helm-bibtex-bibliography)
@@ -396,7 +396,7 @@ specified in `helm-bibtex-pdf-open-function',"
       (let ((buf (helm-bibtex-buffer-visiting bibtex-file)))
         (find-file bibtex-file)
         (goto-char (point-min))
-        (if (search-forward entry nil t)
+        (if (search-forward key nil t)
             (throw 'break t)
           (unless buf
             (kill-buffer)))))))
