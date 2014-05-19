@@ -28,14 +28,17 @@
 ;;
 ;; - Quick access to your bibliography from within Emacs
 ;; - Provides instant search results as you type
-;; - Support for multiple BibTeX files
-;; - Insert LaTeX cite command or ebib link or plain BibTeX key
-;;   depending on document type
-;; - Open the PDF associated with an entry
-;; - Add notes to an entry
-;; - Edit selected entry
 ;; - Quick access to online bibliographic databases such as Pubmed,
 ;;   arXiv, Google Scholar, Library of Congress, etc.
+;; - Support for multiple BibTeX files
+;; - Open the PDF associated with an entry
+;; - Open the URL or DOI of an entry in the browser
+;; - Insert LaTeX cite command or ebib link or plain BibTeX key
+;;   depending on document type
+;; - Insert BibTeX entry at point (useful when sharing BibTeX with
+;;   colleagues via email)
+;; - Add notes to an entry
+;; - Edit selected entry
 ;;
 ;; See the github page for details:
 ;;
