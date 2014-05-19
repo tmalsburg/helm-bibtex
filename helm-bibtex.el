@@ -235,7 +235,8 @@ is an alists containing the full entry."
                                    (buffer-substring-no-properties beg (point)))))
                   (ebib-looking-at-goto-end "[[:space:]]*[\(\{]")
                   (if (assoc (intern-soft entry-type) ebib-entry-types)
-                      (setq entries (cons (helm-bibtex-read-entry entry-type)
+                      (setq entries (cons (helm-bibtex-read-entry
+                                            entry-type '(author title year))
                                           entries))
                     (ebib-match-paren-forward (point-max))))
               (error "Error: illegal entry type at line %d."
@@ -244,7 +245,7 @@ is an alists containing the full entry."
                       (s-join " " (-map 'cdr it))) it)
                entries)))))
 
-(defun helm-bibtex-read-entry (entry-type)
+(defun helm-bibtex-read-entry (entry-type fields)
   "Read the entry starting at point and return an association
 list containing the fields of the entry."
   (setq entry-type (intern-soft entry-type))
@@ -266,7 +267,8 @@ list containing the fields of the entry."
           (skip-chars-forward "^,"))) ; move to the comma after the entry key
     (setq record (cl-loop for field = (ebib-find-bibtex-field limit)
              while field 
-             if (member (car field) '(author title year))
+             if (or (not fields)
+                    (member (car field) fields))
               collect field))
     (setq record (cons (cons 'entry-type (symbol-name entry-type)) record))
     (if (and helm-bibtex-library-path
