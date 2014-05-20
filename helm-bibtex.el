@@ -1,4 +1,4 @@
-;;; helm-bibtex.el --- Helm source for searching in a BibTeX bibliography
+;;; helm-bibtex.el --- Helm source for managing BibTeX bibliographies
 
 ;; Copyright 2014 Titus von der Malsburg <malsburg@posteo.de>
 
@@ -22,7 +22,7 @@
 
 ;;; Commentary:
 
-;; A helm source for searching entries in a BibTeX bibliography.
+;; A helm source for managing BibTeX bibliographies.
 ;;
 ;; Key features:
 ;;
