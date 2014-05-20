@@ -1,7 +1,7 @@
 helm-bibtex
 ===========
 
-A helm source for searching entries in a BibTeX bibliography.
+A helm source for managing BibTeX bibliographies.
 
 ## Key features:
 
