@@ -313,6 +313,7 @@ list containing the fields of the entry."
 (defun helm-bibtex-candidates-formatter (candidates source)
   "Formats BibTeX entries for display in results list."
   (cl-loop
+    with width = (save-excursion (with-helm-window (window-width)))
     for entry in candidates
     for entry = (cdr entry)
     for entry-key = (or (cdr (assoc 'entry-key entry)) nil) 
@@ -320,7 +321,6 @@ list containing the fields of the entry."
                         (or (cdr (assoc it entry)) " "))
                        '(author title year has-pdf has-note entry-type))
     for fields = (-update-at 0 'helm-bibtex-shorten-authors fields)
-    for width = (save-excursion (with-helm-window (window-width)))
     collect
     (cons (s-format "$0 $1 $2 $3$4 $5" 'elt
             (-zip-with (lambda (f w) (truncate-string-to-width f w 0 ?\s))
@@ -336,13 +336,14 @@ values."
 
 (defun helm-bibtex-shorten-authors (authors)
   "Returns a comma-separated list of the surnames in authors."
-  (s-join ", "
-    (cl-loop for a in (s-split " and " authors)
-             for p = (s-split "," a t)
-             if (eq 1 (length p))
-               collect (-last-item (s-split " +" (car p) t))
-             else
-               collect (car p))))
+  (cl-loop for a in (s-split " and " authors)
+           for p = (s-split "," a t)
+           for sep = "" then ", "
+           concat sep
+           if (eq 1 (length p))
+             concat (-last-item (s-split " +" (car p) t))
+           else
+             concat (car p)))
 
 
 (defun helm-bibtex-open-pdf (_)
@@ -408,17 +409,16 @@ specified in `helm-bibtex-pdf-open-function',"
 (defun helm-bibtex-make-bibtex (key)
   (let* ((entry (helm-bibtex-get-entry key))
          (entry-type (cdr (assoc 'entry-type entry))))
-    (format "@%s{%s,\n%s\n}\n"
+    (format "@%s{%s,\n%s}\n"
             entry-type key
-            (s-join "\n"
-                    (cl-loop
-                      for field in entry
-                      for name = (car field)
-                      for value = (cdr field)
-                      unless (member name '(entry-type entry-key has-pdf
-                                            has-note))
-                      collect
-                      (format "  %s = %s," name value))))))
+            (cl-loop
+              for field in entry
+              for name = (car field)
+              for value = (cdr field)
+              unless (member name '(entry-type entry-key has-pdf
+                                    has-note))
+              concat
+              (format "  %s = %s,\n" name value)))))
 
 (defun helm-bibtex-edit-notes (key)
   "Open the notes associated with the entry using `find-file'."
