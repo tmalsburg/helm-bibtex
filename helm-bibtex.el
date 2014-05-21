@@ -313,7 +313,7 @@ list containing the fields of the entry."
 (defun helm-bibtex-candidates-formatter (candidates source)
   "Formats BibTeX entries for display in results list."
   (cl-loop
-    with width = (save-excursion (with-helm-window (window-width)))
+    with width = (with-helm-window (window-width))
     for entry in candidates
     for entry = (cdr entry)
     for entry-key = (or (cdr (assoc 'entry-key entry)) nil) 
