@@ -331,19 +331,22 @@ list containing the fields of the entry."
 (defun helm-bibtex-clean-string (s)
   "Removes quoting and superfluous white space from BibTeX field
 values."
-  (replace-regexp-in-string "[\n\t ]+" " "
-    (replace-regexp-in-string "[\\\"{}]+" "" s)))
+  (if s (replace-regexp-in-string "[\n\t ]+" " "
+         (replace-regexp-in-string "[\\\"{}]+" "" s))
+    nil))
 
 (defun helm-bibtex-shorten-authors (authors)
   "Returns a comma-separated list of the surnames in authors."
-  (cl-loop for a in (s-split " and " authors)
-           for p = (s-split "," a t)
-           for sep = "" then ", "
-           concat sep
-           if (eq 1 (length p))
-             concat (-last-item (s-split " +" (car p) t))
-           else
-             concat (car p)))
+  (if authors
+      (cl-loop for a in (s-split " and " authors)
+               for p = (s-split "," a t)
+               for sep = "" then ", "
+               concat sep
+               if (eq 1 (length p))
+                 concat (-last-item (s-split " +" (car p) t))
+               else
+                 concat (car p))
+    nil))
 
 
 (defun helm-bibtex-open-pdf (_)
@@ -394,6 +397,47 @@ specified in `helm-bibtex-pdf-open-function',"
                   (assoc 'default   helm-bibtex-format-citation-functions)))))
     (insert
      (funcall format-function keys))))
+
+(defun helm-bibtex-insert-reference (_)
+  "Insert a reference for each selected entry at point."
+  (let ((keys (helm-marked-candidates :with-wildcard t)))
+    (insert (s-join "" (--map (helm-bibtex-format-reference it) keys)))))
+
+(defun helm-bibtex-format-reference (key)
+  "Generate a reference for a given BibTeX key."
+  (let* ((entry   (helm-bibtex-get-entry key))
+         (author  (helm-bibtex-shorten-authors
+                   (helm-bibtex-clean-string
+                    (helm-bibtex-get-value entry 'author))))
+         (year    (--when-let (helm-bibtex-clean-string
+                               (helm-bibtex-get-value entry 'year))
+                    (concat "(" it ").")))
+         (title   (--when-let (helm-bibtex-clean-string
+                               (helm-bibtex-get-value entry 'title))
+                    (concat it ".")))
+         (journal (--when-let (helm-bibtex-clean-string
+                               (helm-bibtex-get-value entry 'journal))
+                    (concat it ".")))
+         (fields  (--filter it (list author year title journal)))
+         (url-doi (--if-let (helm-bibtex-get-value entry 'url)
+                      (concat "\n  " it)
+                    (--if-let (helm-bibtex-get-value entry 'doi)
+                        (concat "\n  http://dx.doi.org/" it)
+                      ""))))
+    (concat
+     (s-word-wrap fill-column
+                  (concat "- " (s-join " " fields)))
+     url-doi "\n\n")))
+
+(defun helm-bibtex-get-value (entry field &optional default)
+  "Return the requested value or `default' if the value is not
+defined.  Surrounding curly braces are stripped."
+  (let ((value (cdr (assoc field entry))))
+    (if value
+        (replace-regexp-in-string "\\`[ \t\n{\"]*" ""
+         (replace-regexp-in-string "[ \t\n}\"]*\\'" ""
+          value))
+      default)))
 
 (defun helm-bibtex-insert-key (_)
   "Insert BibTeX key at point."
@@ -486,6 +530,7 @@ entry for each BibTeX file that will open that file for editing."
     (action . (("Open PDF file (if present)"   . helm-bibtex-open-pdf)
                ("Open URL or DOI in browser"   . helm-bibtex-open-url-or-doi)
                ("Insert citation at point"     . helm-bibtex-insert-citation)
+               ("Insert reference at point"    . helm-bibtex-insert-reference)
                ("Insert BibTeX key at point"   . helm-bibtex-insert-key)
                ("Insert BibTeX entry at point" . helm-bibtex-insert-bibtex)
                ("Edit notes"                   . helm-bibtex-edit-notes)

@@ -13,7 +13,8 @@ A helm source for managing BibTeX bibliographies.
 - Open the PDF associated with an entry
 - Open the URL or DOI of an entry in the browser
 - Insert LaTeX cite command or ebib link or plain BibTeX key depending on document type
-- Insert BibTeX entry at point (useful when sharing BibTeX with colleagues via email)
+- Insert BibTeX entry or plain text reference at point (useful when
+  sharing BibTeX with colleagues via email)
 - Add notes to an entry
 - Edit selected entry
 
@@ -98,6 +99,7 @@ There are several actions for matching BibTeX entries:
 - Open the PDF file associated with an entry if available (default).
 - Open the URL or DOI associated with an entry in your web browser.
 - Insert citation at point.
+- Insert reference at point.
 - Insert BibTeX key at point.
 - Insert BibTeX entry at point.
 - Edit notes associated with an entry.
