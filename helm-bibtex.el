@@ -35,8 +35,8 @@
 ;; - Open the URL or DOI of an entry in the browser
 ;; - Insert LaTeX cite command or ebib link or plain BibTeX key
 ;;   depending on document type
-;; - Insert BibTeX entry at point (useful when sharing BibTeX with
-;;   colleagues via email)
+;; - Insert BibTeX entry or plain text reference at point (useful when
+;;   sharing BibTeX with colleagues via email)
 ;; - Add notes to an entry
 ;; - Edit selected entry
 ;;
@@ -316,9 +316,9 @@ list containing the fields of the entry."
     with width = (with-helm-window (window-width))
     for entry in candidates
     for entry = (cdr entry)
-    for entry-key = (or (cdr (assoc 'entry-key entry)) nil) 
+    for entry-key = (helm-bibtex-get-value entry 'entry-key) 
     for fields = (--map (helm-bibtex-clean-string
-                        (or (cdr (assoc it entry)) " "))
+                        (helm-bibtex-get-value entry it " "))
                        '(author title year has-pdf has-note entry-type))
     for fields = (-update-at 0 'helm-bibtex-shorten-authors fields)
     collect
@@ -364,12 +364,12 @@ specified in `helm-bibtex-pdf-open-function',"
   (let ((keys (helm-marked-candidates :with-wildcard t)))
     (dolist (key keys)
       (let* ((entry (helm-bibtex-get-entry key))
-             (url (s-chop-prefix "{" (s-chop-suffix "}" (cdr (assoc 'url entry)))))
-             (doi (s-chop-prefix "{" (s-chop-suffix "}" (cdr (assoc 'doi entry)))))
+             (url (helm-bibtex-get-value entry 'url))
+             (doi (helm-bibtex-get-value entry 'doi))
              (browse-url-browser-function
                (or helm-bibtex-browser-function
                    browse-url-browser-function)))
-        (if url (browse-url-browser-function url)
+        (if url (helm-browse-url url)
           (if doi (helm-browse-url
                    (s-concat "http://dx.doi.org/" doi)))
           (message "No URL or DOI found for this entry: %s"
@@ -452,7 +452,7 @@ defined.  Surrounding curly braces are stripped."
 
 (defun helm-bibtex-make-bibtex (key)
   (let* ((entry (helm-bibtex-get-entry key))
-         (entry-type (cdr (assoc 'entry-type entry))))
+         (entry-type (helm-bibtex-get-value entry 'entry-type)))
     (format "@%s{%s,\n%s}\n"
             entry-type key
             (cl-loop
