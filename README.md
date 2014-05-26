@@ -12,9 +12,9 @@ A helm source for managing BibTeX bibliographies.
 - Support for multiple BibTeX files
 - Open the PDF associated with an entry
 - Open the URL or DOI of an entry in the browser
-- Insert LaTeX cite command or ebib link or plain BibTeX key depending on document type
-- Insert BibTeX entry or plain text reference at point (useful when
-  sharing BibTeX with colleagues via email)
+- Insert LaTeX cite command, ebib link, or plain BibTeX key depending on document type
+- Insert BibTeX entry or plain text reference
+- Add PDFs as attachments to emails
 - Add notes to an entry
 - Edit selected entry
 
@@ -102,6 +102,7 @@ There are several actions for matching BibTeX entries:
 - Insert reference at point.
 - Insert BibTeX key at point.
 - Insert BibTeX entry at point.
+- Add PDF as attachment to email.
 - Edit notes associated with an entry.
 - Show the entry in BibTeX file.
 

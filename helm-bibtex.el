@@ -37,6 +37,7 @@
 ;;   depending on document type
 ;; - Insert BibTeX entry or plain text reference at point (useful when
 ;;   sharing BibTeX with colleagues via email)
+;; - Attach PDF of entry to an email.
 ;; - Add notes to an entry
 ;; - Edit selected entry
 ;;
@@ -464,6 +465,15 @@ defined.  Surrounding curly braces are stripped."
               concat
               (format "  %s = %s,\n" name value)))))
 
+(defun helm-bibtex-add-PDF-attachment (_)
+  "Attach the PDFs of the selected entries."
+  (let ((keys (helm-marked-candidates :with-wildcard t)))
+    (dolist (key keys)
+      (let ((path (f-join helm-bibtex-library-path (s-concat key ".pdf"))))
+        (if (f-exists? path)
+            (mml-attach-file path)
+          (message "No PDF for this entry: %s" key))))))
+
 (defun helm-bibtex-edit-notes (key)
   "Open the notes associated with the entry using `find-file'."
   (let ((path (f-join helm-bibtex-notes-path (s-concat key helm-bibtex-notes-extension))))
@@ -533,6 +543,7 @@ entry for each BibTeX file that will open that file for editing."
                ("Insert reference at point"    . helm-bibtex-insert-reference)
                ("Insert BibTeX key at point"   . helm-bibtex-insert-key)
                ("Insert BibTeX entry at point" . helm-bibtex-insert-bibtex)
+               ("Add PDF as attachment"        . helm-bibtex-add-PDF-attachment)
                ("Edit notes"                   . helm-bibtex-edit-notes)
                ("Show entry in BibTex file"    . helm-bibtex-show-entry))))
   "Source for searching in BibTeX files.")
