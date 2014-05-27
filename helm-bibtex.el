@@ -386,7 +386,7 @@ specified in `helm-bibtex-pdf-open-function',"
   (format "\\cite{%s}" (s-join ", " keys)))
 
 (defun helm-bibtex-format-citation-pandoc-citeproc (keys)
-  "Formatter for LaTeX citation macro."
+  "Formatter for pandoc-citeproc citation."
   (format "[%s]" (s-join "; " (--map (concat "@" it) keys))))
 
 (defun helm-bibtex-format-citation-ebib (keys)
