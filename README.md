@@ -12,7 +12,7 @@ A helm source for managing BibTeX bibliographies.
 - Support for multiple BibTeX files
 - Open the PDF associated with an entry
 - Open the URL or DOI of an entry in the browser
-- Insert LaTeX cite command, ebib link, or plain BibTeX key depending on document type
+- Insert LaTeX cite command, ebib link, or pandoc citation depending on document type
 - Insert BibTeX entry or plain text reference
 - Add PDFs as attachments to emails
 - Add notes to an entry

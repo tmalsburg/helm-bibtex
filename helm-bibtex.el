@@ -33,7 +33,7 @@
 ;; - Support for multiple BibTeX files
 ;; - Open the PDF associated with an entry
 ;; - Open the URL or DOI of an entry in the browser
-;; - Insert LaTeX cite command or ebib link or plain BibTeX key
+;; - Insert LaTeX cite command, ebib link, or pandoc citation
 ;;   depending on document type
 ;; - Insert BibTeX entry or plain text reference at point (useful when
 ;;   sharing BibTeX with colleagues via email)
@@ -111,9 +111,10 @@ publication.  This should be a single character."
   :type 'string)
 
 (defcustom helm-bibtex-format-citation-functions
-  '((org-mode   . helm-bibtex-format-citation-ebib)
-    (latex-mode . helm-bibtex-format-citation-cite)
-    (default    . helm-bibtex-format-citation-default))
+  '((org-mode      . helm-bibtex-format-citation-ebib)
+    (latex-mode    . helm-bibtex-format-citation-cite)
+    (markdown-mode . helm-bibtex-format-citation-pandoc-citeproc)
+    (default       . helm-bibtex-format-citation-default))
   "The functions used for formatting citations.  The publication
 can be cited, for example, as \cite{key} or ebib:key depending on
 the major mode of the current buffer.  Note that the functions
@@ -383,6 +384,10 @@ specified in `helm-bibtex-pdf-open-function',"
 (defun helm-bibtex-format-citation-cite (keys)
   "Formatter for LaTeX citation macro."
   (format "\\cite{%s}" (s-join ", " keys)))
+
+(defun helm-bibtex-format-citation-pandoc-citeproc (keys)
+  "Formatter for LaTeX citation macro."
+  (format "[%s]" (s-join "; " (--map (concat "@" it) keys))))
 
 (defun helm-bibtex-format-citation-ebib (keys)
   "Formatter for ebib reference."
