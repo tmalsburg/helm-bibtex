@@ -51,7 +51,7 @@ Alternatively, you can specify a list of BibTeX files.
 Other customization variables are:
 
 - `helm-bibtex-library-path`: Location where PDFs of the entries are stored
-- `helm-bibtex-pdf-open-function`: Function used for opening PDFs (the default function opens them in Emacs)
+- `helm-bibtex-pdf-open-function`: Function used for opening PDFs (the default function opens them in Emacs).
 - `helm-bibtex-pdf-symbol`: The symbol used to indicate that a PDF is present.  This should be one character (default: "⌘")
 - `helm-bibtex-format-insert-citation-functions`: The functions used for formatting citations.  The publication can be cited, for example, as `\cite{key}` or `ebib:key` depending on the major mode of the current buffer.  Note that the functions should accept a list of keys as input.  With multiple marked entries one can insert multiple keys at once, e.g. `\cite{key1,key2}`.  See the functions `helm-bibtex-format-citation-ebib` and `helm-bibtex-format-citation-cite` as examples.
 - `helm-bibtex-notes-path`: Location where notes are stored (one file per entry)
@@ -61,6 +61,12 @@ Other customization variables are:
 - `helm-bibtex-browser-function`: The browser that is used to access online databases
 
 Helm-bibtex assumes that PDFs and notes have the BibTeX key of their associated entries as their base names plus ".pdf" for PDFs and whatever extension is configured for notes (".org" by default).
+
+By default, helm-bibtex opens PDFs in Emacs.  If you prefer to use an external viewer (e.g. evince), you can put the following in your initialization file:
+
+	(setq helm-bibtex-pdf-open-function
+		  (lambda (fpath) (shell-command-to-string
+						   (concat "/usr/bin/evince " fpath " &"))))
 
 ## Usage
 
