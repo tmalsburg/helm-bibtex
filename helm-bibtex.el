@@ -394,6 +394,11 @@ specified in `helm-bibtex-pdf-open-function',"
   (s-join ", "
    (--map (format "ebib:%s" it) keys)))
 
+(defun helm-bibtex-format-citation-org-link-to-PDF (keys)
+  "Formatter for org-links to PDF."
+  (s-join ", "
+   (--map (format "[[%s][%s]]" (f-join helm-bibtex-library-path (s-concat it ".pdf")) it) keys)))
+
 (defun helm-bibtex-insert-citation (_)
   "Insert citation at point.  The format depends on
 `helm-bibtex-format-citation-functions'."
