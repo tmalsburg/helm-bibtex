@@ -18,11 +18,12 @@ A helm source for managing BibTeX bibliographies.
 - Add notes to an entry
 - Edit selected entry
 
-Here is a screenshot showing a search for entries containing the word "verbs":
+Here is a screenshot showing a search for entries with the word "eye tracking".
+
 
 ![A search for publications containing the word "verbs"](screenshot.png)
 
-A looped square symbol (⌘) next to an entry indicates that a PDF is available.  A pen symbol (✎) means that notes were added.  At the bottom, there are dummy entries that can be used to search online databases.  This list can be extended using the customization variable `helm-bibtex-fallback-options`.
+The regular expression "eye.?tracking" allows searching for different spellings ("eye tracking", "eye-tracking", "eyetracking").  A looped square symbol (⌘) next to an entry indicates that a PDF is available.  A pen symbol (✎) means that notes were added.  At the bottom, there are dummy entries that can be used to search online databases.  This list can be extended using the customization variable `helm-bibtex-fallback-options`.
 
 ## Requirements
 
