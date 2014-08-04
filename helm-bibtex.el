@@ -395,7 +395,7 @@ specified in `helm-bibtex-pdf-open-function',"
    (--map (format "ebib:%s" it) keys)))
 
 (defun helm-bibtex-insert-citation (_)
-  "Insert a citation at point.  The format depends on
+  "Insert citation at point.  The format depends on
 `helm-bibtex-format-citation-functions'."
   (let ((keys (helm-marked-candidates :with-wildcard t))
         (format-function
@@ -544,11 +544,11 @@ entry for each BibTeX file that will open that file for editing."
     (filtered-candidate-transformer            . helm-bibtex-candidates-formatter)
     (action . (("Open PDF file (if present)"   . helm-bibtex-open-pdf)
                ("Open URL or DOI in browser"   . helm-bibtex-open-url-or-doi)
-               ("Insert citation at point"     . helm-bibtex-insert-citation)
-               ("Insert reference at point"    . helm-bibtex-insert-reference)
-               ("Insert BibTeX key at point"   . helm-bibtex-insert-key)
-               ("Insert BibTeX entry at point" . helm-bibtex-insert-bibtex)
-               ("Attach PDF"                   . helm-bibtex-add-PDF-attachment)
+               ("Insert citation"              . helm-bibtex-insert-citation)
+               ("Insert reference"             . helm-bibtex-insert-reference)
+               ("Insert BibTeX key"            . helm-bibtex-insert-key)
+               ("Insert BibTeX entry"          . helm-bibtex-insert-bibtex)
+               ("Attach PDF to email"          . helm-bibtex-add-PDF-attachment)
                ("Edit notes"                   . helm-bibtex-edit-notes)
                ("Show entry"                   . helm-bibtex-show-entry))))
   "Source for searching in BibTeX files.")
