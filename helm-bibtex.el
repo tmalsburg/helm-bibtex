@@ -378,7 +378,7 @@ specified in `helm-bibtex-pdf-open-function',"
                    key))))))
 
 (defun helm-bibtex-format-citation-default (keys)
-  "Default formatter for keys, separate keys with comma."
+  "Default formatter for keys, separates multiple keys with commas."
   (s-join ", " keys))
 
 (defun helm-bibtex-format-citation-cite (keys)
@@ -386,11 +386,11 @@ specified in `helm-bibtex-pdf-open-function',"
   (format "\\cite{%s}" (s-join ", " keys)))
 
 (defun helm-bibtex-format-citation-pandoc-citeproc (keys)
-  "Formatter for pandoc-citeproc citation."
+  "Formatter for pandoc-citeproc citations."
   (format "[%s]" (s-join "; " (--map (concat "@" it) keys))))
 
 (defun helm-bibtex-format-citation-ebib (keys)
-  "Formatter for ebib reference."
+  "Formatter for ebib references."
   (s-join ", "
    (--map (format "ebib:%s" it) keys)))
 
@@ -405,7 +405,7 @@ specified in `helm-bibtex-pdf-open-function',"
      (funcall format-function keys))))
 
 (defun helm-bibtex-insert-reference (_)
-  "Insert a reference for each selected entry at point."
+  "Insert a reference for each selected entry."
   (let ((keys (helm-marked-candidates :with-wildcard t)))
     (insert (s-join "" (--map (helm-bibtex-format-reference it) keys)))))
 
