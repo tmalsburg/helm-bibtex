@@ -536,10 +536,11 @@ entry for each BibTeX file that will open that file for editing."
   (let ((bib-files (if (listp helm-bibtex-bibliography)
                        helm-bibtex-bibliography
                      (list helm-bibtex-bibliography))))
-    (-concat helm-bibtex-fallback-options
+    (-concat 
       (--map (cons (s-concat "Create new entry in " (f-filename it))
                    `(lambda () (find-file ,it) (goto-char (point-max))))
-             bib-files))))
+             bib-files)
+      helm-bibtex-fallback-options)))
 
 
 (defvar helm-source-bibtex
