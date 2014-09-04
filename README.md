@@ -101,6 +101,8 @@ Articles co-authored by David Caplan and Gloria Waters:
 
     article waters caplan
 
+A common use case is where a search term is written in a document (say in your LaTeX manuscript) and you want to search for it in your bibliography.  In this situation, just start helm-bibtex and hit `M-n`.  This inserts the word under the cursor as the search term.  (This is a helm feature and can be used in all helm sources not just helm-bibtex.)  Note that it is also possible to use BibTeX keys for searching.  So if your cursor is on a BibTeX key (e.g., in a LaTeX cite command) you can start helm-bibtex, hit `M+n` and see the entry associated with that BibTeX key.
+
 There are several actions for matching BibTeX entries:
 
 - Open the PDF file associated with an entry if available (default).
