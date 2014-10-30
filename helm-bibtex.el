@@ -224,7 +224,7 @@ actually exist."
 each entry.  The first element of these conses is a string
 containing authors, title, year, type, and key of the
 entry.  This is string is used for matching.  The second element
-is an alists containing the full entry."
+is the entry (only the fields listed above) as an alist."
   ;; Open bibliography in buffer:
   (with-temp-buffer
     (with-syntax-table ebib-syntax-table
