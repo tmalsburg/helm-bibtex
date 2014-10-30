@@ -328,8 +328,8 @@ list containing the fields of the entry."
     for entry = (cdr entry)
     for entry-key = (helm-bibtex-get-value entry 'entry-key) 
     for fields = (--map (helm-bibtex-clean-string
-                        (helm-bibtex-get-value entry it " "))
-                       '(author title year has-pdf has-note entry-type))
+                          (helm-bibtex-get-value entry it " "))
+                        '(author title year has-pdf has-note entry-type))
     for fields = (-update-at 0 'helm-bibtex-shorten-authors fields)
     collect
     (cons (s-format "$0 $1 $2 $3$4 $5" 'elt
