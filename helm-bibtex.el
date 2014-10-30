@@ -206,6 +206,12 @@ browser in `helm-browse-url-default-browser-alist'"
           (alist         :tag "Regexp/function association list"
                          :key-type regexp :value-type function)))
 
+(defcustom helm-bibtex-additional-search-fields nil
+  "The fields that are used for searching in addition to author,
+title, year, BibTeX key, and entry type."
+  :group 'helm-bibtex
+  :type 'list)
+
 (easy-menu-add-item nil '("Tools" "Helm" "Tools") ["BibTeX" helm-bibtex t])
 
 
@@ -244,7 +250,9 @@ is the entry (only the fields listed above) as an alist."
                   (ebib-looking-at-goto-end "[[:space:]]*[\(\{]")
                   (if (assoc (intern-soft entry-type) ebib-entry-types)
                       (setq entries (cons (helm-bibtex-read-entry
-                                            entry-type '(author title year))
+                                            entry-type
+                                            (append '(author title year)
+                                                    helm-bibtex-additional-search-fields))
                                           entries))
                     (ebib-match-paren-forward (point-max))))
               (error "Error: illegal entry type at line %d."
