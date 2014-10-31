@@ -65,9 +65,21 @@ Helm-bibtex assumes that PDFs and notes have the BibTeX key of their associated 
 
 By default, helm-bibtex opens PDFs in Emacs.  If you prefer to use an external viewer (e.g. evince), you can put the following in your initialization file:
 
-	(setq helm-bibtex-pdf-open-function
-		  (lambda (fpath) (shell-command-to-string
-						   (concat "/usr/bin/evince " fpath " &"))))
+    (setq helm-bibtex-pdf-open-function
+      (lambda (fpath)
+        (start-process "evince" "*evince*" "evince" fpath)))
+
+On OSX, you can use the following to open the PDF with the system-wide default viewer
+
+    (setq helm-bibtex-pdf-open-function
+      (lambda (fpath)
+        (start-process "open" "*open*" "open" fpath)))
+
+or the following to open PDFs with Skim:
+
+    (setq helm-bibtex-pdf-open-function
+      (lambda (fpath)
+        (start-process "skim" "*skim*" "open" (concat "-a /Applications/Skim.app " fpath))))
 
 ## Usage
 
