@@ -1,3 +1,5 @@
+[![MELPA](http://melpa.org/packages/helm-bibtex-badge.svg)](http://melpa.org/#/helm-bibtex)
+
 helm-bibtex
 ===========
 
