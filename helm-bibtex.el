@@ -233,7 +233,7 @@ entry.  This is string is used for matching.  The second element
 is the entry (only the fields listed above) as an alist."
   ;; Open bibliography in buffer:
   (with-temp-buffer
-    (with-syntax-table ebib-syntax-table
+    (with-syntax-table ebib--syntax-table
       (mapc 'insert-file-contents 
             (if (listp helm-bibtex-bibliography)
                 helm-bibtex-bibliography
@@ -243,18 +243,18 @@ is the entry (only the fields listed above) as an alist."
       (let (entries (list))
         (while (re-search-forward "^@" nil t) ; find the next entry
           (let ((beg (point)))
-            (if (ebib-looking-at-goto-end
-                 (concat "\\(" ebib-bibtex-identifier "\\)[[:space:]]*[\(\{]") 1)
+            (if (ebib--looking-at-goto-end
+                 (concat "\\(" ebib--bibtex-identifier "\\)[[:space:]]*[\(\{]") 1)
                 (let ((entry-type (downcase
                                    (buffer-substring-no-properties beg (point)))))
-                  (ebib-looking-at-goto-end "[[:space:]]*[\(\{]")
-                  (if (assoc (intern-soft entry-type) ebib-entry-types)
+                  (ebib--looking-at-goto-end "[[:space:]]*[\(\{]")
+                  (if (assoc-string entry-type (ebib--list-entry-types 'BibTeX t) 'case-fold)
                       (setq entries (cons (helm-bibtex-read-entry
                                             entry-type
                                             (append '(author title year)
                                                     helm-bibtex-additional-search-fields))
                                           entries))
-                    (ebib-match-paren-forward (point-max))))
+                    (ebib--match-paren-forward (point-max))))
               (error "Error: illegal entry type at line %d."
                      (line-number-at-pos)))))
         (--map (cons (helm-bibtex-clean-string
@@ -266,50 +266,50 @@ is the entry (only the fields listed above) as an alist."
 listed in `helm-bibtex-bibliography' and returns an alist of the
 record with that key."
   (with-temp-buffer
-    (with-syntax-table ebib-syntax-table
+    (with-syntax-table ebib--syntax-table
       (mapc 'insert-file-contents 
             (if (listp helm-bibtex-bibliography)
                 helm-bibtex-bibliography
               (list helm-bibtex-bibliography)))
       (goto-char (point-min))
-      (re-search-forward (concat "^@" ebib-bibtex-identifier
+      (re-search-forward (concat "^@" ebib--bibtex-identifier
                                  "[[:space:]]*[\(\{][[:space:]]*"
                                  entry-key))
       (goto-char (match-beginning 0))
       (let ((beg (+ 1 (point))))
-        (if (ebib-looking-at-goto-end
-             (concat "^@\\(" ebib-bibtex-identifier "\\)[[:space:]]*[\(\{]") 1)
+        (if (ebib--looking-at-goto-end
+             (concat "^@\\(" ebib--bibtex-identifier "\\)[[:space:]]*[\(\{]") 1)
             (let ((entry-type (downcase
                                (buffer-substring-no-properties beg (point)))))
-              (ebib-looking-at-goto-end "[[:space:]]*[\(\{]")
+              (ebib--looking-at-goto-end "[[:space:]]*[\(\{]")
               (helm-bibtex-read-entry entry-type)))))))
 
 (defun helm-bibtex-read-entry (entry-type &optional fields)
   "Read the entry starting at point and return an association
 list containing the fields of the entry."
-  (setq entry-type (intern-soft entry-type))
   (let ((limit (save-excursion
                  (backward-char)
-                 (ebib-match-paren-forward (point-max))
+                 (ebib--match-paren-forward (point-max))
                  (point)))
         (beg (progn
                (skip-chars-forward " \n\t\f") ; note the space!
                (point)))
         (entry-key nil)
         (record nil))
-    (if (ebib-looking-at-goto-end (concat "\\("
-                                          ebib-key-regexp
+    (if (ebib--looking-at-goto-end (concat "\\("
+                                          ebib--key-regexp
                                           "\\)[ \t\n\f]*,")
                                   1)  ; this delimits the entry key
         (progn                        ; if we found an entry key
           (setq entry-key (buffer-substring-no-properties beg (point)))
           (skip-chars-forward "^,"))) ; move to the comma after the entry key
-    (setq record (cl-loop for field = (ebib-find-bibtex-field limit)
+    (setq record (cl-loop for field = (ebib--find-bibtex-field limit)
              while field 
+             for field = (-update-at 0 (lambda (k) (intern (downcase k))) field)
              if (or (not fields)
                     (member (car field) fields))
               collect field))
-    (setq record (cons (cons 'entry-type (symbol-name entry-type)) record))
+    (setq record (cons (cons 'entry-type entry-type) record))
     (if (and helm-bibtex-library-path
              (f-exists? (f-join helm-bibtex-library-path (s-concat entry-key ".pdf"))))
         (setq record (cons (cons 'has-pdf helm-bibtex-pdf-symbol) record)))
