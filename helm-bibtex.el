@@ -75,7 +75,7 @@
 (require 'helm)
 (require 'helm-net)
 (require 'helm-plugin)
-(require 'ebib)
+(require 'parsebib)
 (require 'cl-lib)
 (require 'dash)
 (require 's)
@@ -232,110 +232,81 @@ containing authors, title, year, type, and key of the
 entry.  This is string is used for matching.  The second element
 is the entry (only the fields listed above) as an alist."
   ;; Open bibliography in buffer:
-  (with-temp-buffer
-    (with-syntax-table ebib--syntax-table
-      (mapc 'insert-file-contents 
-            (if (listp helm-bibtex-bibliography)
-                helm-bibtex-bibliography
-              (list helm-bibtex-bibliography)))
-      ;; Iterate over entries:
-      (goto-char (point-min))
-      (let (entries (list))
-        (while (re-search-forward "^@" nil t) ; find the next entry
-          (let ((beg (point)))
-            (if (ebib--looking-at-goto-end
-                 (concat "\\(" ebib--bibtex-identifier "\\)[[:space:]]*[\(\{]") 1)
-                (let ((entry-type (downcase
-                                   (buffer-substring-no-properties beg (point)))))
-                  (ebib--looking-at-goto-end "[[:space:]]*[\(\{]")
-                  (if (assoc-string entry-type (ebib--list-entry-types 'BibTeX t) 'case-fold)
-                      (setq entries (cons (helm-bibtex-read-entry
-                                            entry-type
-                                            (append '(author title year)
-                                                    helm-bibtex-additional-search-fields))
-                                          entries))
-                    (ebib--match-paren-forward (point-max))))
-              (error "Error: illegal entry type at line %d."
-                     (line-number-at-pos)))))
-        (--map (cons (helm-bibtex-clean-string
-                      (s-join " " (-map 'cdr it))) it)
-               entries)))))
+  (with-temp-buffer 
+    (mapc #'insert-file-contents
+          (if (listp helm-bibtex-bibliography)
+              helm-bibtex-bibliography
+            (list helm-bibtex-bibliography)))
+    (goto-char (point-min))
+    (let* ((fields (append '("author" "title" "year")
+                           helm-bibtex-additional-search-fields))
+           (entries (cl-loop for entry-type = (parsebib-find-next-item)
+                             while entry-type
+                             unless (member-ignore-case entry-type '("preamble" "string" "comment"))
+                             collect (helm-bibtex-prep-entry
+                                      (parsebib-read-entry entry-type)
+                                      fields))))
+      (--map (cons (helm-bibtex-clean-string
+                    (s-join " " (-map #'cdr it))) it)
+             entries))))
 
 (defun helm-bibtex-get-entry (entry-key)
   "Given a BibTeX key this function scans all bibliographies
 listed in `helm-bibtex-bibliography' and returns an alist of the
 record with that key."
   (with-temp-buffer
-    (with-syntax-table ebib--syntax-table
-      (mapc 'insert-file-contents 
-            (if (listp helm-bibtex-bibliography)
-                helm-bibtex-bibliography
-              (list helm-bibtex-bibliography)))
-      (goto-char (point-min))
-      (re-search-forward (concat "^@" ebib--bibtex-identifier
-                                 "[[:space:]]*[\(\{][[:space:]]*"
-                                 entry-key))
-      (goto-char (match-beginning 0))
-      (let ((beg (+ 1 (point))))
-        (if (ebib--looking-at-goto-end
-             (concat "^@\\(" ebib--bibtex-identifier "\\)[[:space:]]*[\(\{]") 1)
-            (let ((entry-type (downcase
-                               (buffer-substring-no-properties beg (point)))))
-              (ebib--looking-at-goto-end "[[:space:]]*[\(\{]")
-              (helm-bibtex-read-entry entry-type)))))))
+    (mapc #'insert-file-contents 
+          (if (listp helm-bibtex-bibliography)
+              helm-bibtex-bibliography
+            (list helm-bibtex-bibliography)))
+    (goto-char (point-min))
+    (re-search-forward (concat "^@\\(" parsebib--bibtex-identifier
+                               "\\)[[:space:]]*[\(\{][[:space:]]*"
+                               entry-key))
+    (let ((entry-type (match-string 1)))
+      (helm-bibtex-prep-entry (parsebib-read-entry entry-type)))))
 
-(defun helm-bibtex-read-entry (entry-type &optional fields)
-  "Read the entry starting at point and return an association
-list containing the fields of the entry."
-  (let ((limit (save-excursion
-                 (backward-char)
-                 (ebib--match-paren-forward (point-max))
-                 (point)))
-        (beg (progn
-               (skip-chars-forward " \n\t\f") ; note the space!
-               (point)))
-        (entry-key nil)
-        (record nil))
-    (if (ebib--looking-at-goto-end (concat "\\("
-                                          ebib--key-regexp
-                                          "\\)[ \t\n\f]*,")
-                                  1)  ; this delimits the entry key
-        (progn                        ; if we found an entry key
-          (setq entry-key (buffer-substring-no-properties beg (point)))
-          (skip-chars-forward "^,"))) ; move to the comma after the entry key
-    (setq record (cl-loop for field = (ebib--find-bibtex-field limit)
-             while field 
-             for field = (-update-at 0 (lambda (k) (intern (downcase k))) field)
-             if (or (not fields)
-                    (member (car field) fields))
-              collect field))
-    (setq record (cons (cons 'entry-type entry-type) record))
-    (if (and helm-bibtex-library-path
-             (f-exists? (f-join helm-bibtex-library-path (s-concat entry-key ".pdf"))))
-        (setq record (cons (cons 'has-pdf helm-bibtex-pdf-symbol) record)))
-    (if (and helm-bibtex-notes-path
-             (f-exists? (f-join helm-bibtex-notes-path
-                                (s-concat entry-key helm-bibtex-notes-extension))))
-        (setq record (cons (cons 'has-note helm-bibtex-notes-symbol) record)))
-    (cons (cons 'entry-key entry-key) record)))
+(defun helm-bibtex-prep-entry (entry &optional fields)
+  "Prep ENTRY for display.
+ENTRY is an alist representing an entry as returned by
+parsebib-read-entry. All the fields not in FIELDS are removed
+from ENTRY, with the exception of the \"=type=\" and \"key\"
+fields, which are always kept. If FIELDS is empty, all fields are
+kept. Also add a pdf and/or notes symbol, if they exist for
+ENTRY."
+  (when entry ; entry may be nil, in which case just return nil
+    (when fields
+      (setq fields (append fields (list "=type=" "=key="))))
+    (let* ((record (if fields
+                       (--filter (member-ignore-case (car it) fields) entry)
+                     entry))
+           (entry-key (cdr (assoc "=key=" record))))
+      (if (and helm-bibtex-library-path
+               (f-exists? (f-join helm-bibtex-library-path (s-concat entry-key ".pdf"))))
+          (setq record (cons (cons "=has-pdf=" helm-bibtex-pdf-symbol) record)))
+      (if (and helm-bibtex-notes-path
+               (f-exists? (f-join helm-bibtex-notes-path
+                                  (s-concat entry-key helm-bibtex-notes-extension))))
+          (setq record (cons (cons "=has-note=" helm-bibtex-notes-symbol) record)))
+      record)))
 
 
 (defun helm-bibtex-candidates-formatter (candidates source)
   "Formats BibTeX entries for display in results list."
   (cl-loop
-    with width = (with-helm-window (window-width))
-    for entry in candidates
-    for entry = (cdr entry)
-    for entry-key = (helm-bibtex-get-value entry 'entry-key) 
-    for fields = (--map (helm-bibtex-clean-string
-                          (helm-bibtex-get-value entry it " "))
-                        '(author title year has-pdf has-note entry-type))
-    for fields = (-update-at 0 'helm-bibtex-shorten-authors fields)
-    collect
-    (cons (s-format "$0 $1 $2 $3$4 $5" 'elt
-            (-zip-with (lambda (f w) (truncate-string-to-width f w 0 ?\s))
-                       fields (list 36 (- width 53) 4 1 1 7)))
-          entry-key)))
+   with width = (with-helm-window (window-width))
+   for entry in candidates
+   for entry = (cdr entry)
+   for entry-key = (helm-bibtex-get-value entry 'entry-key) 
+   for fields = (--map (helm-bibtex-clean-string
+                        (helm-bibtex-get-value entry it " "))
+                       '("author" "title" "year" "=has-pdf=" "=has-note=" "=type="))
+   for fields = (-update-at 0 'helm-bibtex-shorten-authors fields)
+   collect
+   (cons (s-format "$0 $1 $2 $3$4 $5" 'elt
+                   (-zip-with (lambda (f w) (truncate-string-to-width f w 0 ?\s))
+                              fields (list 36 (- width 53) 4 1 1 7)))
+         entry-key)))
 
 
 (defun helm-bibtex-clean-string (s)
@@ -353,9 +324,9 @@ values."
                for sep = "" then ", "
                concat sep
                if (eq 1 (length p))
-                 concat (-last-item (s-split " +" (car p) t))
+               concat (-last-item (s-split " +" (car p) t))
                else
-                 concat (car p))
+               concat (car p))
     nil))
 
 
@@ -374,11 +345,11 @@ specified in `helm-bibtex-pdf-open-function',"
   (let ((keys (helm-marked-candidates :with-wildcard t)))
     (dolist (key keys)
       (let* ((entry (helm-bibtex-get-entry key))
-             (url (helm-bibtex-get-value entry 'url))
-             (doi (helm-bibtex-get-value entry 'doi))
+             (url (helm-bibtex-get-value entry "url"))
+             (doi (helm-bibtex-get-value entry "doi"))
              (browse-url-browser-function
-               (or helm-bibtex-browser-function
-                   browse-url-browser-function)))
+              (or helm-bibtex-browser-function
+                  browse-url-browser-function)))
         (if url (helm-browse-url url)
           (if doi (helm-browse-url
                    (s-concat "http://dx.doi.org/" doi)))
@@ -400,7 +371,7 @@ specified in `helm-bibtex-pdf-open-function',"
 (defun helm-bibtex-format-citation-ebib (keys)
   "Formatter for ebib references."
   (s-join ", "
-   (--map (format "ebib:%s" it) keys)))
+          (--map (format "ebib:%s" it) keys)))
 
 (defun helm-bibtex-format-citation-org-link-to-PDF (keys)
   "Formatter for org-links to PDF."
@@ -427,20 +398,20 @@ specified in `helm-bibtex-pdf-open-function',"
   (let* ((entry   (helm-bibtex-get-entry key))
          (author  (helm-bibtex-shorten-authors
                    (helm-bibtex-clean-string
-                    (helm-bibtex-get-value entry 'author))))
+                    (helm-bibtex-get-value entry "author"))))
          (year    (--when-let (helm-bibtex-clean-string
-                               (helm-bibtex-get-value entry 'year))
+                               (helm-bibtex-get-value entry "year"))
                     (concat "(" it ").")))
          (title   (--when-let (helm-bibtex-clean-string
-                               (helm-bibtex-get-value entry 'title))
+                               (helm-bibtex-get-value entry "title"))
                     (concat it ".")))
          (journal (--when-let (helm-bibtex-clean-string
-                               (helm-bibtex-get-value entry 'journal))
+                               (helm-bibtex-get-value entry "journal"))
                     (concat it ".")))
          (fields  (--filter it (list author year title journal)))
-         (url-doi (--if-let (helm-bibtex-get-value entry 'url)
+         (url-doi (--if-let (helm-bibtex-get-value entry "url")
                       (concat "\n  " it)
-                    (--if-let (helm-bibtex-get-value entry 'doi)
+                    (--if-let (helm-bibtex-get-value entry "doi")
                         (concat "\n  http://dx.doi.org/" it)
                       ""))))
     (concat
@@ -451,11 +422,11 @@ specified in `helm-bibtex-pdf-open-function',"
 (defun helm-bibtex-get-value (entry field &optional default)
   "Return the requested value or `default' if the value is not
 defined.  Surrounding curly braces are stripped."
-  (let ((value (cdr (assoc field entry))))
+  (let ((value (cdr (assoc-string field entry 'case-fold))))
     (if value
         (replace-regexp-in-string "\\`[ \t\n{\"]*" ""
-         (replace-regexp-in-string "[ \t\n}\"]*\\'" ""
-          value))
+                                  (replace-regexp-in-string "[ \t\n}\"]*\\'" ""
+                                                            value))
       default)))
 
 (defun helm-bibtex-insert-key (_)
@@ -471,17 +442,17 @@ defined.  Surrounding curly braces are stripped."
 
 (defun helm-bibtex-make-bibtex (key)
   (let* ((entry (helm-bibtex-get-entry key))
-         (entry-type (helm-bibtex-get-value entry 'entry-type)))
+         (entry-type (helm-bibtex-get-value entry "=type=")))
     (format "@%s{%s,\n%s}\n"
             entry-type key
             (cl-loop
-              for field in entry
-              for name = (car field)
-              for value = (cdr field)
-              unless (member name '(entry-type entry-key has-pdf
-                                    has-note))
-              concat
-              (format "  %s = %s,\n" name value)))))
+             for field in entry
+             for name = (car field)
+             for value = (cdr field)
+             unless (member name '("=type=" "=key=" "=has-pdf="
+                                   "=has-note="))
+             concat
+             (format "  %s = %s,\n" name value)))))
 
 (defun helm-bibtex-add-PDF-attachment (_)
   "Attach the PDFs of the selected entries."
