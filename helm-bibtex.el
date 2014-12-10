@@ -270,7 +270,7 @@ record with that key."
   "Prep ENTRY for display.
 ENTRY is an alist representing an entry as returned by
 parsebib-read-entry. All the fields not in FIELDS are removed
-from ENTRY, with the exception of the \"=type=\" and \"key\"
+from ENTRY, with the exception of the \"=type=\" and \"=key=\"
 fields, which are always kept. If FIELDS is empty, all fields are
 kept. Also add a pdf and/or notes symbol, if they exist for
 ENTRY."
