@@ -248,7 +248,7 @@ is the entry (only the fields listed above) as an alist."
                                       fields))))
       (--map (cons (helm-bibtex-clean-string
                     (s-join " " (-map #'cdr it))) it)
-             entries))))
+             (nreverse entries)))))
 
 (defun helm-bibtex-get-entry (entry-key)
   "Given a BibTeX key this function scans all bibliographies
