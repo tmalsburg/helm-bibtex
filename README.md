@@ -32,7 +32,7 @@ The regular expression "eye.?tracking" allows searching for different spellings 
 In order to run helm-bibtex, a number of packages have to be installed on your system.  The easiest way to get these packages is through [MELPA](http://melpa.milkbox.net/#/).
 
 - [Helm](http://melpa.milkbox.net/#/helm): incremental search framework (helm-bibtex is a plug-in for Helm)
-- [Ebib](http://melpa.milkbox.net/#/ebib): a BibTeX database manager for Emacs
+- [parsebib](http://melpa.milkbox.net/#/parsebib): a parser for BibTeX files 
 - [dash](http://melpa.milkbox.net/#/dash): a powerful list-processing library
 - [s](http://melpa.milkbox.net/#/s): the long lost Emacs string manipulation library.
 - [f](http://melpa.milkbox.net/#/f): a modern API for working with files and directories
