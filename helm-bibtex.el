@@ -56,7 +56,7 @@
 ;;
 ;;     (autoload 'helm-bibtex "helm-bibtex" "" t)
 ;;
-;; Requirements are ebib, helm, s, dash, f, and cl-lib.  The easiest
+;; Requirements are parsebib, helm, s, dash, f, and cl-lib.  The easiest
 ;; way to install these packages is perhaps through MELPA.
 ;;
 ;; In order to specify a (list of) bibliography, set the variable
@@ -297,7 +297,7 @@ ENTRY."
    with width = (with-helm-window (window-width))
    for entry in candidates
    for entry = (cdr entry)
-   for entry-key = (helm-bibtex-get-value entry 'entry-key) 
+   for entry-key = (helm-bibtex-get-value entry "=key=") 
    for fields = (--map (helm-bibtex-clean-string
                         (helm-bibtex-get-value entry it " "))
                        '("author" "title" "year" "=has-pdf=" "=has-note=" "=type="))
