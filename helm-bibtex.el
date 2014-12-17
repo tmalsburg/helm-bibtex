@@ -299,8 +299,8 @@ ENTRY."
   (if (and (not (featurep 'xemacs))
            (display-graphic-p)
            overflow-newline-into-fringe
-           (or (/= (frame-parameter nil 'left-fringe) 0)
-               (/= (frame-parameter nil 'right-fringe) 0))
+           (and (/= (frame-parameter nil 'left-fringe) 0)
+                (/= (frame-parameter nil 'right-fringe) 0)))
       (window-body-width)
     (1- (window-body-width))))
 
