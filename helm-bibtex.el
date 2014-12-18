@@ -225,46 +225,68 @@ actually exist."
             helm-bibtex-bibliography
           (list helm-bibtex-bibliography))))
 
+(defun helm-bibtex-split-bibliography ()
+  "Split out the .bib files loaded in Ebib from `helm-bibtex-bibliography'.
+Check the files in `helm-bibtex-bibliography' to see if they happen
+to be opened in Ebib. Return value is a two-element list: the
+first element is a list of those files that are not loaded in
+Ebib, the second a list of hash tables from the Ebib databases.
+If Ebib is not loaded, the second list in `nil'."
+  (-separate #'stringp
+             (--map (or (and (fboundp 'ebib--get-db-from-filename)
+                             (ebib--get-db-from-filename it))
+                        it)
+                    (if (listp helm-bibtex-bibliography)
+                        helm-bibtex-bibliography
+                      (list helm-bibtex-bibliography)))))
+
 (defun helm-bibtex-candidates ()
   "Reads the BibTeX files and returns a list of conses, one for
 each entry.  The first element of these conses is a string
 containing authors, title, year, type, and key of the
 entry.  This is string is used for matching.  The second element
 is the entry (only the fields listed above) as an alist."
-  ;; Open bibliography in buffer:
-  (with-temp-buffer 
-    (mapc #'insert-file-contents
-          (if (listp helm-bibtex-bibliography)
-              helm-bibtex-bibliography
-            (list helm-bibtex-bibliography)))
-    (goto-char (point-min))
-    (let* ((fields (append '("author" "title" "year")
-                           helm-bibtex-additional-search-fields))
-           (entries (cl-loop for entry-type = (parsebib-find-next-item)
-                             while entry-type
-                             unless (member-ignore-case entry-type '("preamble" "string" "comment"))
-                             collect (helm-bibtex-prep-entry
-                                      (parsebib-read-entry entry-type)
-                                      fields))))
-      (--map (cons (helm-bibtex-clean-string
-                    (s-join " " (-map #'cdr it))) it)
-             (nreverse entries)))))
+  (let* ((sources (helm-bibtex-split-bibliography))
+         (fields (append '("author" "title" "year")
+                         helm-bibtex-additional-search-fields))
+         ;; Open file entries in buffer:
+         (file-entries (with-temp-buffer
+                         (mapc #'insert-file-contents
+                               (car sources))
+                         (goto-char (point-min))
+                         (cl-loop for entry-type = (parsebib-find-next-item)
+                                  while entry-type
+                                  unless (member-ignore-case entry-type '("preamble" "string" "comment"))
+                                  collect (helm-bibtex-prep-entry
+                                           (parsebib-read-entry entry-type)
+                                           fields))))
+         ;; Read Ebib entries from the database
+         (ebib-entries (-flatten-n 1 (-map (lambda (db)
+                                             (cl-loop for entry being the hash-values of (ebib--db-struct-database db)
+                                                      collect (helm-bibtex-prep-entry entry fields)))
+                                           (cadr sources))))
+         (entries (append (nreverse file-entries) ebib-entries)))
+    (--map (cons (helm-bibtex-clean-string
+                  (s-join " " (-map #'cdr it))) it)
+           entries)))
 
 (defun helm-bibtex-get-entry (entry-key)
   "Given a BibTeX key this function scans all bibliographies
 listed in `helm-bibtex-bibliography' and returns an alist of the
 record with that key."
-  (with-temp-buffer
-    (mapc #'insert-file-contents 
-          (if (listp helm-bibtex-bibliography)
-              helm-bibtex-bibliography
-            (list helm-bibtex-bibliography)))
-    (goto-char (point-min))
-    (re-search-forward (concat "^@\\(" parsebib--bibtex-identifier
-                               "\\)[[:space:]]*[\(\{][[:space:]]*"
-                               entry-key))
-    (let ((entry-type (match-string 1)))
-      (helm-bibtex-prep-entry (parsebib-read-entry entry-type)))))
+  (let* ((sources (helm-bibtex-split-library)))
+    (or (cl-loop for db in (cadr sources)
+                 for entry = (ebib-db-get-entry entry-key db 'noerror)
+                 thereis entry)
+        (with-temp-buffer
+          (mapc #'insert-file-contents
+                (car sources))
+          (goto-char (point-min))
+          (when (re-search-forward (concat "^@\\(" parsebib--bibtex-identifier
+                                           "\\)[[:space:]]*[\(\{][[:space:]]*"
+                                           entry-key)
+                                   nil 'noerror)
+            (helm-bibtex-prep-entry (parsebib-read-entry (match-string 1))))))))
 
 (defun helm-bibtex-prep-entry (entry &optional fields)
   "Prep ENTRY for display.
