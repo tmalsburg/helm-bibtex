@@ -220,7 +220,7 @@ title, year, BibTeX key, and entry type."
 actually exist."
   (mapc (lambda (file)
           (unless (f-exists? file)
-                  (user-error "BibTeX file %s could not be found." file)))
+            (user-error "BibTeX file %s could not be found." file)))
         (if (listp helm-bibtex-bibliography)
             helm-bibtex-bibliography
           (list helm-bibtex-bibliography))))
