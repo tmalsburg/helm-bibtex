@@ -332,7 +332,7 @@ ENTRY."
    with width = (with-helm-window (helm-bibtex-window-width))
    for entry in candidates
    for entry = (cdr entry)
-   for entry-key = (helm-bibtex-get-value entry "=key=") 
+   for entry-key = (helm-bibtex-get-value entry "=key=")
    for fields = (--map (helm-bibtex-clean-string
                         (helm-bibtex-get-value entry it " "))
                        '("author" "title" "year" "=has-pdf=" "=has-note=" "=type="))
@@ -525,7 +525,7 @@ defined.  Surrounding curly braces are stripped."
   (let ((browse-url-browser-function
           (or helm-bibtex-browser-function
               browse-url-browser-function)))
-    (cond 
+    (cond
       ((stringp url-or-function)
         (helm-browse-url (format url-or-function (url-hexify-string helm-pattern))))
       ((functionp url-or-function)
@@ -550,7 +550,7 @@ entry for each BibTeX file that will open that file for editing."
   (let ((bib-files (if (listp helm-bibtex-bibliography)
                        helm-bibtex-bibliography
                      (list helm-bibtex-bibliography))))
-    (-concat 
+    (-concat
       (--map (cons (s-concat "Create new entry in " (f-filename it))
                    `(lambda () (find-file ,it) (goto-char (point-max))))
              bib-files)
