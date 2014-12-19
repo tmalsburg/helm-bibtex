@@ -227,11 +227,15 @@ actually exist."
 
 (defun helm-bibtex-split-bibliography ()
   "Split out the .bib files loaded in Ebib from `helm-bibtex-bibliography'.
-Check the files in `helm-bibtex-bibliography' to see if they happen
-to be opened in Ebib. Return value is a two-element list: the
-first element is a list of those files that are not loaded in
-Ebib, the second a list of hash tables from the Ebib databases.
-If Ebib is not loaded, the second list in `nil'."
+Check the files in `helm-bibtex-bibliography' to see if they
+happen to be opened in Ebib. Return value is a two-element list:
+the first element is a list of those files that are not loaded in
+Ebib, the second a list of Ebib databases. If Ebib is not running
+or not even installed, the second list in `nil'."
+  ;; We first use `--map' on `helm-bibtex-bibliography' to create a new
+  ;; list in which each file name that is the name of an Ebib database is
+  ;; replaced by a reference to that database (i.e., a `cl-struct'). Then
+  ;; we use `-separate' to split this list into two lists.
   (-separate #'stringp
              (--map (or (and (fboundp 'ebib--get-db-from-filename)
                              (ebib--get-db-from-filename it))
@@ -260,7 +264,10 @@ is the entry (only the fields listed above) as an alist."
                                   collect (helm-bibtex-prep-entry
                                            (parsebib-read-entry entry-type)
                                            fields))))
-         ;; Read Ebib entries from the database
+         ;; Read Ebib entries from the database. Note, we can safely call
+         ;; `ebib--db-struct-database' here: the -map is only executed if
+         ;; `(cadr sources)' is non-nil, and that is only the case if Ebib
+         ;; is actually loaded.
          (ebib-entries (-flatten-n 1 (-map (lambda (db)
                                              (cl-loop for entry being the hash-values of (ebib--db-struct-database db)
                                                       collect (helm-bibtex-prep-entry entry fields)))
@@ -276,6 +283,9 @@ listed in `helm-bibtex-bibliography' and returns an alist of the
 record with that key."
   (let* ((sources (helm-bibtex-split-bibliography)))
     (or (cl-loop for db in (cadr sources)
+                 ;; We can safely call `ebib-db-get-entry' here: the loop
+                 ;; is only executed if `(cadr sources)' is non-nil, and
+                 ;; that is only the case if Ebib is actually loaded.
                  for entry = (ebib-db-get-entry entry-key db 'noerror)
                  thereis entry)
         (with-temp-buffer
