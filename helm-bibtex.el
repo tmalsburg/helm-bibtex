@@ -274,7 +274,7 @@ is the entry (only the fields listed above) as an alist."
   "Given a BibTeX key this function scans all bibliographies
 listed in `helm-bibtex-bibliography' and returns an alist of the
 record with that key."
-  (let* ((sources (helm-bibtex-split-library)))
+  (let* ((sources (helm-bibtex-split-bibliography)))
     (or (cl-loop for db in (cadr sources)
                  for entry = (ebib-db-get-entry entry-key db 'noerror)
                  thereis entry)
