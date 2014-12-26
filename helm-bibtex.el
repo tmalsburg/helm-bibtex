@@ -239,7 +239,7 @@ is the entry (only the fields listed above) as an alist."
             (list helm-bibtex-bibliography)))
     (goto-char (point-min))
     (let* ((fields (append '("author" "title" "year")
-                           helm-bibtex-additional-search-fields))
+                           (mapcar 'symbol-name helm-bibtex-additional-search-fields)))
            (entries (cl-loop for entry-type = (parsebib-find-next-item)
                              while entry-type
                              unless (member-ignore-case entry-type '("preamble" "string" "comment"))
