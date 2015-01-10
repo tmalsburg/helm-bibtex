@@ -262,7 +262,7 @@ record with that key."
     (goto-char (point-min))
     (re-search-forward (concat "^@\\(" parsebib--bibtex-identifier
                                "\\)[[:space:]]*[\(\{][[:space:]]*"
-                               entry-key))
+                               (regexp-quote entry-key)))
     (let ((entry-type (match-string 1)))
       (helm-bibtex-prep-entry (parsebib-read-entry entry-type)))))
 
@@ -494,7 +494,10 @@ defined.  Surrounding curly braces are stripped."
       (let ((buf (helm-bibtex-buffer-visiting bibtex-file)))
         (find-file bibtex-file)
         (goto-char (point-min))
-        (if (search-forward key nil t)
+        (if (re-search-forward
+             (concat "^@\\(" parsebib--bibtex-identifier
+                     "\\)[[:space:]]*[\(\{][[:space:]]*"
+                     (regexp-quote key)) nil t)
             (throw 'break t)
           (unless buf
             (kill-buffer)))))))
