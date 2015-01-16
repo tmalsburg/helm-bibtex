@@ -214,6 +214,16 @@ title, year, BibTeX key, and entry type."
 
 (easy-menu-add-item nil '("Tools" "Helm" "Tools") ["BibTeX" helm-bibtex t])
 
+(defvar helm-bibtex-bibliography-hash nil
+  "The hash of the content of the configured bibliography
+files.  If this hash has not changed since the bibliography was
+last parsed, a cached version of the parsed bibliography will be
+used.")
+
+(defvar helm-bibtex-cached-candidates nil
+  "The candidates obtained when the configured bibliography files
+were last parsed.")
+
 
 (defun helm-bibtex-init ()
   "Checks that the files and directories specified by the user
@@ -231,24 +241,36 @@ each entry.  The first element of these conses is a string
 containing authors, title, year, type, and key of the
 entry.  This is string is used for matching.  The second element
 is the entry (only the fields listed above) as an alist."
-  ;; Open bibliography in buffer:
+  ;; Open configured bibliographies in temporary buffer:
   (with-temp-buffer 
     (mapc #'insert-file-contents
           (if (listp helm-bibtex-bibliography)
               helm-bibtex-bibliography
             (list helm-bibtex-bibliography)))
-    (goto-char (point-min))
-    (let* ((fields (append '("author" "title" "year")
-                           (mapcar 'symbol-name helm-bibtex-additional-search-fields)))
-           (entries (cl-loop for entry-type = (parsebib-find-next-item)
-                             while entry-type
-                             unless (member-ignore-case entry-type '("preamble" "string" "comment"))
-                             collect (helm-bibtex-prep-entry
-                                      (parsebib-read-entry entry-type)
-                                      fields))))
-      (--map (cons (helm-bibtex-clean-string
-                    (s-join " " (-map #'cdr it))) it)
-             (nreverse entries)))))
+    ;; Check hash of bibliography and reparse if necessary:
+    (let ((bibliography-hash (secure-hash 'sha256 (current-buffer))))
+      (unless (and helm-bibtex-cached-candidates
+                   (string= helm-bibtex-bibliography-hash bibliography-hash))
+        (message "Loading bibliography ...")
+        (setq helm-bibtex-cached-candidates (helm-bibtex-parse-bibliography))
+        (setq helm-bibtex-bibliography-hash bibliography-hash))))
+  helm-bibtex-cached-candidates)
+
+(defun helm-bibtex-parse-bibliography ()
+  "Parse the BibTeX entries listed in the current buffer and
+return a list of entries."
+  (goto-char (point-min))
+  (let* ((fields (append '("author" "title" "year")
+                         (mapcar 'symbol-name helm-bibtex-additional-search-fields)))
+         (entries (cl-loop for entry-type = (parsebib-find-next-item)
+                           while entry-type
+                           unless (member-ignore-case entry-type '("preamble" "string" "comment"))
+                           collect (helm-bibtex-prepare-entry
+                                    (parsebib-read-entry entry-type)
+                                    fields))))
+    (--map (cons (helm-bibtex-clean-string
+                  (s-join " " (-map #'cdr it))) it)
+           (nreverse entries))))
 
 (defun helm-bibtex-get-entry (entry-key)
   "Given a BibTeX key this function scans all bibliographies
@@ -264,10 +286,10 @@ record with that key."
                                "\\)[[:space:]]*[\(\{][[:space:]]*"
                                (regexp-quote entry-key)))
     (let ((entry-type (match-string 1)))
-      (helm-bibtex-prep-entry (parsebib-read-entry entry-type)))))
+      (helm-bibtex-prepare-entry (parsebib-read-entry entry-type)))))
 
-(defun helm-bibtex-prep-entry (entry &optional fields)
-  "Prep ENTRY for display.
+(defun helm-bibtex-prepare-entry (entry &optional fields)
+  "Prepare ENTRY for display.
 ENTRY is an alist representing an entry as returned by
 parsebib-read-entry. All the fields not in FIELDS are removed
 from ENTRY, with the exception of the \"=type=\" and \"=key=\"
