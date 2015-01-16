@@ -20,8 +20,14 @@ A helm source for managing BibTeX bibliographies.
 - Add notes to an entry
 - Edit selected entry
 
-Here is a screenshot showing a search for entries with the word "eye tracking".
+## News
+- 01/16/2015: The parsed bibliography is now cached which can dramatically improve responsiveness with larger bibliographies.
 
+## Description
+
+Helm-bibtex allows the user to search for bibliographic entries in one or more bibtex-files.  In the default configuration, the user can search for the bibtex key, the entry type, the authors, the title, and the year.  Additional search fields can be configured if desired.  Various actions can be performed on the entries matching the search terms.  See the sections below for details.
+
+Here is a screenshot showing a search for entries containing the word "eye tracking".
 
 ![A search for publications containing the word "verbs"](screenshot.png)
 
