@@ -214,6 +214,16 @@ title, year, BibTeX key, and entry type."
 
 (easy-menu-add-item nil '("Tools" "Helm" "Tools") ["BibTeX" helm-bibtex t])
 
+(defvar helm-bibtex-bibliography-hash nil
+  "The hash of the content of the configured bibliography
+files.  If this hash has not changed since the bibliography was
+last parsed, a cached version of the parsed bibliography will be
+used.")
+
+(defvar helm-bibtex-cached-candidates nil
+  "The candidates obtained when the configured bibliography files
+were last parsed.")
+
 
 (defun helm-bibtex-init ()
   "Checks that the files and directories specified by the user
@@ -224,16 +234,6 @@ actually exist."
         (if (listp helm-bibtex-bibliography)
             helm-bibtex-bibliography
           (list helm-bibtex-bibliography))))
-
-(defvar helm-bibtex-bibliography-hash nil
-  "The hash of the content of the configured bibliography
-files.  If this hash has not changed since the bibliography was
-last parsed, a cached version of the parsed bibliography is used,
-which speeds up helm-bibtex.")
-
-(defvar helm-bibtex-cached-candidates nil
-  "The candidates obtained when the configured bibliography files
-were last parsed.")
 
 (defun helm-bibtex-candidates ()
   "Reads the BibTeX files and returns a list of conses, one for
