@@ -225,9 +225,13 @@ files.  If this hash has not changed since the bibliography was
 last parsed, a cached version of the parsed bibliography will be
 used.")
 
+(defvar helm-bibtex-cached-entries nil
+  "A hash table containing the entries obtained when the
+configured bibliography files were last parsed.")
+
 (defvar helm-bibtex-cached-candidates nil
-  "The candidates obtained when the configured bibliography files
-were last parsed.")
+  "The a list of candidates obtained when the configured
+bibliography files were last parsed.")
 
 
 (defun helm-bibtex-init ()
@@ -257,15 +261,30 @@ is the entry (only the fields listed above) as an alist."
       (unless (and helm-bibtex-cached-candidates
                    (string= helm-bibtex-bibliography-hash bibliography-hash))
         (message "Loading bibliography ...")
-        (setq helm-bibtex-cached-candidates (helm-bibtex-parse-bibliography))
-        (setq helm-bibtex-bibliography-hash bibliography-hash))))
-  helm-bibtex-cached-candidates)
+        (let* ((entries (helm-bibtex-parse-bibliography))
+               (entries (--map (helm-bibtex-update-from-crossref it) entries))
+               (entries (nreverse entries)))
+          (setq helm-bibtex-cached-candidates
+                (--map (cons (helm-bibtex-clean-string (s-join " " (-map #'cdr it))) it)
+                       entries)))
+        (setq helm-bibtex-bibliography-hash bibliography-hash))
+      helm-bibtex-cached-candidates)))
+
+(defun helm-bibtex-update-from-crossref (entry)
+  "Retrieve a cross-referenced entry and copy author, title, and
+year from there if not present in ENTRY."
+  (let* ((crossref (helm-bibtex-get-value entry "crossref"))
+         (crossref (if crossref (gethash (downcase crossref) helm-bibtex-cached-entries) nil)))
+    (append entry crossref)))
 
 (defun helm-bibtex-parse-bibliography ()
   "Parse the BibTeX entries listed in the current buffer and
-return a list of entries."
+return a list of entry keys in the order in which the entries
+appeared in the BibTeX files.  As a side effect, a hash table
+named `helm-bibtex-cached-entries' is created which maps keys to
+entries."
   (goto-char (point-min))
-  (let* ((fields (append '("author" "title" "year")
+  (let* ((fields (append '("author" "title" "year" "crossref")
                          (mapcar 'symbol-name helm-bibtex-additional-search-fields)))
          (entries (cl-loop for entry-type = (parsebib-find-next-item)
                            while entry-type
@@ -273,9 +292,12 @@ return a list of entries."
                            collect (helm-bibtex-prepare-entry
                                     (parsebib-read-entry entry-type)
                                     fields))))
-    (--map (cons (helm-bibtex-clean-string
-                  (s-join " " (-map #'cdr it))) it)
-           (nreverse entries))))
+    (setq helm-bibtex-cached-entries
+          (make-hash-table :test #'equal :size (length entries)))
+    (cl-loop for entry in entries
+             for key = (helm-bibtex-get-value entry "=key=")
+             do (puthash (downcase key) entry helm-bibtex-cached-entries))
+    entries))
 
 (defun helm-bibtex-get-entry (entry-key)
   "Given a BibTeX key this function scans all bibliographies
