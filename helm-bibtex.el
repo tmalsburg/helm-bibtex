@@ -320,9 +320,8 @@ record with that key."
 ENTRY is an alist representing an entry as returned by
 parsebib-read-entry. All the fields not in FIELDS are removed
 from ENTRY, with the exception of the \"=type=\" and \"=key=\"
-fields, which are always kept. If FIELDS is empty, all fields are
-kept. Also add a pdf and/or notes symbol, if they exist for
-ENTRY."
+fields. If FIELDS is empty, all fields are kept. Also add a
+=has-pdf= and/or =has-notes= field, if they exist for ENTRY."
   (when entry ; entry may be nil, in which case just return nil
     (when fields
       (setq fields (append fields (list "=type=" "=key="))))
