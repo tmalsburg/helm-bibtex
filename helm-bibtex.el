@@ -284,7 +284,7 @@ appeared in the BibTeX files.  As a side effect, a hash table
 named `helm-bibtex-cached-entries' is created which maps keys to
 entries."
   (goto-char (point-min))
-  (let* ((fields (append '("author" "title" "year" "crossref")
+  (let* ((fields (append '("author" "editor" "title" "year" "crossref")
                          (mapcar 'symbol-name helm-bibtex-additional-search-fields)))
          (entries (cl-loop for entry-type = (parsebib-find-next-item)
                            while entry-type
@@ -361,10 +361,14 @@ fields. If FIELDS is empty, all fields are kept. Also add a
    with width = (with-helm-window (helm-bibtex-window-width))
    for entry in candidates
    for entry = (cdr entry)
-   for entry-key = (helm-bibtex-get-value "=key=" entry)
+   for entry-key = (helm-bibtex-get-value entry "=key=")
+   if (assoc "author" entry)
+     for fields = '("author" "title" "year" "=has-pdf=" "=has-note=" "=type=")
+   else
+     for fields = '("editor" "title" "year" "=has-pdf=" "=has-note=" "=type=")
    for fields = (--map (helm-bibtex-clean-string
                         (helm-bibtex-get-value it entry " "))
-                       '("author" "title" "year" "=has-pdf=" "=has-note=" "=type="))
+                       fields)
    for fields = (-update-at 0 'helm-bibtex-shorten-authors fields)
    collect
    (cons (s-format "$0 $1 $2 $3$4 $5" 'elt
