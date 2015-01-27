@@ -329,6 +329,9 @@ fields. If FIELDS is empty, all fields are kept. Also add a
                        (--filter (member-ignore-case (car it) fields) entry)
                      entry))
            (entry-key (cdr (assoc "=key=" record))))
+      ;; Normalize case of entry type:
+      (setcdr (assoc "=type=" entry) (downcase (cdr (assoc "=type=" entry))))
+      ;; Check for PDF and notes:
       (if (and helm-bibtex-library-path
                (f-exists? (f-join helm-bibtex-library-path (s-concat entry-key ".pdf"))))
           (setq record (cons (cons "=has-pdf=" helm-bibtex-pdf-symbol) record)))
