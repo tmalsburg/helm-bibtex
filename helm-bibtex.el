@@ -362,7 +362,7 @@ fields. If FIELDS is empty, all fields are kept. Also add a
    for entry in candidates
    for entry = (cdr entry)
    for entry-key = (helm-bibtex-get-value entry "=key=")
-   if (assoc "author" entry)
+   if (assoc-string "author" entry 'case-fold)
      for fields = '("author" "title" "year" "=has-pdf=" "=has-note=" "=type=")
    else
      for fields = '("editor" "title" "year" "=has-pdf=" "=has-note=" "=type=")
