@@ -302,7 +302,14 @@ entries."
 (defun helm-bibtex-get-entry (entry-key)
   "Given a BibTeX key this function scans all bibliographies
 listed in `helm-bibtex-bibliography' and returns an alist of the
-record with that key."
+record with that key.  Fields from crossreferenced entries are
+appended to the requested entry."
+  (let* ((entry (helm-bibtex-get-entry1 entry-key))
+         (crossref (helm-bibtex-get-value entry "crossref"))
+         (crossref (when crossref (helm-bibtex-get-entry1 crossref))))
+    (append entry crossref)))
+
+(defun helm-bibtex-get-entry1 (entry-key)
   (with-temp-buffer
     (mapc #'insert-file-contents 
           (if (listp helm-bibtex-bibliography)
@@ -625,7 +632,8 @@ defined.  Surrounding curly braces are stripped."
     (format "@%s{%s,\n%s}\n"
             entry-type key
             (cl-loop
-             for field in entry
+             for field in (cl-remove-duplicates entry :test #'string=
+                                                      :key #'car :from-end t)
              for name = (car field)
              for value = (cdr field)
              unless (member name '("=type=" "=key=" "=has-pdf="
