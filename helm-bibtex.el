@@ -274,7 +274,7 @@ is the entry (only the fields listed above) as an alist."
   "Retrieve a cross-referenced entry and append its author, title, and
 year fields."
   (let* ((crossref (helm-bibtex-get-value entry "crossref"))
-         (crossref (gethash (downcase crossref) helm-bibtex-cached-entries)))
+         (crossref (if crossref (gethash (downcase crossref) helm-bibtex-cached-entries))))
     (append entry crossref)))
 
 (defun helm-bibtex-parse-bibliography ()
