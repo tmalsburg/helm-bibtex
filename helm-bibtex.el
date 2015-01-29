@@ -271,8 +271,8 @@ is the entry (only the fields listed above) as an alist."
       helm-bibtex-cached-candidates)))
 
 (defun helm-bibtex-update-from-crossref (entry)
-  "Retrieve a cross-referenced entry and copy author, title, and
-year from there if not present in ENTRY."
+  "Retrieve a cross-referenced entry and append its author, title, and
+year fields."
   (let* ((crossref (helm-bibtex-get-value entry "crossref"))
          (crossref (if crossref (gethash (downcase crossref) helm-bibtex-cached-entries) nil)))
     (append entry crossref)))
