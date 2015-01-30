@@ -459,9 +459,11 @@ specified in `helm-bibtex-pdf-open-function',"
 defined.  Surrounding curly braces are stripped."
   (let ((value (cdr (assoc-string field entry 'case-fold))))
     (if value
-        (replace-regexp-in-string "\\`[ \t\n{\"]*" ""
-                                  (replace-regexp-in-string "[ \t\n}\"]*\\'" ""
-                                                            value))
+        (s-collapse-whitespace
+         (replace-regexp-in-string
+          "\\(^[[:space:]]*[\"{][[:space:]]*\\)\\|\\([[:space:]]*[\"}][[:space:]]*$\\)"
+          ""
+          value))
       default)))
 
 (defun helm-bibtex-insert-key (_)
