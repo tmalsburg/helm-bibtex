@@ -318,7 +318,7 @@ appended to the requested entry."
     (goto-char (point-min))
     (re-search-forward (concat "^@\\(" parsebib--bibtex-identifier
                                "\\)[[:space:]]*[\(\{][[:space:]]*"
-                               (regexp-quote entry-key) "[:space:]*,"))
+                               (regexp-quote entry-key) "[[:space:]]*,"))
     (let ((entry-type (match-string 1)))
       (helm-bibtex-prepare-entry (parsebib-read-entry entry-type)))))
 
@@ -671,7 +671,7 @@ defined.  Surrounding curly braces are stripped."
         (if (re-search-forward
              (concat "^@\\(" parsebib--bibtex-identifier
                      "\\)[[:space:]]*[\(\{][[:space:]]*"
-                     (regexp-quote key) "[:space:]*,") nil t)
+                     (regexp-quote key) "[[:space:]]*,") nil t)
             (throw 'break t)
           (unless buf
             (kill-buffer)))))))
