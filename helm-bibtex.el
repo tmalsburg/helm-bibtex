@@ -332,9 +332,9 @@ ENTRY."
    with width = (with-helm-window (helm-bibtex-window-width))
    for entry in candidates
    for entry = (cdr entry)
-   for entry-key = (helm-bibtex-get-value entry "=key=") 
+   for entry-key = (helm-bibtex-get-value "=key=" entry)
    for fields = (--map (helm-bibtex-clean-string
-                        (helm-bibtex-get-value entry it " "))
+                        (helm-bibtex-get-value it entry " "))
                        '("author" "title" "year" "=has-pdf=" "=has-note=" "=type="))
    for fields = (-update-at 0 'helm-bibtex-shorten-authors fields)
    collect
@@ -380,8 +380,8 @@ specified in `helm-bibtex-pdf-open-function',"
   (let ((keys (helm-marked-candidates :with-wildcard t)))
     (dolist (key keys)
       (let* ((entry (helm-bibtex-get-entry key))
-             (url (helm-bibtex-get-value entry "url"))
-             (doi (helm-bibtex-get-value entry "doi"))
+             (url (helm-bibtex-get-value "url" entry))
+             (doi (helm-bibtex-get-value "doi" entry))
              (browse-url-browser-function
               (or helm-bibtex-browser-function
                   browse-url-browser-function)))
@@ -433,20 +433,20 @@ specified in `helm-bibtex-pdf-open-function',"
   (let* ((entry   (helm-bibtex-get-entry key))
          (author  (helm-bibtex-shorten-authors
                    (helm-bibtex-clean-string
-                    (helm-bibtex-get-value entry "author"))))
+                    (helm-bibtex-get-value "author" entry))))
          (year    (--when-let (helm-bibtex-clean-string
-                               (helm-bibtex-get-value entry "year"))
+                               (helm-bibtex-get-value "year" entry))
                     (concat "(" it ").")))
          (title   (--when-let (helm-bibtex-clean-string
-                               (helm-bibtex-get-value entry "title"))
+                               (helm-bibtex-get-value "title" entry))
                     (concat it ".")))
          (journal (--when-let (helm-bibtex-clean-string
-                               (helm-bibtex-get-value entry "journal"))
+                               (helm-bibtex-get-value "journal" entry))
                     (concat it ".")))
          (fields  (--filter it (list author year title journal)))
-         (url-doi (--if-let (helm-bibtex-get-value entry "url")
+         (url-doi (--if-let (helm-bibtex-get-value "url" entry)
                       (concat "\n  " it)
-                    (--if-let (helm-bibtex-get-value entry "doi")
+                    (--if-let (helm-bibtex-get-value "doi" entry)
                         (concat "\n  http://dx.doi.org/" it)
                       ""))))
     (concat
@@ -454,7 +454,7 @@ specified in `helm-bibtex-pdf-open-function',"
                   (concat "- " (s-join " " fields)))
      url-doi "\n\n")))
 
-(defun helm-bibtex-get-value (entry field &optional default)
+(defun helm-bibtex-get-value (field entry &optional default)
   "Return the requested value or `default' if the value is not
 defined.  Surrounding curly braces are stripped."
   (let ((value (cdr (assoc-string field entry 'case-fold))))
@@ -477,7 +477,7 @@ defined.  Surrounding curly braces are stripped."
 
 (defun helm-bibtex-make-bibtex (key)
   (let* ((entry (helm-bibtex-get-entry key))
-         (entry-type (helm-bibtex-get-value entry "=type=")))
+         (entry-type (helm-bibtex-get-value "=type=" entry)))
     (format "@%s{%s,\n%s}\n"
             entry-type key
             (cl-loop
