@@ -297,7 +297,11 @@ entries."
           (make-hash-table :test #'equal :size (length entries)))
     (cl-loop for entry in entries
              for key = (helm-bibtex-get-value entry "=key=")
-             do (puthash (downcase key) entry helm-bibtex-cached-entries))
+             ;; Other types than proceedings and books can be
+             ;; cross-referenced, but I suppose that isn't really used:
+             if (member (downcase (helm-bibtex-get-value entry "=type="))
+                        '("proceedings" "book"))
+               do (puthash (downcase key) entry helm-bibtex-cached-entries))
     entries))
 
 (defun helm-bibtex-get-entry (entry-key)
