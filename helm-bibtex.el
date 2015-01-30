@@ -264,6 +264,7 @@ is the entry (only the fields listed above) as an alist."
         (let* ((entries (helm-bibtex-parse-bibliography))
                (entries (--map (helm-bibtex-update-from-crossref it) entries))
                (entries (nreverse entries)))
+          (setq helm-bibtex-cached-entries nil) ; Not needed anymore, free memory.
           (setq helm-bibtex-cached-candidates
                 (--map (cons (helm-bibtex-clean-string (s-join " " (-map #'cdr it))) it)
                        entries)))
