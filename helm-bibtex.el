@@ -426,33 +426,142 @@ specified in `helm-bibtex-pdf-open-function',"
 (defun helm-bibtex-insert-reference (_)
   "Insert a reference for each selected entry."
   (let ((keys (helm-marked-candidates :with-wildcard t)))
-    (insert (s-join "" (--map (helm-bibtex-format-reference it) keys)))))
+    (insert (s-join "" (--map (helm-bibtex-apa-format-reference it) keys)))))
 
-(defun helm-bibtex-format-reference (key)
-  "Generate a reference for a given BibTeX key."
-  (let* ((entry   (helm-bibtex-get-entry key))
-         (author  (helm-bibtex-shorten-authors
-                   (helm-bibtex-clean-string
-                    (helm-bibtex-get-value "author" entry))))
-         (year    (--when-let (helm-bibtex-clean-string
-                               (helm-bibtex-get-value "year" entry))
-                    (concat "(" it ").")))
-         (title   (--when-let (helm-bibtex-clean-string
-                               (helm-bibtex-get-value "title" entry))
-                    (concat it ".")))
-         (journal (--when-let (helm-bibtex-clean-string
-                               (helm-bibtex-get-value "journal" entry))
-                    (concat it ".")))
-         (fields  (--filter it (list author year title journal)))
-         (url-doi (--if-let (helm-bibtex-get-value "url" entry)
-                      (concat "\n  " it)
-                    (--if-let (helm-bibtex-get-value "doi" entry)
-                        (concat "\n  http://dx.doi.org/" it)
-                      ""))))
-    (concat
-     (s-word-wrap fill-column
-                  (concat "- " (s-join " " fields)))
-     url-doi "\n\n")))
+(defun helm-bibtex-apa-format-reference (key)
+  "Returns a plain text reference in APA format for the
+publication specified by KEY."
+  (let ((entry (helm-bibtex-get-entry key)))
+    (s-word-wrap fill-column
+     (concat "\n- "
+      (pcase (downcase (helm-bibtex-get-value "=type=" entry))
+        ("article"
+         (s-format
+          "${author} (${year}). ${title}. ${journal}, ${volume}(${number}), ${pages}."
+          'helm-bibtex-apa-get-value entry))
+        ("inproceedings"
+         (s-format
+          "${author} (${year}). ${title}. In ${editor}, ${booktitle} (pp. ${pages}). ${address}: ${publisher}."
+          'helm-bibtex-apa-get-value entry))
+        ("book"
+         (s-format
+          "${author} (${year}). ${title}. ${address}: ${publisher}."
+          'helm-bibtex-apa-get-value entry))
+        ("phdthesis"
+         (s-format
+          "${author} (${year}). ${title} (Doctoral dissertation). ${school}, ${address}."
+          'helm-bibtex-apa-get-value entry))
+        ("inbook"
+         (s-format
+          "${author} (${year}). ${title}. In ${editor} (Eds.), ${booktitle} (pp. ${pages}). ${address}: ${publisher}."
+          'helm-bibtex-apa-get-value entry))
+        ("incollection"
+         (s-format
+          "${author} (${year}). ${title}. In ${editor} (Eds.), ${booktitle} (pp. ${pages}). ${address}: ${publisher}."
+          'helm-bibtex-apa-get-value entry))
+        ("proceedings"
+         (s-format
+          "${editor} (Eds.). (${year}). ${booktitle}. ${address}: ${publisher}."
+          'helm-bibtex-apa-get-value entry))
+        ("unpublished"
+         (s-format
+          "${author} (${year}). ${title}. Unpublished manuscript."
+          'helm-bibtex-apa-get-value entry))
+        (_
+         (s-format
+          "${author} (${year}). ${title}."
+          'helm-bibtex-apa-get-value entry))) "\n\n"))))
+
+(defun helm-bibtex-apa-get-value (field entry &optional default)
+  "Return FIELD or ENTRY formatted following the APA
+guidelines.  Return DEFAULT if FIELD is not present in ENTRY."
+  (let ((value (helm-bibtex-get-value field entry))
+        (entry-type (helm-bibtex-get-value "=type=" entry)))
+    (if value
+       (pcase field
+         ;; https://owl.english.purdue.edu/owl/resource/560/06/
+         ("author" (helm-bibtex-apa-format-authors value))
+         ("editor"
+          (if (string= entry-type "proceedings")
+              (helm-bibtex-apa-format-editors value)
+            (helm-bibtex-apa-format-editors value)))
+         ;; When referring to books, chapters, articles, or Web pages,
+         ;; capitalize only the first letter of the first word of a
+         ;; title and subtitle, the first word after a colon or a dash
+         ;; in the title, and proper nouns. Do not capitalize the first
+         ;; letter of the second word in a hyphenated compound word.
+         ("title" (replace-regexp-in-string ; remove braces
+                   "[{}]"
+                   ""
+                    (replace-regexp-in-string ; upcase initial letter
+                    "^[[:alpha:]]"
+                    'upcase
+                    (replace-regexp-in-string ; preserve stuff in braces from being downcased
+                     "\\(^[^{]*{\\)\\|\\(}[^{]*{\\)\\|\\(}.*$\\)\\|\\(^[^{}]*$\\)"
+                     'downcase
+                     value))))
+         ("booktitle" value)
+         ;; Maintain the punctuation and capitalization that is used by
+         ;; the journal in its title.
+         ("pages" (s-join "–" (s-split "[^0-9]+" value t)))
+         (_ value))
+      "")))
+
+(defun helm-bibtex-apa-format-authors (value)
+  (cl-loop for a in (s-split " and " value t)
+           if (s-index-of "{" a)
+             collect
+             (replace-regexp-in-string "[{}]" "" a)
+             into authors
+           else if (s-index-of "," a)
+             collect
+             (let ((p (s-split " *, *" a t)))
+               (concat
+                (car p) ", "
+                (s-join " " (--map (concat (s-left 1 it) ".")
+                                   (s-split " " (cadr p))))))
+             into authors
+           else
+             collect
+             (let ((p (s-split " " a t)))
+               (concat
+                (-last-item p) ", "
+                (s-join " " (--map (concat (s-left 1 it) ".")
+                                   (-butlast p)))))
+             into authors
+           finally return
+             (let ((l (length authors)))
+               (cond
+                 ((= l 1) (car authors))
+                 ((< l 8) (concat (s-join ", " (-butlast authors))
+                                  ", & " (-last-item authors)))
+                 (t (concat (s-join ", " authors) ", ..."))))))
+
+(defun helm-bibtex-apa-format-editors (value)
+  (cl-loop for a in (s-split " and " value t)
+           if (s-index-of "," a)
+             collect
+             (let ((p (s-split " *, *" a t)))
+               (concat
+                (s-join " " (--map (concat (s-left 1 it) ".")
+                                   (s-split " " (cadr p))))
+                " " (car p)))
+             into authors
+           else
+             collect
+             (let ((p (s-split " " a t)))
+               (concat
+                (s-join " " (--map (concat (s-left 1 it) ".")
+                                   (-butlast p)))
+                " " (-last-item p)))
+             into authors
+           finally return
+             (let ((l (length authors)))
+               (cond
+                 ((= l 1) (car authors))
+                 ((< l 8) (concat (s-join ", " (-butlast authors))
+                                  ", & " (-last-item authors)))
+                 (t (concat (s-join ", " authors) ", ..."))))))
 
 (defun helm-bibtex-get-value (field entry &optional default)
   "Return the requested value or `default' if the value is not
