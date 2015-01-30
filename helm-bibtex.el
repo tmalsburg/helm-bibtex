@@ -24,8 +24,13 @@
 
 ;; A helm source for managing BibTeX bibliographies.
 ;;
-;; Key features:
+;; News:
+;; - 01/29/2015: Better formatting of plain text references
+;;   following the APA style guide.
+;; - 01/16/2015: The parsed bibliography is now cached which can
+;;   dramatically improve responsiveness with larger bibliographies.
 ;;
+;; Key features:
 ;; - Quick access to your bibliography from within Emacs
 ;; - Provides instant search results as you type
 ;; - Quick access to online bibliographic databases such as Pubmed,

@@ -21,6 +21,7 @@ A helm source for managing BibTeX bibliographies.
 - Edit selected entry
 
 ## News
+- 01/29/2015: Better formatting of plain text references following the APA style guide.
 - 01/16/2015: The parsed bibliography is now cached which can dramatically improve responsiveness with larger bibliographies.
 
 ## Description
