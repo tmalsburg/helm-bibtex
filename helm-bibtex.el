@@ -470,7 +470,7 @@ publication specified by KEY."
         (_
          (s-format
           "${author} (${year}). ${title}."
-          'helm-bibtex-apa-get-value entry))) "\n\n"))))
+          'helm-bibtex-apa-get-value entry))) "\n"))))
 
 (defun helm-bibtex-apa-get-value (field entry &optional default)
   "Return FIELD or ENTRY formatted following the APA
