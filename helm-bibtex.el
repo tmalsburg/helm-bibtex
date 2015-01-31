@@ -225,10 +225,6 @@ files.  If this hash has not changed since the bibliography was
 last parsed, a cached version of the parsed bibliography will be
 used.")
 
-(defvar helm-bibtex-cached-entries nil
-  "A hash table containing the entries obtained when the
-configured bibliography files were last parsed.")
-
 (defvar helm-bibtex-cached-candidates nil
   "The a list of candidates obtained when the configured
 bibliography files were last parsed.")
@@ -262,28 +258,38 @@ is the entry (only the fields listed above) as an alist."
                    (string= helm-bibtex-bibliography-hash bibliography-hash))
         (message "Loading bibliography ...")
         (let* ((entries (helm-bibtex-parse-bibliography))
-               (entries (--map (helm-bibtex-update-from-crossref it) entries))
+               (entries (helm-bibtex-resolve-crossrefs entries))
                (entries (nreverse entries)))
-          (setq helm-bibtex-cached-entries nil) ; Not needed anymore, free memory.
           (setq helm-bibtex-cached-candidates
                 (--map (cons (helm-bibtex-clean-string (s-join " " (-map #'cdr it))) it)
                        entries)))
         (setq helm-bibtex-bibliography-hash bibliography-hash))
       helm-bibtex-cached-candidates)))
 
-(defun helm-bibtex-update-from-crossref (entry)
-  "Retrieve a cross-referenced entry and append its author, title, and
-year fields."
-  (let* ((crossref (helm-bibtex-get-value entry "crossref"))
-         (crossref (if crossref (gethash (downcase crossref) helm-bibtex-cached-entries))))
-    (append entry crossref)))
+(defun helm-bibtex-resolve-crossrefs (entries)
+  "Expand all entries with fields from cross-references entries."
+  (let
+   ((entry-hash
+     (cl-loop for entry in entries
+              with ht = (make-hash-table :test #'equal :size (length entries))
+              for key = (helm-bibtex-get-value "=key=" entry)
+              ;; Other types than proceedings and books can be
+              ;; cross-referenced, but I suppose that isn't really used:
+              if (member (downcase (helm-bibtex-get-value "=type=" entry))
+                         '("proceedings" "book"))
+              do (puthash (downcase key) entry ht)
+              finally return ht)))
+   (cl-loop for entry in entries
+            for crossref = (helm-bibtex-get-value "crossref" entry)
+            if crossref
+              collect (append entry (gethash (downcase crossref) entry-hash))
+            else
+              collect entry)))
 
 (defun helm-bibtex-parse-bibliography ()
   "Parse the BibTeX entries listed in the current buffer and
 return a list of entry keys in the order in which the entries
-appeared in the BibTeX files.  As a side effect, a hash table
-named `helm-bibtex-cached-entries' is created which maps keys to
-entries."
+appeared in the BibTeX files."
   (goto-char (point-min))
   (let* ((fields (append '("author" "editor" "title" "year" "crossref")
                          (mapcar 'symbol-name helm-bibtex-additional-search-fields)))
@@ -293,15 +299,6 @@ entries."
                            collect (helm-bibtex-prepare-entry
                                     (parsebib-read-entry entry-type)
                                     fields))))
-    (setq helm-bibtex-cached-entries
-          (make-hash-table :test #'equal :size (length entries)))
-    (cl-loop for entry in entries
-             for key = (helm-bibtex-get-value entry "=key=")
-             ;; Other types than proceedings and books can be
-             ;; cross-referenced, but I suppose that isn't really used:
-             if (member (downcase (helm-bibtex-get-value entry "=type="))
-                        '("proceedings" "book"))
-               do (puthash (downcase key) entry helm-bibtex-cached-entries))
     entries))
 
 (defun helm-bibtex-get-entry (entry-key)
