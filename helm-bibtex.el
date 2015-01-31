@@ -636,12 +636,12 @@ defined.  Surrounding curly braces are stripped."
     (format "@%s{%s,\n%s}\n"
             entry-type key
             (cl-loop
-             for field in (cl-remove-duplicates entry :test #'string=
-                                                      :key #'car :from-end t)
+             with -compare-fn = (lambda (x y) (string= (car x) (car y)))
+             for field in (-uniq entry)
              for name = (car field)
              for value = (cdr field)
              unless (member name '("=type=" "=key=" "=has-pdf="
-                                   "=has-note="))
+                                   "=has-note=" "crossref"))
              concat
              (format "  %s = %s,\n" name value)))))
 
