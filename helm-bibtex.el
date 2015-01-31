@@ -310,7 +310,7 @@ listed in `helm-bibtex-bibliography' and returns an alist of the
 record with that key.  Fields from crossreferenced entries are
 appended to the requested entry."
   (let* ((entry (helm-bibtex-get-entry1 entry-key))
-         (crossref (helm-bibtex-get-value entry "crossref"))
+         (crossref (helm-bibtex-get-value "crossref" entry))
          (crossref (when crossref (helm-bibtex-get-entry1 crossref))))
     (append entry crossref)))
 
@@ -373,7 +373,7 @@ fields. If FIELDS is empty, all fields are kept. Also add a
    with width = (with-helm-window (helm-bibtex-window-width))
    for entry in candidates
    for entry = (cdr entry)
-   for entry-key = (helm-bibtex-get-value entry "=key=")
+   for entry-key = (helm-bibtex-get-value "=key=" entry)
    if (assoc-string "author" entry 'case-fold)
      for fields = '("author" "title" "year" "=has-pdf=" "=has-note=" "=type=")
    else
