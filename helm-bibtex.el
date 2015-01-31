@@ -304,7 +304,8 @@ appeared in the BibTeX files."
    for entry-type = (parsebib-find-next-item)
    while entry-type
    unless (member-ignore-case entry-type '("preamble" "string" "comment"))
-   collect (parsebib-read-entry entry-type)))
+   collect (--map (cons (downcase (car it)) (cdr it))
+                  (parsebib-read-entry entry-type))))
 
 (defun helm-bibtex-get-entry (entry-key)
   "Given a BibTeX key this function scans all bibliographies
@@ -355,7 +356,6 @@ fields. If FIELDS is empty, all fields are kept. Also add a
            (entry-key (cdr (assoc "=key=" entry))))
       ;; Normalize case of entry type:
       (setcdr (assoc "=type=" entry) (downcase (cdr (assoc "=type=" entry))))
-      (setq entry (--map (cons (downcase (car it)) (cdr it)) entry))
       ;; Check for PDF and notes:
       (if (and helm-bibtex-library-path
                (f-exists? (f-join helm-bibtex-library-path (s-concat entry-key ".pdf"))))
@@ -364,6 +364,7 @@ fields. If FIELDS is empty, all fields are kept. Also add a
                (f-exists? (f-join helm-bibtex-notes-path
                                   (s-concat entry-key helm-bibtex-notes-extension))))
           (setq entry (cons (cons "=has-note=" helm-bibtex-notes-symbol) entry)))
+      ;; Remove duplicated fields:
       (let ((-compare-fn (lambda (x y) (string= (car x) (car y)))))
         (-uniq entry)))))
 
