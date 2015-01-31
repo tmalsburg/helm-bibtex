@@ -257,9 +257,36 @@ is the entry (only the fields listed above) as an alist."
       (unless (and helm-bibtex-cached-candidates
                    (string= helm-bibtex-bibliography-hash bibliography-hash))
         (message "Loading bibliography ...")
-        (setq helm-bibtex-cached-candidates (helm-bibtex-parse-bibliography))
-        (setq helm-bibtex-bibliography-hash bibliography-hash))))
-  helm-bibtex-cached-candidates)
+        (let* ((entries (helm-bibtex-parse-bibliography))
+               (entries (helm-bibtex-resolve-crossrefs entries))
+               (entries (nreverse entries)))
+          (setq helm-bibtex-cached-candidates
+                (--map (cons (helm-bibtex-clean-string
+                              (s-join " " (-map #'cdr it))) it)
+                       entries)))
+        (setq helm-bibtex-bibliography-hash bibliography-hash))
+      helm-bibtex-cached-candidates)))
+
+(defun helm-bibtex-resolve-crossrefs (entries)
+  "Expand all entries with fields from cross-references entries."
+   (cl-loop
+    with entry-hash = 
+      (cl-loop
+       with ht = (make-hash-table :test #'equal :size (length entries))
+       for entry in entries
+       for key = (helm-bibtex-get-value "=key=" entry)
+       ;; Other types than proceedings and books can be
+       ;; cross-referenced, but I suppose that isn't really used:
+       if (member (downcase (helm-bibtex-get-value "=type=" entry))
+                  '("proceedings" "book"))
+       do (puthash (downcase key) entry ht)
+       finally return ht)
+    for entry in entries
+    for crossref = (helm-bibtex-get-value "crossref" entry)
+    if crossref
+      collect (append entry (gethash (downcase crossref) entry-hash))
+    else
+      collect entry))
 
 (defun helm-bibtex-parse-bibliography ()
   "Parse the BibTeX entries listed in the current buffer and
@@ -274,14 +301,19 @@ appeared in the BibTeX files."
                            collect (helm-bibtex-prepare-entry
                                     (parsebib-read-entry entry-type)
                                     fields))))
-    (--map (cons (helm-bibtex-clean-string
-                  (s-join " " (-map #'cdr it))) it)
-           (nreverse entries))))
+    entries))
 
 (defun helm-bibtex-get-entry (entry-key)
   "Given a BibTeX key this function scans all bibliographies
 listed in `helm-bibtex-bibliography' and returns an alist of the
-record with that key."
+record with that key.  Fields from crossreferenced entries are
+appended to the requested entry."
+  (let* ((entry (helm-bibtex-get-entry1 entry-key))
+         (crossref (helm-bibtex-get-value "crossref" entry))
+         (crossref (when crossref (helm-bibtex-get-entry1 crossref))))
+    (append entry crossref)))
+
+(defun helm-bibtex-get-entry1 (entry-key)
   (with-temp-buffer
     (mapc #'insert-file-contents 
           (if (listp helm-bibtex-bibliography)
@@ -308,6 +340,9 @@ fields. If FIELDS is empty, all fields are kept. Also add a
                        (--filter (member-ignore-case (car it) fields) entry)
                      entry))
            (entry-key (cdr (assoc "=key=" record))))
+      ;; Normalize case of entry type:
+      (setcdr (assoc "=type=" entry) (downcase (cdr (assoc "=type=" entry))))
+      ;; Check for PDF and notes:
       (if (and helm-bibtex-library-path
                (f-exists? (f-join helm-bibtex-library-path (s-concat entry-key ".pdf"))))
           (setq record (cons (cons "=has-pdf=" helm-bibtex-pdf-symbol) record)))
@@ -601,7 +636,8 @@ defined.  Surrounding curly braces are stripped."
     (format "@%s{%s,\n%s}\n"
             entry-type key
             (cl-loop
-             for field in entry
+             for field in (cl-remove-duplicates entry :test #'string=
+                                                      :key #'car :from-end t)
              for name = (car field)
              for value = (cdr field)
              unless (member name '("=type=" "=key=" "=has-pdf="
