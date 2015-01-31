@@ -217,6 +217,12 @@ editor, title, year, BibTeX key, and entry type."
   :group 'helm-bibtex
   :type 'list)
 
+(defcustom helm-bibtex-no-export-fields nil
+  "A list of fields that should be ignored when exporting BibTeX
+entries."
+  :group 'helm-bibtex
+  :type 'list)
+
 (easy-menu-add-item nil '("Tools" "Helm" "Tools") ["BibTeX" helm-bibtex t])
 
 (defvar helm-bibtex-bibliography-hash nil
@@ -259,6 +265,7 @@ is the entry (only the fields listed above) as an alist."
         (message "Loading bibliography ...")
         (let* ((entries (helm-bibtex-parse-bibliography))
                (entries (helm-bibtex-resolve-crossrefs entries))
+               (entries (helm-bibtex-prepare-entries entries))
                (entries (nreverse entries)))
           (setq helm-bibtex-cached-candidates
                 (--map (cons (helm-bibtex-clean-string
@@ -293,15 +300,11 @@ is the entry (only the fields listed above) as an alist."
 return a list of entry keys in the order in which the entries
 appeared in the BibTeX files."
   (goto-char (point-min))
-  (let* ((fields (append '("author" "editor" "title" "year" "crossref")
-                         (mapcar 'symbol-name helm-bibtex-additional-search-fields)))
-         (entries (cl-loop for entry-type = (parsebib-find-next-item)
-                           while entry-type
-                           unless (member-ignore-case entry-type '("preamble" "string" "comment"))
-                           collect (helm-bibtex-prepare-entry
-                                    (parsebib-read-entry entry-type)
-                                    fields))))
-    entries))
+  (cl-loop
+   for entry-type = (parsebib-find-next-item)
+   while entry-type
+   unless (member-ignore-case entry-type '("preamble" "string" "comment"))
+   collect (parsebib-read-entry entry-type)))
 
 (defun helm-bibtex-get-entry (entry-key)
   "Given a BibTeX key this function scans all bibliographies
@@ -326,6 +329,16 @@ appended to the requested entry."
     (let ((entry-type (match-string 1)))
       (helm-bibtex-prepare-entry (parsebib-read-entry entry-type)))))
 
+(defun helm-bibtex-prepare-entries (entries)
+  "Do some preprocessing of the entries."
+  (cl-loop
+   with fields = (append '("title" "year" "crossref")
+                         (--map (if (symbolp it) (symbol-name it) it)
+                                helm-bibtex-additional-search-fields))
+   for entry in entries
+   collect (helm-bibtex-prepare-entry entry
+            (cons (if (assoc "author" entry) "author" "editor") fields))))
+
 (defun helm-bibtex-prepare-entry (entry &optional fields)
   "Prepare ENTRY for display.
 ENTRY is an alist representing an entry as returned by
@@ -336,21 +349,23 @@ fields. If FIELDS is empty, all fields are kept. Also add a
   (when entry ; entry may be nil, in which case just return nil
     (when fields
       (setq fields (append fields (list "=type=" "=key="))))
-    (let* ((record (if fields
+    (let* ((entry (if fields
                        (--filter (member-ignore-case (car it) fields) entry)
                      entry))
-           (entry-key (cdr (assoc "=key=" record))))
+           (entry-key (cdr (assoc "=key=" entry))))
       ;; Normalize case of entry type:
       (setcdr (assoc "=type=" entry) (downcase (cdr (assoc "=type=" entry))))
+      (setq entry (--map (cons (downcase (car it)) (cdr it)) entry))
       ;; Check for PDF and notes:
       (if (and helm-bibtex-library-path
                (f-exists? (f-join helm-bibtex-library-path (s-concat entry-key ".pdf"))))
-          (setq record (cons (cons "=has-pdf=" helm-bibtex-pdf-symbol) record)))
+          (setq entry (cons (cons "=has-pdf=" helm-bibtex-pdf-symbol) entry)))
       (if (and helm-bibtex-notes-path
                (f-exists? (f-join helm-bibtex-notes-path
                                   (s-concat entry-key helm-bibtex-notes-extension))))
-          (setq record (cons (cons "=has-note=" helm-bibtex-notes-symbol) record)))
-      record)))
+          (setq entry (cons (cons "=has-note=" helm-bibtex-notes-symbol) entry)))
+      (let ((-compare-fn (lambda (x y) (string= (car x) (car y)))))
+        (-uniq entry)))))
 
 
 ;; The function `window-width' does not necessarily report the correct
@@ -636,12 +651,13 @@ defined.  Surrounding curly braces are stripped."
     (format "@%s{%s,\n%s}\n"
             entry-type key
             (cl-loop
-             with -compare-fn = (lambda (x y) (string= (car x) (car y)))
-             for field in (-uniq entry)
+             for field in entry
              for name = (car field)
              for value = (cdr field)
-             unless (member name '("=type=" "=key=" "=has-pdf="
-                                   "=has-note=" "crossref"))
+             unless (member name
+                            (append (--map (if (symbolp it) (symbol-name it) it)
+                                           helm-bibtex-no-export-fields)
+                             '("=type=" "=key=" "=has-pdf=" "=has-note=" "crossref")))
              concat
              (format "  %s = %s,\n" name value)))))
 
