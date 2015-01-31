@@ -263,7 +263,8 @@ is the entry (only the fields listed above) as an alist."
 
 (defun helm-bibtex-parse-bibliography ()
   "Parse the BibTeX entries listed in the current buffer and
-return a list of entries."
+return a list of entry keys in the order in which the entries
+appeared in the BibTeX files."
   (goto-char (point-min))
   (let* ((fields (append '("author" "editor" "title" "year" "crossref")
                          (mapcar 'symbol-name helm-bibtex-additional-search-fields)))
@@ -298,9 +299,8 @@ record with that key."
 ENTRY is an alist representing an entry as returned by
 parsebib-read-entry. All the fields not in FIELDS are removed
 from ENTRY, with the exception of the \"=type=\" and \"=key=\"
-fields, which are always kept. If FIELDS is empty, all fields are
-kept. Also add a pdf and/or notes symbol, if they exist for
-ENTRY."
+fields. If FIELDS is empty, all fields are kept. Also add a
+=has-pdf= and/or =has-notes= field, if they exist for ENTRY."
   (when entry ; entry may be nil, in which case just return nil
     (when fields
       (setq fields (append fields (list "=type=" "=key="))))
