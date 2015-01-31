@@ -226,8 +226,8 @@ last parsed, a cached version of the parsed bibliography will be
 used.")
 
 (defvar helm-bibtex-cached-candidates nil
-  "The candidates obtained when the configured bibliography files
-were last parsed.")
+  "The a list of candidates obtained when the configured
+bibliography files were last parsed.")
 
 
 (defun helm-bibtex-init ()
