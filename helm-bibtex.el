@@ -261,30 +261,32 @@ is the entry (only the fields listed above) as an alist."
                (entries (helm-bibtex-resolve-crossrefs entries))
                (entries (nreverse entries)))
           (setq helm-bibtex-cached-candidates
-                (--map (cons (helm-bibtex-clean-string (s-join " " (-map #'cdr it))) it)
+                (--map (cons (helm-bibtex-clean-string
+                              (s-join " " (-map #'cdr it))) it)
                        entries)))
         (setq helm-bibtex-bibliography-hash bibliography-hash))
       helm-bibtex-cached-candidates)))
 
 (defun helm-bibtex-resolve-crossrefs (entries)
   "Expand all entries with fields from cross-references entries."
-  (let
-   ((entry-hash
-     (cl-loop for entry in entries
-              with ht = (make-hash-table :test #'equal :size (length entries))
-              for key = (helm-bibtex-get-value "=key=" entry)
-              ;; Other types than proceedings and books can be
-              ;; cross-referenced, but I suppose that isn't really used:
-              if (member (downcase (helm-bibtex-get-value "=type=" entry))
-                         '("proceedings" "book"))
-              do (puthash (downcase key) entry ht)
-              finally return ht)))
-   (cl-loop for entry in entries
-            for crossref = (helm-bibtex-get-value "crossref" entry)
-            if crossref
-              collect (append entry (gethash (downcase crossref) entry-hash))
-            else
-              collect entry)))
+   (cl-loop
+    with entry-hash = 
+      (cl-loop
+       with ht = (make-hash-table :test #'equal :size (length entries))
+       for entry in entries
+       for key = (helm-bibtex-get-value "=key=" entry)
+       ;; Other types than proceedings and books can be
+       ;; cross-referenced, but I suppose that isn't really used:
+       if (member (downcase (helm-bibtex-get-value "=type=" entry))
+                  '("proceedings" "book"))
+       do (puthash (downcase key) entry ht)
+       finally return ht)
+    for entry in entries
+    for crossref = (helm-bibtex-get-value "crossref" entry)
+    if crossref
+      collect (append entry (gethash (downcase crossref) entry-hash))
+    else
+      collect entry))
 
 (defun helm-bibtex-parse-bibliography ()
   "Parse the BibTeX entries listed in the current buffer and
