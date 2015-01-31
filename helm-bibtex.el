@@ -225,10 +225,6 @@ files.  If this hash has not changed since the bibliography was
 last parsed, a cached version of the parsed bibliography will be
 used.")
 
-(defvar helm-bibtex-cached-entries nil
-  "A hash table containing the entries obtained when the
-configured bibliography files were last parsed.")
-
 (defvar helm-bibtex-cached-candidates nil
   "The a list of candidates obtained when the configured
 bibliography files were last parsed.")
