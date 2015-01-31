@@ -213,7 +213,7 @@ browser in `helm-browse-url-default-browser-alist'"
 
 (defcustom helm-bibtex-additional-search-fields nil
   "The fields that are used for searching in addition to author,
-title, year, BibTeX key, and entry type."
+editor, title, year, BibTeX key, and entry type."
   :group 'helm-bibtex
   :type 'list)
 
@@ -243,7 +243,7 @@ actually exist."
 (defun helm-bibtex-candidates ()
   "Reads the BibTeX files and returns a list of conses, one for
 each entry.  The first element of these conses is a string
-containing authors, title, year, type, and key of the
+containing authors, editors, title, year, type, and key of the
 entry.  This is string is used for matching.  The second element
 is the entry (only the fields listed above) as an alist."
   ;; Open configured bibliographies in temporary buffer:
@@ -265,7 +265,7 @@ is the entry (only the fields listed above) as an alist."
   "Parse the BibTeX entries listed in the current buffer and
 return a list of entries."
   (goto-char (point-min))
-  (let* ((fields (append '("author" "title" "year")
+  (let* ((fields (append '("author" "editor" "title" "year" "crossref")
                          (mapcar 'symbol-name helm-bibtex-additional-search-fields)))
          (entries (cl-loop for entry-type = (parsebib-find-next-item)
                            while entry-type
@@ -338,9 +338,13 @@ ENTRY."
    for entry in candidates
    for entry = (cdr entry)
    for entry-key = (helm-bibtex-get-value "=key=" entry)
+   if (assoc-string "author" entry 'case-fold)
+     for fields = '("author" "title" "year" "=has-pdf=" "=has-note=" "=type=")
+   else
+     for fields = '("editor" "title" "year" "=has-pdf=" "=has-note=" "=type=")
    for fields = (--map (helm-bibtex-clean-string
                         (helm-bibtex-get-value it entry " "))
-                       '("author" "title" "year" "=has-pdf=" "=has-note=" "=type="))
+                       fields)
    for fields = (-update-at 0 'helm-bibtex-shorten-authors fields)
    collect
    (cons (s-format "$0 $1 $2 $3$4 $5" 'elt
