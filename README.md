@@ -73,19 +73,7 @@ Other customization variables are:
 
 Helm-bibtex assumes that PDFs and notes have the BibTeX key of their associated entries as their base names plus ".pdf" for PDFs and whatever extension is configured for notes (".org" by default).
 
-By default, helm-bibtex opens PDFs in Emacs.  If you prefer to use an external viewer (e.g. evince), you can put the following in your initialization file:
-
-    (setq helm-bibtex-pdf-open-function
-      (lambda (fpath)
-        (start-process "evince" "*evince*" "evince" fpath)))
-
-On OSX, you can use the following to open the PDF with the system-wide default viewer
-
-    (setq helm-bibtex-pdf-open-function
-      (lambda (fpath)
-        (start-process "open" "*open*" "open" fpath)))
-
-or the following to open PDFs with Skim:
+By default, helm-bibtex opens PDFs in Emacs (either with DocView or, if installed, with the much superior pdf-tools).  If you prefer to use the system's default viewer, you can set the customization variable `helm-bibtex-pdf-open-function` to `'helm-open-file-with-default-tool`.  To use a specific viewer (e.g., Skim on OSX), put something like the following in your initialization file:
 
     (setq helm-bibtex-pdf-open-function
       (lambda (fpath)
