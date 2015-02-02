@@ -104,8 +104,12 @@ BibTeX-key plus a \".pdf\" suffix."
   :type 'directory)
 
 (defcustom helm-bibtex-pdf-open-function 'find-file
-  "The function used for opening PDF files.  This can be an arbitrary
-function that takes one argument: the path to the PDF file."
+  "The function used for opening PDF files.  This can be an
+arbitrary function that takes one argument: the path to the PDF
+file.  The default is `find-file' which opens the PDF in
+Emacs (either with docview or, if installed, the much superior
+pdf-tools.  When set to `helm-open-file-with-default-tool', the
+systems default viewer for PDFs is used."
   :group 'helm-bibtex
   :type 'function)
 
