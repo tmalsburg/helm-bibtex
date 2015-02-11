@@ -25,6 +25,15 @@
 ;; A helm source for managing BibTeX bibliographies.
 ;;
 ;; News:
+;; - 01/11/2015:
+;;   - Added resolution of cross-references.  Missing fields are
+;;     imported from the cross-referenced entry (useful for conference
+;;     abstracts).
+;;   - Editors are shown when there are no authors (useful for
+;;     conference proceedings).
+;;   - Fields that should be ignored when exporting BibTeX can be
+;;     configured via `helm-bibtex-no-export-fields' (useful to keep
+;;     private notes private).
 ;; - 01/29/2015: Better formatting of plain text references
 ;;   following the APA style guide.
 ;; - 01/16/2015: The parsed bibliography is now cached which can
