@@ -498,52 +498,56 @@ specified in `helm-bibtex-pdf-open-function',"
 
 (defun helm-bibtex-insert-reference (_)
   "Insert a reference for each selected entry."
-  (let ((keys (helm-marked-candidates :with-wildcard t)))
-    (insert (s-join "" (--map (helm-bibtex-apa-format-reference it) keys)))))
+  (let* ((keys (helm-marked-candidates :with-wildcard t))
+         (refs (--map
+                (s-word-wrap fill-column
+                             (concat "\n- " (helm-bibtex-apa-format-reference it)))
+                keys)))
+   (insert "\n" (s-join "\n" refs) "\n")))
 
 (defun helm-bibtex-apa-format-reference (key)
   "Returns a plain text reference in APA format for the
 publication specified by KEY."
-  (let ((entry (helm-bibtex-get-entry key)))
-    (s-word-wrap fill-column
-     (concat "\n- "
-      (pcase (downcase (helm-bibtex-get-value "=type=" entry))
-        ("article"
-         (s-format
-          "${author} (${year}). ${title}. ${journal}, ${volume}(${number}), ${pages}."
-          'helm-bibtex-apa-get-value entry))
-        ("inproceedings"
-         (s-format
-          "${author} (${year}). ${title}. In ${editor}, ${booktitle} (pp. ${pages}). ${address}: ${publisher}."
-          'helm-bibtex-apa-get-value entry))
-        ("book"
-         (s-format
-          "${author} (${year}). ${title}. ${address}: ${publisher}."
-          'helm-bibtex-apa-get-value entry))
-        ("phdthesis"
-         (s-format
-          "${author} (${year}). ${title} (Doctoral dissertation). ${school}, ${address}."
-          'helm-bibtex-apa-get-value entry))
-        ("inbook"
-         (s-format
-          "${author} (${year}). ${title}. In ${editor} (Eds.), ${booktitle} (pp. ${pages}). ${address}: ${publisher}."
-          'helm-bibtex-apa-get-value entry))
-        ("incollection"
-         (s-format
-          "${author} (${year}). ${title}. In ${editor} (Eds.), ${booktitle} (pp. ${pages}). ${address}: ${publisher}."
-          'helm-bibtex-apa-get-value entry))
-        ("proceedings"
-         (s-format
-          "${editor} (Eds.). (${year}). ${booktitle}. ${address}: ${publisher}."
-          'helm-bibtex-apa-get-value entry))
-        ("unpublished"
-         (s-format
-          "${author} (${year}). ${title}. Unpublished manuscript."
-          'helm-bibtex-apa-get-value entry))
-        (_
-         (s-format
-          "${author} (${year}). ${title}."
-          'helm-bibtex-apa-get-value entry))) "\n"))))
+  (let*
+   ((entry (helm-bibtex-get-entry key))
+    (ref (pcase (downcase (helm-bibtex-get-value "=type=" entry))
+           ("article"
+            (s-format
+             "${author} (${year}). ${title}. ${journal}, ${volume}(${number}), ${pages}."
+             'helm-bibtex-apa-get-value entry))
+           ("inproceedings"
+            (s-format
+             "${author} (${year}). ${title}. In ${editor}, ${booktitle} (pp. ${pages}). ${address}: ${publisher}."
+             'helm-bibtex-apa-get-value entry))
+           ("book"
+            (s-format
+             "${author} (${year}). ${title}. ${address}: ${publisher}."
+             'helm-bibtex-apa-get-value entry))
+           ("phdthesis"
+            (s-format
+             "${author} (${year}). ${title} (Doctoral dissertation). ${school}, ${address}."
+             'helm-bibtex-apa-get-value entry))
+           ("inbook"
+            (s-format
+             "${author} (${year}). ${title}. In ${editor} (Eds.), ${booktitle} (pp. ${pages}). ${address}: ${publisher}."
+             'helm-bibtex-apa-get-value entry))
+           ("incollection"
+            (s-format
+             "${author} (${year}). ${title}. In ${editor} (Eds.), ${booktitle} (pp. ${pages}). ${address}: ${publisher}."
+             'helm-bibtex-apa-get-value entry))
+           ("proceedings"
+            (s-format
+             "${editor} (Eds.). (${year}). ${booktitle}. ${address}: ${publisher}."
+             'helm-bibtex-apa-get-value entry))
+           ("unpublished"
+            (s-format
+             "${author} (${year}). ${title}. Unpublished manuscript."
+             'helm-bibtex-apa-get-value entry))
+           (_
+            (s-format
+             "${author} (${year}). ${title}."
+             'helm-bibtex-apa-get-value entry)))))
+    (replace-regexp-in-string "\\([.?!]\\)\\." "\\1" ref))) ; Avoid sequences of punctuation marks.
 
 (defun helm-bibtex-apa-get-value (field entry &optional default)
   "Return FIELD or ENTRY formatted following the APA
