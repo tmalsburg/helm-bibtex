@@ -317,8 +317,9 @@ appeared in the BibTeX files."
    for entry-type = (parsebib-find-next-item)
    while entry-type
    unless (member-ignore-case entry-type '("preamble" "string" "comment"))
-   collect (--map (cons (downcase (car it)) (cdr it))
-                  (parsebib-read-entry entry-type))))
+   collect (-map (lambda (it)
+                   (cons (downcase (car it)) (cdr it)))
+                 (parsebib-read-entry entry-type))))
 
 (defun helm-bibtex-get-entry (entry-key)
   "Given a BibTeX key this function scans all bibliographies
