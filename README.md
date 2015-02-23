@@ -6,7 +6,9 @@ helm-bibtex
 A helm source for managing BibTeX bibliographies.
 
 ## News
-- 01/11/2015:
+- 02/23/2015: Added a workaround for a bug in Emacs 24.3.1.  If you
+  didn't see any publications, this should fix it.
+- 02/11/2015:
    - Added resolution of cross-references.  Missing fields are imported from the cross-referenced entry (useful for conference abstracts).
    - Editors are shown when there are no authors (useful for conference proceedings).
    - Fields that should be ignored when exporting BibTeX can be configured via `helm-bibtex-no-export-fields` (useful to keep private notes private).

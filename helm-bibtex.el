@@ -25,6 +25,8 @@
 ;; A helm source for managing BibTeX bibliographies.
 ;;
 ;; News:
+;; - 02/23/2015: Added a workaround for a bug in Emacs 24.3.1.  If you
+;;   didn't see any publications, this should fix it.
 ;; - 01/11/2015:
 ;;   - Added resolution of cross-references.  Missing fields are
 ;;     imported from the cross-referenced entry (useful for conference
