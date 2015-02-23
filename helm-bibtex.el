@@ -137,14 +137,25 @@ e.g. \cite{key1,key2}. See the functions
   :type '(alist :key-type symbol :value-type function))
 
 (defcustom helm-bibtex-notes-path nil
-  "The directory in which notes are stored.  Helm-bibtex assumes
-that the names of these notes are composed of the BibTeX-key plus
-a suffix that is specified in `helm-bibtex-notes-extension'."
+  "The place where notes are stored.  This is either a file, in
+which case all notes are stored in that file, or a directory, in
+which case each publication gets its own notes file in that
+directory.  In the latter case, helm-bibtex assumes that the
+names of the note files are composed of the BibTeX-key plus a
+suffix that is specified in `helm-bibtex-notes-extension'."
   :group 'helm-bibtex
-  :type 'directory)
+  :type '(choice file directory))
+
+(defcustom helm-bibtex-notes-template
+  "\n* ${author} (${year}): ${title}\n  :PROPERTIES:\n  :BIBTEX-KEY: ${=key=}\n  :END:\n"
+  "Template used to create a new note.  '${field-name}' can be
+used to insert the value of a BibTeX field into the template."
+  :group 'helm-bibtex
+  :type 'string)
 
 (defcustom helm-bibtex-notes-extension ".org"
-  "The extension of the files containing notes."
+  "The extension of the files containing notes.  This is only
+used when `helm-bibtex-notes-path' is a directory (not a file)."
   :group 'helm-bibtex
   :type 'string)
 
@@ -695,8 +706,22 @@ defined.  Surrounding curly braces are stripped."
 
 (defun helm-bibtex-edit-notes (key)
   "Open the notes associated with the entry using `find-file'."
-  (let ((path (f-join helm-bibtex-notes-path (s-concat key helm-bibtex-notes-extension))))
-    (find-file path)))
+  (if (f-directory? helm-bibtex-notes-path)
+      ;; One notes file per publication: just open the file.
+      (let ((path (f-join helm-bibtex-notes-path
+                          (s-concat key helm-bibtex-notes-extension))))
+        (find-file path))
+    ;; One file for all notes: find the notes or create new section
+    ;; from the template:
+    (find-file helm-bibtex-notes-path)
+    (goto-char (point-min))
+    (if (re-search-forward (concat "\\b" key "\\b") nil t)
+        (when (eq major-mode 'org-mode)
+          (org-show-entry))
+      (goto-char (point-max))
+      (insert (s-format helm-bibtex-notes-template
+                        'helm-bibtex-apa-get-value
+                        (helm-bibtex-get-entry key))))))
 
 (defun helm-bibtex-buffer-visiting (file)
   (or (get-file-buffer file)
