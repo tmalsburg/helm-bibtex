@@ -717,7 +717,10 @@ defined.  Surrounding curly braces are stripped."
     (goto-char (point-min))
     (if (re-search-forward (concat "\\b" key "\\b") nil t)
         (when (eq major-mode 'org-mode)
-          (org-show-entry))
+          (outline-hide-other)
+          (outline-show-subtree)
+          (outline-previous-visible-heading 1)
+          (recenter-top-bottom 1))
       (goto-char (point-max))
       (insert (s-format helm-bibtex-notes-template
                         'helm-bibtex-apa-get-value
