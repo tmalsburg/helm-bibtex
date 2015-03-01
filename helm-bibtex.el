@@ -496,8 +496,9 @@ specified in `helm-bibtex-pdf-open-function',"
         (format-function
          (cdr (or (assoc major-mode helm-bibtex-format-citation-functions)
                   (assoc 'default   helm-bibtex-format-citation-functions)))))
-    (insert
-     (funcall format-function keys))))
+    (with-helm-current-buffer
+      (insert
+       (funcall format-function keys)))))
 
 (defun helm-bibtex-insert-reference (_)
   "Insert a reference for each selected entry."
@@ -506,7 +507,8 @@ specified in `helm-bibtex-pdf-open-function',"
                 (s-word-wrap fill-column
                              (concat "\n- " (helm-bibtex-apa-format-reference it)))
                 keys)))
-   (insert "\n" (s-join "\n" refs) "\n")))
+    (with-helm-current-buffer
+      (insert "\n" (s-join "\n" refs) "\n"))))
 
 (defun helm-bibtex-apa-format-reference (key)
   "Returns a plain text reference in APA format for the
@@ -658,13 +660,15 @@ defined.  Surrounding curly braces are stripped."
 (defun helm-bibtex-insert-key (_)
   "Insert BibTeX key at point."
   (let ((keys (helm-marked-candidates :with-wildcard t)))
-    (insert
-      (funcall 'helm-bibtex-format-citation-default keys))))
+    (with-helm-current-buffer
+      (insert
+        (funcall 'helm-bibtex-format-citation-default keys)))))
 
 (defun helm-bibtex-insert-bibtex (_)
   "Insert BibTeX key at point."
   (let ((keys (helm-marked-candidates :with-wildcard t)))
-    (insert (s-join "\n" (--map (helm-bibtex-make-bibtex it) keys)))))
+    (with-helm-current-buffer
+      (insert (s-join "\n" (--map (helm-bibtex-make-bibtex it) keys))))))
 
 (defun helm-bibtex-make-bibtex (key)
   (let* ((entry (helm-bibtex-get-entry key))
