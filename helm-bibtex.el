@@ -268,7 +268,7 @@ containing authors, editors, title, year, type, and key of the
 entry.  This is string is used for matching.  The second element
 is the entry (only the fields listed above) as an alist."
   ;; Open configured bibliographies in temporary buffer:
-  (with-temp-buffer 
+  (with-temp-buffer
     (mapc #'insert-file-contents
           (if (listp helm-bibtex-bibliography)
               helm-bibtex-bibliography
@@ -292,7 +292,7 @@ is the entry (only the fields listed above) as an alist."
 (defun helm-bibtex-resolve-crossrefs (entries)
   "Expand all entries with fields from cross-references entries."
    (cl-loop
-    with entry-hash = 
+    with entry-hash =
       (cl-loop
        with ht = (make-hash-table :test #'equal :size (length entries))
        for entry in entries
@@ -335,7 +335,7 @@ appended to the requested entry."
 
 (defun helm-bibtex-get-entry1 (entry-key)
   (with-temp-buffer
-    (mapc #'insert-file-contents 
+    (mapc #'insert-file-contents
           (if (listp helm-bibtex-bibliography)
               helm-bibtex-bibliography
             (list helm-bibtex-bibliography)))
@@ -710,14 +710,16 @@ defined.  Surrounding curly braces are stripped."
     (dolist (bibtex-file (if (listp helm-bibtex-bibliography)
                              helm-bibtex-bibliography
                            (list helm-bibtex-bibliography)))
-      (let ((buf (helm-bibtex-buffer-visiting bibtex-file)))
+      (let ((buf (helm-bibtex-buffer-visiting bibtex-file))
+            (entries '()))
         (find-file bibtex-file)
-        (goto-char (point-min))
-        (if (re-search-forward
-             (concat "^@\\(" parsebib--bibtex-identifier
-                     "\\)[[:space:]]*[\(\{][[:space:]]*"
-                     (regexp-quote key) "[[:space:]]*,") nil t)
-            (throw 'break t)
+        (bibtex-map-entries
+         (lambda (key start end)
+           (add-to-list 'entries (cons key start))))
+        (if (assoc key entries)
+            (progn
+              (goto-char (cdr (assoc key entries)))
+              (throw 'break t))
           (unless buf
             (kill-buffer)))))))
 
@@ -725,7 +727,7 @@ defined.  Surrounding curly braces are stripped."
   (let ((browse-url-browser-function
           (or helm-bibtex-browser-function
               browse-url-browser-function)))
-    (cond 
+    (cond
       ((stringp url-or-function)
         (helm-browse-url (format url-or-function (url-hexify-string helm-pattern))))
       ((functionp url-or-function)
@@ -750,7 +752,7 @@ entry for each BibTeX file that will open that file for editing."
   (let ((bib-files (if (listp helm-bibtex-bibliography)
                        helm-bibtex-bibliography
                      (list helm-bibtex-bibliography))))
-    (-concat 
+    (-concat
       (--map (cons (s-concat "Create new entry in " (f-filename it))
                    `(lambda () (find-file ,it) (goto-char (point-max))))
              bib-files)
