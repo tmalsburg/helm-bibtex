@@ -711,11 +711,9 @@ defined.  Surrounding curly braces are stripped."
     ;; from the template:
     (find-file helm-bibtex-notes-path)
     (goto-char (point-min))
-    (if (re-search-forward (concat "\\b" key "\\b") nil t)
+    (if (or (search-forward (concat ":BIBTEX-KEY: " key) nil t) (search-forward (concat "* " key) nil t))
         (when (eq major-mode 'org-mode)
-          (outline-hide-other)
-          (outline-show-subtree)
-          (outline-previous-visible-heading 1)
+          (org-show-context)
           (recenter-top-bottom 1))
       (goto-char (point-max))
       (insert (s-format helm-bibtex-notes-template
