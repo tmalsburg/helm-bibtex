@@ -449,7 +449,6 @@ values."
                concat (car p))
     nil))
 
-
 (defun helm-bibtex-open-pdf (_)
   "Open the PDF associated with the entry using the function
 specified in `helm-bibtex-pdf-open-function',"
@@ -458,7 +457,10 @@ specified in `helm-bibtex-pdf-open-function',"
       (let ((path (f-join helm-bibtex-library-path (s-concat key ".pdf"))))
         (if (f-exists? path)
             (funcall helm-bibtex-pdf-open-function path)
-          (message "No PDF for this entry: %s" key))))))
+          (let ((path (f-join helm-bibtex-library-path (s-concat key ".txt"))))
+            (if (f-exists? path)
+                (funcall helm-bibtex-pdf-open-function path)
+              (message "No PDF or TXT for this entry: %s" key))))))))
 
 (defun helm-bibtex-open-url-or-doi (_)
   "Open the associated URL or DOI in a browser."
