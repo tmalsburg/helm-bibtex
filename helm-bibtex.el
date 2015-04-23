@@ -449,7 +449,6 @@ values."
                concat (car p))
     nil))
 
-
 (defun helm-bibtex-open-pdf (_)
   "Open the PDF associated with the entry using the function
 specified in `helm-bibtex-pdf-open-function',"
@@ -458,7 +457,10 @@ specified in `helm-bibtex-pdf-open-function',"
       (let ((path (f-join helm-bibtex-library-path (s-concat key ".pdf"))))
         (if (f-exists? path)
             (funcall helm-bibtex-pdf-open-function path)
-          (message "No PDF for this entry: %s" key))))))
+          (let ((path (f-join helm-bibtex-library-path (s-concat key ".txt"))))
+            (if (f-exists? path)
+                (funcall helm-bibtex-pdf-open-function path)
+              (message "No PDF or TXT for this entry: %s" key))))))))
 
 (defun helm-bibtex-open-url-or-doi (_)
   "Open the associated URL or DOI in a browser."
@@ -711,11 +713,9 @@ defined.  Surrounding curly braces are stripped."
     ;; from the template:
     (find-file helm-bibtex-notes-path)
     (goto-char (point-min))
-    (if (re-search-forward (concat "\\b" key "\\b") nil t)
+    (if (or (search-forward (concat ":BIBTEX-KEY: " key) nil t) (search-forward (concat "* " key) nil t))
         (when (eq major-mode 'org-mode)
-          (outline-hide-other)
-          (outline-show-subtree)
-          (outline-previous-visible-heading 1)
+          (org-show-context)
           (recenter-top-bottom 1))
       (goto-char (point-max))
       (insert (s-format helm-bibtex-notes-template
