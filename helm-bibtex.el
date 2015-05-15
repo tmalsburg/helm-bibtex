@@ -353,9 +353,9 @@ appended to the requested entry."
 (defun helm-bibtex-find-pdf (key)
   "Searches in all directories in `helm-bibtex-library-path' for
 a PDF whose name is KEY + \".pdf\".  Returns the first matching PDF."
-  (car (-filter 'f-exists?
-                (--map (f-join it (s-concat key ".pdf"))
-                       (-flatten (list helm-bibtex-library-path))))))
+  (-first 'f-exists?
+          (--map (f-join it (s-concat key ".pdf"))
+                 (-flatten (list helm-bibtex-library-path)))))
   
 (defun helm-bibtex-prepare-entry (entry &optional fields)
   "Prepare ENTRY for display.
