@@ -1,0 +1,28 @@
+#+TITLE: News
+
+This file lists changes that are visible to users (such as feature
+additions) but no bug fixes and code clean-ups.
+
+** [2015-05-14 Thu]
+- Added support for multiple PDF directories.
+
+** [2015-02-23 Mon]
+- Added a workaround for a bug in Emacs 24.3.1.  If you didn't see any
+  publications, this should fix it.
+
+** [2015-02-11 Wed]
+- Added resolution of cross-references.  Missing fields are imported
+  from the cross-referenced entry (useful for conference abstracts).
+- Editors are shown when there are no authors (useful for conference
+  proceedings).
+- Fields that should be ignored when exporting BibTeX can be
+  configured via `helm-bibtex-no-export-fields` (useful to keep
+  private notes private).
+
+** [2015-01-29 Thu]
+- Better formatting of plain text references following the APA style
+  guide.
+
+** [2015-01-16 Fri]
+- The parsed bibliography is now cached which can dramatically improve
+  responsiveness with larger bibliographies.
