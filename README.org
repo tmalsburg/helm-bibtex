@@ -43,7 +43,7 @@ The regular expression ~eye.?tracking~ allows searching for different spellings 
 
 * Installation
 
-The easiest way to install the latest version of helm-bibtex is through [[http://melpa.milkbox.net/#/][MELPA]].  Alternatively, put the file [[file:helm-bibtex.el]] in a directory included in your load-path and add the following line to your start-up file (typically ~init.el~):
+The easiest way to install the latest version of helm-bibtex is through [[http://melpa.org/#/helm-bibtex][MELPA]].  Alternatively, put the file [[file:helm-bibtex.el]] in a directory included in your load-path and add the following line to your start-up file (typically ~init.el~):
 
 #+BEGIN_SRC emacs-lisp
 (autoload 'helm-bibtex "helm-bibtex" "" t)
