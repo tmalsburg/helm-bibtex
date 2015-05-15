@@ -25,6 +25,7 @@
 ;; A helm source for managing BibTeX bibliographies.
 ;;
 ;; News:
+;; - 05/14/2015: Added support for multiple PDF directories.
 ;; - 02/23/2015: Added a workaround for a bug in Emacs 24.3.1.  If you
 ;;   didn't see any publications, this should fix it.
 ;; - 01/11/2015:
@@ -102,17 +103,16 @@
   :group 'helm)
 
 (defcustom helm-bibtex-bibliography nil
-  "The list of BibTeX files that is used for searching. The first
-one will be used when creating new entries."
+  "The BibTeX file or list of BibTeX files."
   :group 'helm-bibtex
   :type '(choice file (repeat file)))
 
 (defcustom helm-bibtex-library-path nil
-  "The directory in which PDFs are stored.  Helm-bibtex
-assumes that the names of these PDFs are composed of the
-BibTeX-key plus a \".pdf\" suffix."
+  "A directory or list of directories in which PDFs are
+stored.  Helm-bibtex assumes that the names of these PDFs are
+composed of the BibTeX-key plus a \".pdf\" suffix."
   :group 'helm-bibtex
-  :type 'directory)
+  :type '(choice directory (repeat directory)))
 
 (defcustom helm-bibtex-pdf-open-function 'find-file
   "The function used for opening PDF files.  This can be an
@@ -356,6 +356,13 @@ appended to the requested entry."
    collect (helm-bibtex-prepare-entry entry
             (cons (if (assoc "author" entry) "author" "editor") fields))))
 
+(defun helm-bibtex-find-pdf (key)
+  "Searches in all directories in `helm-bibtex-library-path' for
+a PDF whose name is KEY + \".pdf\".  Returns the first matching PDF."
+  (car (-filter 'f-exists?
+                (--map (f-join it (s-concat key ".pdf"))
+                       (-flatten (list helm-bibtex-library-path))))))
+  
 (defun helm-bibtex-prepare-entry (entry &optional fields)
   "Prepare ENTRY for display.
 ENTRY is an alist representing an entry as returned by
@@ -373,8 +380,7 @@ fields. If FIELDS is empty, all fields are kept. Also add a
       ;; Normalize case of entry type:
       (setcdr (assoc "=type=" entry) (downcase (cdr (assoc "=type=" entry))))
       ;; Check for PDF and notes:
-      (if (and helm-bibtex-library-path
-               (f-exists? (f-join helm-bibtex-library-path (s-concat entry-key ".pdf"))))
+      (if (helm-bibtex-find-pdf entry-key)
           (setq entry (cons (cons "=has-pdf=" helm-bibtex-pdf-symbol) entry)))
       (if (and helm-bibtex-notes-path
                (f-exists? (f-join helm-bibtex-notes-path
@@ -442,14 +448,15 @@ values."
 
 
 (defun helm-bibtex-open-pdf (_)
-  "Open the PDF associated with the entry using the function
-specified in `helm-bibtex-pdf-open-function',"
-  (let ((keys (helm-marked-candidates :with-wildcard t)))
-    (dolist (key keys)
-      (let ((path (f-join helm-bibtex-library-path (s-concat key ".pdf"))))
-        (if (f-exists? path)
-            (funcall helm-bibtex-pdf-open-function path)
-          (message "No PDF for this entry: %s" key))))))
+  "Open the PDFs associated with the marked entries using the
+function specified in `helm-bibtex-pdf-open-function'.  All paths
+in `helm-bibtex-library-path' are searched.  If there are several
+matching PDFs for an entry, the first is opened."
+  (--if-let
+      (-non-nil
+       (-map 'helm-bibtex-find-pdf (helm-marked-candidates :with-wildcard t)))
+      (-each it helm-bibtex-pdf-open-function)
+    (message "No PDF(s) found.")))
 
 (defun helm-bibtex-open-url-or-doi (_)
   "Open the associated URL or DOI in a browser."
@@ -485,9 +492,13 @@ specified in `helm-bibtex-pdf-open-function',"
           (--map (format "ebib:%s" it) keys)))
 
 (defun helm-bibtex-format-citation-org-link-to-PDF (keys)
-  "Formatter for org-links to PDF."
-  (s-join ", "
-   (--map (format "[[%s][%s]]" (f-join helm-bibtex-library-path (s-concat it ".pdf")) it) keys)))
+  "Formatter for org-links to PDF.  Uses first matching PDF if
+several are available.  Entries for which no PDF is available are
+omitted."
+  (s-join ", " (-non-nil
+                (--map (when (cdr it)
+                           (format "[[%s][%s]]" (cdr it) (car it)))
+                       (--map (cons it (helm-bibtex-find-pdf it)) keys)))))
 
 (defun helm-bibtex-insert-citation (_)
   "Insert citation at point.  The format depends on
@@ -687,13 +698,12 @@ defined.  Surrounding curly braces are stripped."
              (format "  %s = %s,\n" name value)))))
 
 (defun helm-bibtex-add-PDF-attachment (_)
-  "Attach the PDFs of the selected entries."
-  (let ((keys (helm-marked-candidates :with-wildcard t)))
-    (dolist (key keys)
-      (let ((path (f-join helm-bibtex-library-path (s-concat key ".pdf"))))
-        (if (f-exists? path)
-            (mml-attach-file path)
-          (message "No PDF for this entry: %s" key))))))
+  "Attach the PDFs of the selected entries where available."
+  (--if-let
+      (-non-nil
+       (-map 'helm-bibtex-find-pdf (helm-marked-candidates :with-wildcard t)))
+      (-each it 'mml-attach-file)
+    (message "No PDF(s) found.")))
 
 (defun helm-bibtex-edit-notes (key)
   "Open the notes associated with the entry using `find-file'."
