@@ -85,7 +85,7 @@ Notes for a publication are currently stored in separate files, one file per pub
 (setq helm-bibtex-notes-extension ".org")
 #+END_SRC
 
-At this point most people will be ready to go.  Skip to [[#usage]] below to see how to use helm-bibtex.
+At this point most people will be ready to go.  Skip to [[#usage][Usage]] below to see how to use helm-bibtex.
 
 * Advanced tweaking
 
@@ -222,7 +222,7 @@ article waters caplan
 
 ** Search the word under the cursor
 
-A common use case is where a search term is written in a document (say in your LaTeX manuscript) and you want to search for it in your bibliography.  In this situation, just start helm-bibtex and enter ~M-n~.  This inserts the word under the cursor as the search term.  (This is a helm feature and can be used in all helm sources not just helm-bibtex.)  Note that it is also possible to use BibTeX keys for searching.  So if your cursor is on a BibTeX key (e.g., in a LaTeX cite command) you can start helm-bibtex, hit ~M+n~ and see the entry associated with that BibTeX key.  Special case: you want to open the PDF associated with the BibTeX key under the cursor: ~M-x helm-bibtex M-n Enter~.  This is of course shorter if you bind ~helm-bibtex~ to a convenient key (see [[#key-bindings]]).
+A common use case is where a search term is written in a document (say in your LaTeX manuscript) and you want to search for it in your bibliography.  In this situation, just start helm-bibtex and enter ~M-n~.  This inserts the word under the cursor as the search term.  (This is a helm feature and can be used in all helm sources not just helm-bibtex.)  Note that it is also possible to use BibTeX keys for searching.  So if your cursor is on a BibTeX key (e.g., in a LaTeX cite command) you can start helm-bibtex, hit ~M+n~ and see the entry associated with that BibTeX key.  Special case: you want to open the PDF associated with the BibTeX key under the cursor: ~M-x helm-bibtex M-n Enter~.  This is of course shorter if you bind ~helm-bibtex~ to a convenient key (see [[#key-bindings][Key-bindings]]).
 
 ** Select multiple entries
 
