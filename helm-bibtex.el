@@ -257,9 +257,7 @@ actually exist."
   (mapc (lambda (file)
           (unless (f-exists? file)
                   (user-error "BibTeX file %s could not be found." file)))
-        (if (listp helm-bibtex-bibliography)
-            helm-bibtex-bibliography
-          (list helm-bibtex-bibliography))))
+        (-flatten (list helm-bibtex-bibliography))))
 
 (defun helm-bibtex-candidates ()
   "Reads the BibTeX files and returns a list of conses, one for
@@ -270,9 +268,7 @@ is the entry (only the fields listed above) as an alist."
   ;; Open configured bibliographies in temporary buffer:
   (with-temp-buffer 
     (mapc #'insert-file-contents
-          (if (listp helm-bibtex-bibliography)
-              helm-bibtex-bibliography
-            (list helm-bibtex-bibliography)))
+          (-flatten (list helm-bibtex-bibliography)))
     ;; Check hash of bibliography and reparse if necessary:
     (let ((bibliography-hash (secure-hash 'sha256 (current-buffer))))
       (unless (and helm-bibtex-cached-candidates
@@ -335,10 +331,8 @@ appended to the requested entry."
 
 (defun helm-bibtex-get-entry1 (entry-key)
   (with-temp-buffer
-    (mapc #'insert-file-contents 
-          (if (listp helm-bibtex-bibliography)
-              helm-bibtex-bibliography
-            (list helm-bibtex-bibliography)))
+    (mapc #'insert-file-contents
+          (-flatten (list helm-bibtex-bibliography)))
     (goto-char (point-min))
     (re-search-forward (concat "^@\\(" parsebib--bibtex-identifier
                                "\\)[[:space:]]*[\(\{][[:space:]]*"
@@ -717,9 +711,7 @@ defined.  Surrounding curly braces are stripped."
 (defun helm-bibtex-show-entry (key)
   "Show the entry in the BibTeX file."
   (catch 'break
-    (dolist (bibtex-file (if (listp helm-bibtex-bibliography)
-                             helm-bibtex-bibliography
-                           (list helm-bibtex-bibliography)))
+    (dolist (bibtex-file (-flatten (list helm-bibtex-bibliography)))
       (let ((buf (helm-bibtex-buffer-visiting bibtex-file)))
         (find-file bibtex-file)
         (goto-char (point-min))
@@ -757,9 +749,7 @@ defined.  Surrounding curly braces are stripped."
   "Compile list of fallback options.  These consist of the online
 resources defined in `helm-bibtex-fallback-options' plus one
 entry for each BibTeX file that will open that file for editing."
-  (let ((bib-files (if (listp helm-bibtex-bibliography)
-                       helm-bibtex-bibliography
-                     (list helm-bibtex-bibliography))))
+  (let ((bib-files (-flatten (list helm-bibtex-bibliography))))
     (-concat 
       (--map (cons (s-concat "Create new entry in " (f-filename it))
                    `(lambda () (find-file ,it) (goto-char (point-max))))
