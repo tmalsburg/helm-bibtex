@@ -1,4 +1,4 @@
-;;; helm-bibtex.el --- Helm source for managing BibTeX bibliographies
+;;; helm-bibtex.el --- A BibTeX bibliography manager based on Helm
 
 ;; Copyright 2014 Titus von der Malsburg <malsburg@posteo.de>
 
@@ -22,7 +22,7 @@
 
 ;;; Commentary:
 
-;; A helm source for managing BibTeX bibliographies.
+;; A BibTeX bibliography manager based on Helm.
 ;;
 ;; News:
 ;; - 05/14/2015: Added support for multiple PDF directories.
