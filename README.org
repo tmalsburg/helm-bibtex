@@ -24,13 +24,7 @@ See [[file:NEWS.org]] for old news.
 
 * Description
 
-Helm-bibtex’ main feature is efficient search in large bibliographies using powerful search expressions.  Actions that be performed on entries matching the search expression are:
-- open the PDF, URL, or DOI,
-- insert a citation, the BibTeX key, the BibTeX entry, a plain text reference,
-- attach a PDF to an email,
-- take notes,
-- edit the BibTeX entry.
-Many aspects of helm-bibtex can be configured to suit personal preferences.
+Helm-bibtex’ main selling points are efficient search in large bibliographies using powerful search expressions and tight integration into your Emacs workflows.  Helm-bibtex can perform the following actions on entries matching the search expression: open the PDF, URL, or DOI, insert a citation, the BibTeX key, the BibTeX entry, or a plain text reference, attach a PDF to an email, take notes, edit the BibTeX entry.  Many aspects of helm-bibtex can be configured to suit personal preferences.
 
 * Example
 
@@ -244,5 +238,5 @@ Select one or more entries (see above) and press ~<return>~ to open the PDF (def
 
 ** Use case: A colleague asks for copies of your new papers
 
-Start an email to your colleague and ~M-x helm-bibtex~.  Select your new publications and select “Add PDF to email.”  Then ~M-x helm-resume~ (the publications are still marked) and select “Insert BibTeX entry.”  Optionally insert more human readable references by ~M-x helm-resume~ and “Insert reference.”  Send email.  Done.  This takes less than 10 seconds.
+Start an email to your colleague and ~M-x helm-bibtex~.  Select your new publications and select “Attach PDF to email.”  Then ~M-x helm-resume~ (the publications are still marked) and select “Insert BibTeX entry.”  Optionally insert more human readable references by ~M-x helm-resume~ and “Insert reference.”  Send email.  Done.  This takes less than 10 seconds.  Of course, this assumes that you’re sending email from Emacs, e.g. via [[http://www.djcbsoftware.nl/code/mu/mu4e.html][Mu4e]].
 
