@@ -190,7 +190,7 @@ Lyn Frazier's PhD thesis:
 phdthesis frazier
 #+END_EXAMPLE
 
-Publications about eye tracking.  A regular expression is used to match various spellings (/eyetracking, eye tracking, eye-tracking/):
+Publications about eye tracking.  A regular expression is used to match various spellings (“eyetracking”, “eye tracking”, “eye-tracking”):
 
 #+BEGIN_EXAMPLE
 eye.?tracking
