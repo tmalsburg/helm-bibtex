@@ -329,8 +329,8 @@ appended to the requested entry."
   "Do some preprocessing of the entries."
   (cl-loop
    with fields = (append '("title" "year" "crossref")
-                         (--map (if (symbolp it) (symbol-name it) it)
-                                helm-bibtex-additional-search-fields))
+                         (-map (lambda (it) (if (symbolp it) (symbol-name it) it))
+                               helm-bibtex-additional-search-fields))
    for entry in entries
    collect (helm-bibtex-prepare-entry entry
             (cons (if (assoc "author" entry) "author" "editor") fields))))
@@ -394,9 +394,10 @@ fields. If FIELDS is empty, all fields are kept. Also add a
      for fields = '("author" "title" "year" "=has-pdf=" "=has-note=" "=type=")
    else
      for fields = '("editor" "title" "year" "=has-pdf=" "=has-note=" "=type=")
-   for fields = (--map (helm-bibtex-clean-string
-                        (helm-bibtex-get-value it entry " "))
-                       fields)
+   for fields = (-map (lambda (it)
+                        (helm-bibtex-clean-string
+                          (helm-bibtex-get-value it entry " ")))
+                      fields)
    for fields = (-update-at 0 'helm-bibtex-shorten-authors fields)
    collect
    (cons (s-format "$0 $1 $2 $3$4 $5" 'elt
@@ -590,16 +591,16 @@ guidelines.  Return DEFAULT if FIELD is not present in ENTRY."
              (let ((p (s-split " *, *" a t)))
                (concat
                 (car p) ", "
-                (s-join " " (--map (concat (s-left 1 it) ".")
-                                   (s-split " " (cadr p))))))
+                (s-join " " (-map (lambda (it) (concat (s-left 1 it) "."))
+                                  (s-split " " (cadr p))))))
              into authors
            else
              collect
              (let ((p (s-split " " a t)))
                (concat
                 (-last-item p) ", "
-                (s-join " " (--map (concat (s-left 1 it) ".")
-                                   (-butlast p)))))
+                (s-join " " (-map (lambda (it) (concat (s-left 1 it) "."))
+                                  (-butlast p)))))
              into authors
            finally return
              (let ((l (length authors)))
@@ -615,16 +616,16 @@ guidelines.  Return DEFAULT if FIELD is not present in ENTRY."
              collect
              (let ((p (s-split " *, *" a t)))
                (concat
-                (s-join " " (--map (concat (s-left 1 it) ".")
-                                   (s-split " " (cadr p))))
+                (s-join " " (-map (lambda (it) (concat (s-left 1 it) "."))
+                                  (s-split " " (cadr p))))
                 " " (car p)))
              into authors
            else
              collect
              (let ((p (s-split " " a t)))
                (concat
-                (s-join " " (--map (concat (s-left 1 it) ".")
-                                   (-butlast p)))
+                (s-join " " (-map (lambda (it) (concat (s-left 1 it) "."))
+                                  (-butlast p)))
                 " " (-last-item p)))
              into authors
            finally return
@@ -670,8 +671,8 @@ defined.  Surrounding curly braces are stripped."
              for name = (car field)
              for value = (cdr field)
              unless (member name
-                            (append (--map (if (symbolp it) (symbol-name it) it)
-                                           helm-bibtex-no-export-fields)
+                            (append (-map (lambda (it) (if (symbolp it) (symbol-name it) it))
+                                          helm-bibtex-no-export-fields)
                              '("=type=" "=key=" "=has-pdf=" "=has-note=" "crossref")))
              concat
              (format "  %s = %s,\n" name value)))))
