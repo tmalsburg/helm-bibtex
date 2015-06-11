@@ -325,7 +325,7 @@ appended to the requested entry."
                                "\\)[[:space:]]*[\(\{][[:space:]]*"
                                (regexp-quote entry-key) "[[:space:]]*,"))
     (let ((entry-type (match-string 1)))
-      (helm-bibtex-prepare-entry (parsebib-read-entry entry-type)))))
+      (reverse (helm-bibtex-prepare-entry (parsebib-read-entry entry-type))))))
 
 (defun helm-bibtex-prepare-entries (entries)
   "Do some preprocessing of the entries."
