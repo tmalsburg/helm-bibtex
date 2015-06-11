@@ -43,13 +43,15 @@ The easiest way to install the latest version of helm-bibtex is through [[http:/
 (autoload 'helm-bibtex "helm-bibtex" "" t)
 #+END_SRC
 
-Helm-bibtex depends on the following packages (all available through MELPA):
+Helm-bibtex depends on the following packages which are all available through MELPA and will be automatically installed if you install helm-bibtex from MELPA:
 
 - [[http://melpa.milkbox.net/#/helm][Helm]] :: incremental search framework (helm-bibtex is a plug-in for Helm)
 - [[http://melpa.milkbox.net/#/parsebib][Parsebib]] :: a parser for BibTeX files 
 - [[http://melpa.milkbox.net/#/dash][Dash]] :: a powerful list-processing library
 - [[http://melpa.milkbox.net/#/s][S]] :: the long lost Emacs string manipulation library
 - [[http://melpa.milkbox.net/#/f][F]] :: a modern API for working with files and directories
+
+Make sure to configure helm (see [[https://github.com/emacs-helm/helm#quick-install-from-git][helm documentation]]).
 
 * Minimal configuration
 

@@ -49,8 +49,9 @@
 
 ;;; Install:
 
-;; Put this file on your Emacs-Lisp load path and add the following in
-;; your Emacs startup file:
+;; Put this file in a directory included in your load path or install
+;; helm-bibtex from MELPA (preferred).  Then add the following in your
+;; Emacs startup file:
 ;;
 ;;     (require 'helm-bibtex)
 ;;
@@ -58,11 +59,15 @@
 ;;
 ;;     (autoload 'helm-bibtex "helm-bibtex" "" t)
 ;;
-;; Requirements are parsebib, helm, s, dash, f, and cl-lib.  The easiest
-;; way to install these packages is perhaps through MELPA.
+;; Requirements are parsebib, helm, s, dash, and f.  The easiest way
+;; to install these packages is through MELPA.  Make sure helm is
+;; properly configured (see
+;; https://github.com/emacs-helm/helm#quick-install-from-git).
 ;;
-;; In order to specify a (list of) bibliography, set the variable
-;; `helm-bibtex-bibliography' to point to a list of BibTeX file.
+;; Let helm-bibtex know where it can find your bibliography by setting
+;; the variable `helm-bibtex-bibliography'.  See the manual for more details:
+;;
+;;   https://github.com/tmalsburg/helm-bibtex#minimal-configuration
 
 ;;; Usage:
 
