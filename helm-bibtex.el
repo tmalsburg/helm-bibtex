@@ -312,7 +312,9 @@ appended to the requested entry."
   (let* ((entry (helm-bibtex-get-entry1 entry-key))
          (crossref (helm-bibtex-get-value "crossref" entry))
          (crossref (when crossref (helm-bibtex-get-entry1 crossref))))
-    (append entry crossref)))
+    (cl-remove-duplicates (append entry crossref)
+                          :test (lambda (x y) (string= (s-downcase x) (s-downcase y)))
+                          :key 'car :from-end t)))
 
 (defun helm-bibtex-get-entry1 (entry-key)
   (with-temp-buffer
@@ -366,8 +368,9 @@ fields. If FIELDS is empty, all fields are kept. Also add a
                                   (s-concat entry-key helm-bibtex-notes-extension))))
           (setq entry (cons (cons "=has-note=" helm-bibtex-notes-symbol) entry)))
       ;; Remove duplicated fields:
-      (let ((-compare-fn (lambda (x y) (string= (car x) (car y)))))
-        (-uniq entry)))))
+      (cl-remove-duplicates entry
+                            :test (lambda (x y) (string= (s-downcase x) (s-downcase y)))
+                            :key 'car :from-end t))))
 
 
 ;; The function `window-width' does not necessarily report the correct
