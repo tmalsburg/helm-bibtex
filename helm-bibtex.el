@@ -335,7 +335,7 @@ appended to the requested entry."
                                helm-bibtex-additional-search-fields))
    for entry in entries
    collect (helm-bibtex-prepare-entry entry
-            (cons (if (assoc "author" entry) "author" "editor") fields))))
+            (cons (if (assoc-string "author" entry 'case-fold) "author" "editor") fields))))
 
 (defun helm-bibtex-find-pdf (key)
   "Searches in all directories in `helm-bibtex-library-path' for
