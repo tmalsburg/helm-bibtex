@@ -153,6 +153,12 @@ used to insert the value of a BibTeX field into the template."
   :group 'helm-bibtex
   :type 'string)
 
+(defcustom helm-bibtex-notes-key-pattern
+  ":Custom_ID: +%s\( \|$\)"
+  "The pattern used to find entries in the notes file.  Only
+relevant if all notes are stored in one file.  The key can be
+inserted into the pattern using the `format` function.")
+
 (defcustom helm-bibtex-notes-extension ".org"
   "The extension of the files containing notes.  This is only
 used when `helm-bibtex-notes-path' is a directory (not a file)."
@@ -715,7 +721,7 @@ defined.  Surrounding curly braces are stripped."
     ;; from the template:
     (find-file helm-bibtex-notes-path)
     (goto-char (point-min))
-    (if (re-search-forward (concat "\\b" key "\\b") nil t)
+    (if (re-search-forward (format helm-bibtex-notes-key-pattern key) nil t)
         (when (eq major-mode 'org-mode)
           (outline-hide-other)
           (outline-show-subtree)
