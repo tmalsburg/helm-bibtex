@@ -385,10 +385,21 @@ fields. If FIELDS is empty, all fields are kept. Also add a
       ;; Check for PDF and notes:
       (if (helm-bibtex-find-pdf entry-key)
           (setq entry (cons (cons "=has-pdf=" helm-bibtex-pdf-symbol) entry)))
-      (if (and helm-bibtex-notes-path
-               (f-exists? (f-join helm-bibtex-notes-path
-                                  (s-concat entry-key helm-bibtex-notes-extension))))
-          (setq entry (cons (cons "=has-note=" helm-bibtex-notes-symbol) entry)))
+      (when (or
+             ;; One note file per entry:
+             (and helm-bibtex-notes-path
+                  (f-directory? helm-bibtex-notes-path)
+                  (f-file? (f-join helm-bibtex-notes-path
+                                   (s-concat entry-key
+                                             helm-bibtex-notes-extension))))
+             ;; All notes in one file:
+             (and helm-bibtex-notes-path
+                  (f-file? helm-bibtex-notes-path)
+                  (with-current-buffer (find-file-noselect helm-bibtex-notes-path)
+                    (goto-char (point-min))
+                    (re-search-forward (format helm-bibtex-notes-key-pattern entry-key)
+                                       nil t))))
+        (setq entry (cons (cons "=has-note=" helm-bibtex-notes-symbol) entry)))
       ;; Remove duplicated fields:
       (cl-remove-duplicates entry
                             :test (lambda (x y) (string= (s-downcase x) (s-downcase y)))
