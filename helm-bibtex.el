@@ -727,7 +727,11 @@ defined.  Surrounding curly braces are stripped."
       ;; One notes file per publication: just open the file.
       (let ((path (f-join helm-bibtex-notes-path
                           (s-concat key helm-bibtex-notes-extension))))
-        (find-file path))
+        (find-file path)
+        (unless (f-exists? path)
+          (insert (s-format helm-bibtex-notes-template
+                            'helm-bibtex-apa-get-value
+                            (helm-bibtex-get-entry key)))))
     ;; One file for all notes: find the notes or create new section
     ;; from the template:
     (find-file helm-bibtex-notes-path)
