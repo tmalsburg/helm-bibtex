@@ -147,7 +147,7 @@ suffix that is specified in `helm-bibtex-notes-extension'."
   :type '(choice file directory))
 
 (defcustom helm-bibtex-notes-template
-  "\n* ${author} (${year}): ${title}\n  :PROPERTIES:\n  :BIBTEX-KEY: ${=key=}\n  :END:\n"
+  "\n* ${author} (${year}): ${title}\n  :PROPERTIES:\n  :Custom_ID: ${=key=}\n  :END:\n"
   "Template used to create a new note.  '${field-name}' can be
 used to insert the value of a BibTeX field into the template."
   :group 'helm-bibtex
