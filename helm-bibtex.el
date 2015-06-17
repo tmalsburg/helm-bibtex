@@ -147,7 +147,7 @@ suffix that is specified in `helm-bibtex-notes-extension'."
   :type '(choice file directory))
 
 (defcustom helm-bibtex-notes-template
-  "\n* ${author} (${year}): ${title}\n  :PROPERTIES:\n  :Custom_ID: ${=key=}\n  :END:\n"
+  "* ${author} (${year}): ${title}\n  :PROPERTIES:\n  :Custom_ID: ${=key=}\n  :END:\n\n"
   "Template used to create a new note.  '${field-name}' can be
 used to insert the value of a BibTeX field into the template."
   :group 'helm-bibtex
@@ -372,7 +372,7 @@ ENTRY is an alist representing an entry as returned by
 parsebib-read-entry. All the fields not in FIELDS are removed
 from ENTRY, with the exception of the \"=type=\" and \"=key=\"
 fields. If FIELDS is empty, all fields are kept. Also add a
-=has-pdf= and/or =has-notes= field, if they exist for ENTRY."
+=has-pdf= and/or =has-note= field, if they exist for ENTRY."
   (when entry ; entry may be nil, in which case just return nil
     (when fields
       (setq fields (append fields (list "=type=" "=key="))))
@@ -727,10 +727,12 @@ defined.  Surrounding curly braces are stripped."
           (outline-show-subtree)
           (outline-previous-visible-heading 1)
           (recenter-top-bottom 1))
-      (goto-char (point-max))
+      (when (eq major-mode 'org-mode)
+        (outline-hide-sublevels 1))
       (insert (s-format helm-bibtex-notes-template
                         'helm-bibtex-apa-get-value
-                        (helm-bibtex-get-entry key))))))
+                        (helm-bibtex-get-entry key)))
+      (goto-char (- (point) 1)))))
 
 (defun helm-bibtex-buffer-visiting (file)
   (or (get-file-buffer file)
