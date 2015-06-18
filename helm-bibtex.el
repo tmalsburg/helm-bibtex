@@ -738,12 +738,12 @@ defined.  Surrounding curly braces are stripped."
     (goto-char (point-min))
     (if (re-search-forward (format helm-bibtex-notes-key-pattern key) nil t)
         (when (eq major-mode 'org-mode)
-          (outline-hide-other)
-          (outline-show-subtree)
+          (hide-other)
+          (show-subtree)
           (outline-previous-visible-heading 1)
           (recenter-top-bottom 1))
       (when (eq major-mode 'org-mode)
-        (outline-hide-sublevels 1))
+        (hide-sublevels 1))
       (insert (s-format helm-bibtex-notes-template
                         'helm-bibtex-apa-get-value
                         (helm-bibtex-get-entry key)))
