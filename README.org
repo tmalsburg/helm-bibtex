@@ -284,7 +284,31 @@ Select one or more entries (see above) and press ~<return>~ to open the PDF (def
 - Edit notes
 - Show entry
 
-** Use case: A colleague asks for copies of your new papers
+** A colleague asks for copies of your new papers
 
 Start an email to your colleague and ~M-x helm-bibtex~.  Select your new publications and select “Attach PDF to email.”  Then ~M-x helm-resume~ (the publications are still marked) and select “Insert BibTeX entry.”  Optionally insert more human readable references by ~M-x helm-resume~ and “Insert reference.”  Send email.  Done.  This takes less than 10 seconds.  Of course, this assumes that you’re sending email from Emacs, e.g. via [[http://www.djcbsoftware.nl/code/mu/mu4e.html][Mu4e]].
+
+** Tagging publications
+
+Helm-bibtex has powerful search capabilities (inherited from Helm) but some common searches cannot be performed simply because the relevant information is typically not represented in BibTeX files.  For example, helm-bibtex doesn’t know whether a conference presentation was a talk or a poster because both are represented as ~inproceedings~.  So if you want to compile a list of your conference talks (e.g., for your CV), that’s not possible – not without some additional work.  One solution to this is to “tag” publications.  Tags are like keywords except that they don’t represent the content of a publications but meta data.  Example:
+
+#+BEGIN_SRC bibtex
+@inproceedings{BibtexKey2015,
+  author = {Jane Doe and Monika Mustermann},
+  title = {This is the title},
+  crossref = {XYZ-conference-2015},
+  keywords = {keyword1, keyword2},
+  pages = {10},
+  tags = {poster},
+}
+#+END_SRC
+
+Since ~tags~ is not a standard BibTeX field, helm-bibtex by default doesn’t consider it when searching.  In order to be able to search for tags we therefore have to tell helm-bibtex that the ~tags~ field is relevant, too: 
+
+#+BEGIN_SRC elsip
+(setq helm-bibtex-additional-search-fields '(tags))
+#+END_SRC
+
+There are many other ways in which tags can be used.  For example, they can be used to mark articles that you plan to read or important articles or manuscripts in progress, etc.  Be creative.
+
 
