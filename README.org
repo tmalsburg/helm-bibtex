@@ -168,6 +168,17 @@ Online databases can be configured using the customization variable ~helm-bibtex
 
 For quick access to the bibliography, bind the search command, ~helm-bibtex~, to a convenient key.  I use the [[http://farm1.static.flickr.com/68/167224406_166a1bf2e5.jpg][menu key]] as the prefix key for all helm commands and bind ~helm-bibtex~ to ~b~.  Helm-bibtex can then be started using ~<menu> b~.  It is also useful to bind ~helm-resume~ to ~<menu>~ in ~helm-command-map~.  With this binding, ~<menu> <menu>~ can be used to reopen the last helm search.
 
+** Changing the default action
+
+Pressing enter on a publication triggers the “default action” which is opening the PDF associated with the publication.  Since the default action is simply the first entry in the list of actions, the default action can be changed by deleting an action and re-inserting it at the top of the list.  Below is an example showing how to make “Insert BibTeX key” the default action:
+
+#+BEGIN_SRC emacs-lisp
+(helm-delete-action-from-source "Insert BibTeX key" helm-source-bibtex)
+(helm-add-action-to-source "Insert BibTeX key" 'helm-bibtex-insert-key helm-source-bibtex 0)
+#+END_SRC
+
+The function ~helm-add-action-to-source~ can also be used to add new actions to helm-bibtex.
+
 * Usage
 
 ** Searching publications
