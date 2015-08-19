@@ -154,7 +154,7 @@ used to insert the value of a BibTeX field into the template."
   :type 'string)
 
 (defcustom helm-bibtex-notes-key-pattern
-  ":Custom_ID: +%s\( \|$\)"
+  ":Custom_ID: +%s\\( \\|$\\)"
   "The pattern used to find entries in the notes file.  Only
 relevant if all notes are stored in one file.  The key can be
 inserted into the pattern using the `format` function.")
