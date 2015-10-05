@@ -517,7 +517,7 @@ publication specified by KEY."
     (ref (pcase (downcase (helm-bibtex-get-value "=type=" entry))
            ("article"
             (s-format
-             "${author} (${year}). ${title}. ${journal}, ${volume}(${number}), ${pages}."
+             "${author} (${year}). ${title}. ${journal}, ${volume}(${number}), ${pages}.${doi}"
              'helm-bibtex-apa-get-value entry))
            ("inproceedings"
             (s-format
@@ -585,6 +585,7 @@ guidelines.  Return DEFAULT if FIELD is not present in ENTRY."
          ;; Maintain the punctuation and capitalization that is used by
          ;; the journal in its title.
          ("pages" (s-join "–" (s-split "[^0-9]+" value t)))
+         ("doi" (s-concat " http://dx.doi.org/" value))
          (_ value))
       "")))
 
