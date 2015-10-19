@@ -240,6 +240,11 @@ used.")
   "The a list of candidates obtained when the configured
 bibliography files were last parsed.")
 
+(defvar helm-bibtex-interleave-support nil
+  "If set to t then the interleave package is supported for note
+  taking by automatically inserting the #+INTERLEAVE_PDF header
+  in org mode notes.")
+
 
 (defun helm-bibtex-init ()
   "Checks that the files and directories specified by the user
@@ -697,7 +702,9 @@ defined.  Surrounding curly braces are stripped."
 (defun helm-bibtex-edit-notes (key)
   "Open the notes associated with the entry using `find-file'."
   (let ((path (f-join helm-bibtex-notes-path (s-concat key helm-bibtex-notes-extension))))
-    (find-file path)))
+    (find-file path)
+    (unless  (or (file-exists-p path) (eq helm-bibtex-interleave-support nil))
+      (insert (concat "#+INTERLEAVE_PDF: " (f-join helm-bibtex-library-path (s-concat key ".pdf")))))))
 
 (defun helm-bibtex-buffer-visiting (file)
   (or (get-file-buffer file)

@@ -208,6 +208,16 @@ The second argument of ~helm-add-action-to-source~ is the function that executes
 
 The function ~helm-add-action-to-source~ can also be used to add new actions to helm-bibtex.
 
+** [[https://github.com/rudolfochrist/interleave][Interleave]] support
+Setting the variable ~helm-bibtex-interleave-support~ to ~t~ will automatically
+insert the
+
+#+BEGIN_SRC org
+#+INTERLEAVE_PDF:
+#+END_SRC
+
+header into empty notes files.
+
 * Usage
 
 ** Searching publications
