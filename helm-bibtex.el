@@ -228,6 +228,12 @@ entries."
   :group 'helm-bibtex
   :type 'list)
 
+(defcustom helm-bibtex-full-frame t
+  "Non-nil means open `helm-bibtex' using the entire window. When
+nil, the window will split below."
+  :group 'helm-bibtex
+  :type 'string)
+
 (easy-menu-add-item nil '("Tools" "Helm" "Tools") ["BibTeX" helm-bibtex t])
 
 (defvar helm-bibtex-bibliography-hash nil
@@ -782,7 +788,7 @@ entry for each BibTeX file that will open that file for editing."
   "Search BibTeX entries."
   (interactive)
   (helm :sources '(helm-source-bibtex helm-source-fallback-options)
-        :full-frame t
+        :full-frame helm-bibtex-full-frame
         :candidate-number-limit 500))
 
 (provide 'helm-bibtex)
