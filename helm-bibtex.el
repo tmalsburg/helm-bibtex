@@ -228,6 +228,22 @@ entries."
   :group 'helm-bibtex
   :type 'list)
 
+(defcustom helm-bibtex-cite-commands '("cite" "Cite" "parencite"
+"Parencite" "footcite" "footcitetext" "textcite" "Textcite"
+"smartcite" "Smartcite" "cite*" "parencite*" "supercite" "autocite"
+"Autocite" "autocite*" "Autocite*" "citeauthor" "Citeauthor"
+"citeauthor*" "Citeauthor*" "citetitle" "citetitle*" "citeyear"
+"citeyear*" "citedate" "citedate*" "citeurl" "nocite" "fullcite"
+"footfullcite" "notecite" "Notecite" "pnotecite" "Pnotecite"
+"fnotecite")
+  "The list of LaTeX cite commands.  When creating LaTeX
+citations, these can be accessed as future entries in the
+minibuffer history, i.e. by pressing the arrow down key.  The
+default entries are taken from biblatex.  There is currently no
+support for multicite commands and volcite et al."
+  :group 'helm-bibtex
+  :type '(choice string (repeat string)))
+
 (easy-menu-add-item nil '("Tools" "Helm" "Tools") ["BibTeX" helm-bibtex t])
 
 (defvar helm-bibtex-bibliography-hash nil
@@ -466,9 +482,20 @@ matching PDFs for an entry, the first is opened."
   "Default formatter for keys, separates multiple keys with commas."
   (s-join ", " keys))
 
+(defvar helm-bibtex-citation-command-history nil
+  "History list for LaTeX citation commands.")
+
 (defun helm-bibtex-format-citation-cite (keys)
-  "Formatter for LaTeX citation macro."
-  (format "\\cite{%s}" (s-join ", " keys)))
+  "Formatter for LaTeX citation commands.  Prompts for the command and
+for arguments if the commands can take any."
+  (let ((cite-command (read-from-minibuffer "Cite command: " nil nil nil 'helm-bibtex-citation-command-history helm-bibtex-cite-commands)))
+		(if (member cite-command '("nocite" "supercite"))  ; These don't want arguments.
+        (format "\\%s{%s}" cite-command (s-join ", " keys))
+			(let ((prenote      (read-from-minibuffer "Prenote: "))
+            (postnote     (read-from-minibuffer "Postnote: ")))
+				(if (and (string= "" prenote) (string= "" postnote))
+						(format "\\%s{%s}" cite-command (s-join ", " keys))
+					(format "\\%s[%s][%s]{%s}" cite-command prenote postnote (s-join ", " keys)))))))
 
 (defun helm-bibtex-format-citation-pandoc-citeproc (keys)
   "Formatter for pandoc-citeproc citations."
