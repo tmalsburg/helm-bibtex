@@ -45,11 +45,11 @@ The easiest way to install the latest version of helm-bibtex is through [[http:/
 
 Helm-bibtex depends on the following packages which are all available through MELPA and will be automatically installed if you install helm-bibtex from MELPA:
 
-- [[http://melpa.milkbox.net/#/helm][Helm]] :: incremental search framework (helm-bibtex is a plug-in for Helm)
-- [[http://melpa.milkbox.net/#/parsebib][Parsebib]] :: a parser for BibTeX files 
-- [[http://melpa.milkbox.net/#/dash][Dash]] :: a powerful list-processing library
-- [[http://melpa.milkbox.net/#/s][S]] :: the long lost Emacs string manipulation library
-- [[http://melpa.milkbox.net/#/f][F]] :: a modern API for working with files and directories
+- [[https://melpa.org/#/helm][Helm]] :: incremental search framework (helm-bibtex is a plug-in for Helm)
+- [[https://melpa.org/#/parsebib][Parsebib]] :: a parser for BibTeX files
+- [[https://melpa.org/#/dash][Dash]] :: a powerful list-processing library
+- [[https://melpa.org/#/s][S]] :: the long lost Emacs string manipulation library
+- [[https://melpa.org/#/f][F]] :: a modern API for working with files and directories
 
 Make sure to configure helm (see [[https://github.com/emacs-helm/helm#quick-install-from-git][helm documentation]]).
 
@@ -311,4 +311,8 @@ Since ~tags~ is not a standard BibTeX field, helm-bibtex by default doesn’t co
 
 There are many other ways in which tags can be used.  For example, they can be used to mark articles that you plan to read or important articles or manuscripts in progress, etc.  Be creative.
 
+
+** Insertion of LaTeX cite commands
+
+The action for inserting a citation command into a LaTeX document prompts for the citation command and, if applicable, for the pre- and postnote arguments.  The prompt for the citation command has its own minibuffer history, which means that previous inputs can be accessed by pressing the ~<up>~ key.  By pressing ~<down>~ it is also possible to access the list of all citation commands defined in biblatex (except for multicite commands and volcite et al. which have different argument structures).
 
