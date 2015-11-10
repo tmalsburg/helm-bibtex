@@ -340,7 +340,7 @@ appended to the requested entry."
                           :test (lambda (x y) (string= (s-downcase x) (s-downcase y)))
                           :key 'car :from-end t)))
 
-(defun helm-bibtex-get-entry1 (entry-key)
+(defun helm-bibtex-get-entry1 (entry-key &optional raw)
   (with-temp-buffer
     (mapc #'insert-file-contents
           (-flatten (list helm-bibtex-bibliography)))
@@ -348,8 +348,10 @@ appended to the requested entry."
     (re-search-forward (concat "^@\\(" parsebib--bibtex-identifier
                                "\\)[[:space:]]*[\(\{][[:space:]]*"
                                (regexp-quote entry-key) "[[:space:]]*,"))
-    (let ((entry-type (match-string 1)))
-      (reverse (helm-bibtex-prepare-entry (parsebib-read-entry entry-type))))))
+    (let* ((entry-type (match-string 1))
+          (entry (parsebib-read-entry entry-type)))
+      (reverse (or (and raw entry)
+                   (helm-bibtex-prepare-entry entry))))))
 
 (defun helm-bibtex-prepare-entries (entries)
   "Do some preprocessing of the entries."
