@@ -4,6 +4,7 @@
 [[http://melpa.org/#/helm-bibtex][http://melpa.org/packages/helm-bibtex-badge.svg]]
 
 * News
+- [2015-11-09 Mon] :: Improved insertion of LaTeX cite commands.
 - [2015-05-14 Thu] :: Added support for multiple PDF directories.
 - [2015-02-23 Mon] :: Added a workaround for a bug in Emacs 24.3.1.  If you
      didn't see any publications, this should fix it.
