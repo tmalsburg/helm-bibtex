@@ -489,13 +489,13 @@ matching PDFs for an entry, the first is opened."
   "Formatter for LaTeX citation commands.  Prompts for the command and
 for arguments if the commands can take any."
   (let ((cite-command (read-from-minibuffer "Cite command: " nil nil nil 'helm-bibtex-citation-command-history helm-bibtex-cite-commands)))
-		(if (member cite-command '("nocite" "supercite"))  ; These don't want arguments.
+    (if (member cite-command '("nocite" "supercite"))  ; These don't want arguments.
         (format "\\%s{%s}" cite-command (s-join ", " keys))
-			(let ((prenote      (read-from-minibuffer "Prenote: "))
+      (let ((prenote      (read-from-minibuffer "Prenote: "))
             (postnote     (read-from-minibuffer "Postnote: ")))
-				(if (and (string= "" prenote) (string= "" postnote))
-						(format "\\%s{%s}" cite-command (s-join ", " keys))
-					(format "\\%s[%s][%s]{%s}" cite-command prenote postnote (s-join ", " keys)))))))
+        (if (and (string= "" prenote) (string= "" postnote))
+            (format "\\%s{%s}" cite-command (s-join ", " keys))
+          (format "\\%s[%s][%s]{%s}" cite-command prenote postnote (s-join ", " keys)))))))
 
 (defun helm-bibtex-format-citation-pandoc-citeproc (keys)
   "Formatter for pandoc-citeproc citations."
