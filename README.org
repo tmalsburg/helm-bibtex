@@ -145,7 +145,7 @@ User-defined functions can be used, too:
 Helm-bibtex creates citations based on the major mode in which the citation is inserted:
 
 - org-mode :: insert link for opening the entry in Ebib
-- latex-mode :: insert standard LaTeX cite macro (~\cite{BibTeX key}~)
+- latex-mode :: insert LaTeX citation command
 - markdown-mode :: insert Pandoc citation macro
 - other modes :: insert plain BibTeX key
 
