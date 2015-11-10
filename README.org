@@ -314,5 +314,5 @@ There are many other ways in which tags can be used.  For example, they can be u
 
 ** Insertion of LaTeX cite commands
 
-The action for inserting a citation command into a LaTeX document prompts for the citation command and, if applicable, for the pre- and postnote arguments.  The prompt for the citation command has its own minibuffer history, which means that previous inputs can be accessed by pressing the <kbd>⬆</kbd> key.  By pressing <kbd>⬇</kbd> it is also possible to access the list of all citation commands defined in biblatex (except for multicite commands and volcite et al. which have different argument structures).
+The action for inserting a citation command into a LaTeX document prompts for the citation command and, if applicable, for the pre- and postnote arguments.  The prompt for the citation command has its own minibuffer history, which means that previous inputs can be accessed by pressing the ~⬆~ key.  By pressing ~⬇~ it is also possible to access the list of all citation commands defined in biblatex (except for multicite commands and volcite et al. which have different argument structures).
 
