@@ -241,7 +241,9 @@ entries."
 citations, these can be accessed as future entries in the
 minibuffer history, i.e. by pressing the arrow down key.  The
 default entries are taken from biblatex.  There is currently no
-support for multicite commands and volcite et al."
+special support for multicite commands and volcite et al.  These
+commands can be used but helm-bibtex does not prompt for their
+extra arguments."
   :group 'helm-bibtex
   :type '(choice string (repeat string)))
 
