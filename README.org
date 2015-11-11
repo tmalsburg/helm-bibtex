@@ -4,6 +4,7 @@
 [[http://melpa.org/#/helm-bibtex][http://melpa.org/packages/helm-bibtex-badge.svg]]
 
 * News
+- [2015-11-10 Tue] :: Added support for PDFs specified in a BibTeX field.  See customization variable ~helm-bibtex-pdf-field~.
 - [2015-11-09 Mon] :: Improved insertion of LaTeX cite commands.
 - [2015-05-14 Thu] :: Added support for multiple PDF directories.
 - [2015-02-23 Mon] :: Added a workaround for a bug in Emacs 24.3.1.  If you
@@ -72,6 +73,14 @@ Specify where PDFs can be found:
 #+END_SRC
 
 Helm-bibtex assumes that the name of a PDF consists of the BibTeX key followed by the suffix ~.pdf~.  Example, if a BibTeX entry has the key ~Darwin1859~, helm-bibtex searches for ~Darvin1859.pdf~ when trying to open the corresponding PDF.
+
+If the BibTeX entries have a field that specifies the full path to the PDFs, that field can also be used.  For example, JabRef stores the location of the PDFs in a field called ~File~:
+
+#+BEGIN_SRC emacs-lisp
+(setq helm-bibtex-pdf-field "File")
+#+END_SRC
+
+If ~helm-bibtex-pdf-field~ is non-nil, helm-bibtex will first try to retrieve the file specified in this field.  If the field is not set for an entry or if the specified file does not exists, helm-bibtex falls back to the method described above (searching for key + ~.pdf~ in the directories listed in ~helm-bibtex-library-path~).
 
 ** Notes
 
