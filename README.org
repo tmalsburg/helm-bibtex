@@ -161,6 +161,10 @@ The list of modes can be extended and the citation functions can be changed usin
 
 A citation function has to accept a list of keys as input and return a string containing the citations.  See the predefined citation functions for examples.
 
+*** LaTeX citation commands
+
+Helm-bibtex prompts for a LaTeX citation command when inserting citations in LaTeX documents.  The list of commands available for auto-completion can be defined using the variable ~helm-bibtex-cite-commands~.  The default setting includes all cite commands defined in biblatex (except multicite commands and ~\volcite~ et al.).  If no command is entered, a default command is used which can be configured using ~helm-bibtex-default-cite-command~.  The default value for the default command is ~cite~.  See also the section [[Insertion of LaTeX cite commands]] below.
+
 ** Online databases
 
 Online databases can be configured using the customization variable ~helm-bibtex-fallback-options~.  This variable contains an alist where the first element of each entry is the name of the database and the second element is either a URL or a function.  The URL needs to contain a ~%s~ at the position where the current search expression should be inserted.  For an example of a function see ~helm-bibtex-arxiv~.
@@ -315,5 +319,5 @@ There are many other ways in which tags can be used.  For example, they can be u
 
 ** Insertion of LaTeX cite commands
 
-The action for inserting a citation command into a LaTeX document prompts for the citation command and, if applicable, for the pre- and postnote arguments.  The prompt for the citation command has its own minibuffer history, which means that previous inputs can be accessed by pressing the ~<up>~ key.  By pressing ~<down>~ it is also possible to access the list of all citation commands defined in biblatex (except for multicite commands and volcite et al. which have different argument structures).
+The action for inserting a citation command into a LaTeX document prompts for the citation command and, if applicable, for the pre- and postnote arguments.  The prompt for the citation command has its own minibuffer history, which means that previous inputs can be accessed by pressing the ~<up>~ key.  By pressing ~<down>~ it is also possible to access the list of all citation commands defined in biblatex (except for multicite commands and volcite et al. which have different argument structures).  The prompt also supports auto-completion via the ~tab~ key.  If no command is entered, the default command is used.  The default command is defined in the customization variable ~helm-bibtex-default-cite-command~.
 
