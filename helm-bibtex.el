@@ -247,6 +247,12 @@ extra arguments."
   :group 'helm-bibtex
   :type '(choice string (repeat string)))
 
+(defcustom helm-bibtex-default-cite-command "cite"
+   "The LaTeX cite command that is used if the user doesn't enter
+anything when prompted for such a command."
+  :group 'helm-bibtex
+  :type 'string)
+
 (easy-menu-add-item nil '("Tools" "Helm" "Tools") ["BibTeX" helm-bibtex t])
 
 (defvar helm-bibtex-bibliography-hash nil
@@ -485,13 +491,16 @@ matching PDFs for an entry, the first is opened."
   "Default formatter for keys, separates multiple keys with commas."
   (s-join ", " keys))
 
-(defvar helm-bibtex-citation-command-history nil
+(defvar helm-bibtex-cite-command-history nil
   "History list for LaTeX citation commands.")
 
 (defun helm-bibtex-format-citation-cite (keys)
   "Formatter for LaTeX citation commands.  Prompts for the command and
 for arguments if the commands can take any."
-  (let ((cite-command (read-from-minibuffer "Cite command: " nil nil nil 'helm-bibtex-citation-command-history helm-bibtex-cite-commands)))
+  (let ((cite-command (completing-read
+                       (format "Cite command (default \"%s\"): " helm-bibtex-default-cite-command)
+                       helm-bibtex-cite-commands nil nil nil 'helm-bibtex-cite-command-history
+                       helm-bibtex-default-cite-command nil)))
     (if (member cite-command '("nocite" "supercite"))  ; These don't want arguments.
         (format "\\%s{%s}" cite-command (s-join ", " keys))
       (let ((prenote      (read-from-minibuffer "Prenote: "))
