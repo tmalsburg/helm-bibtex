@@ -253,6 +253,12 @@ anything when prompted for such a command."
   :group 'helm-bibtex
   :type 'string)
 
+(defcustom helm-bibtex-cite-prompt-for-notes t
+  "If t, helm-bibtex prompts for pre- and postnotes for
+LaTeX cite commands.  Choose nil for no prompts."
+  :group 'helm-bibtex
+  :type 'boolean)
+
 (easy-menu-add-item nil '("Tools" "Helm" "Tools") ["BibTeX" helm-bibtex t])
 
 (defvar helm-bibtex-bibliography-hash nil
@@ -503,8 +509,8 @@ for arguments if the commands can take any."
                        helm-bibtex-default-cite-command nil)))
     (if (member cite-command '("nocite" "supercite"))  ; These don't want arguments.
         (format "\\%s{%s}" cite-command (s-join ", " keys))
-      (let ((prenote      (read-from-minibuffer "Prenote: "))
-            (postnote     (read-from-minibuffer "Postnote: ")))
+      (let ((prenote      (if helm-bibtex-cite-prompt-for-notes (read-from-minibuffer "Prenote: ") ""))
+            (postnote     (if helm-bibtex-cite-prompt-for-notes (read-from-minibuffer "Postnote: ") "")))
         (if (and (string= "" prenote) (string= "" postnote))
             (format "\\%s{%s}" cite-command (s-join ", " keys))
           (format "\\%s[%s][%s]{%s}" cite-command prenote postnote (s-join ", " keys)))))))
