@@ -25,6 +25,7 @@
 ;; A BibTeX bibliography manager based on Helm.
 ;;
 ;; News:
+;; - 11/09/2015: Improved insertion of LaTeX cite commands.
 ;; - 05/14/2015: Added support for multiple PDF directories.
 ;; - 02/23/2015: Added a workaround for a bug in Emacs 24.3.1.  If you
 ;;   didn't see any publications, this should fix it.
@@ -240,7 +241,9 @@ entries."
 citations, these can be accessed as future entries in the
 minibuffer history, i.e. by pressing the arrow down key.  The
 default entries are taken from biblatex.  There is currently no
-support for multicite commands and volcite et al."
+special support for multicite commands and volcite et al.  These
+commands can be used but helm-bibtex does not prompt for their
+extra arguments."
   :group 'helm-bibtex
   :type '(choice string (repeat string)))
 
@@ -249,6 +252,18 @@ support for multicite commands and volcite et al."
 nil, the window will split below."
   :group 'helm-bibtex
   :type 'string)
+
+(defcustom helm-bibtex-default-cite-command "cite"
+   "The LaTeX cite command that is used if the user doesn't enter
+anything when prompted for such a command."
+  :group 'helm-bibtex
+  :type 'string)
+
+(defcustom helm-bibtex-cite-prompt-for-notes t
+  "If t, helm-bibtex prompts for pre- and postnotes for
+LaTeX cite commands.  Choose nil for no prompts."
+  :group 'helm-bibtex
+  :type 'boolean)
 
 (easy-menu-add-item nil '("Tools" "Helm" "Tools") ["BibTeX" helm-bibtex t])
 
@@ -488,17 +503,20 @@ matching PDFs for an entry, the first is opened."
   "Default formatter for keys, separates multiple keys with commas."
   (s-join ", " keys))
 
-(defvar helm-bibtex-citation-command-history nil
+(defvar helm-bibtex-cite-command-history nil
   "History list for LaTeX citation commands.")
 
 (defun helm-bibtex-format-citation-cite (keys)
   "Formatter for LaTeX citation commands.  Prompts for the command and
 for arguments if the commands can take any."
-  (let ((cite-command (read-from-minibuffer "Cite command: " nil nil nil 'helm-bibtex-citation-command-history helm-bibtex-cite-commands)))
+  (let ((cite-command (completing-read
+                       (format "Cite command (default \"%s\"): " helm-bibtex-default-cite-command)
+                       helm-bibtex-cite-commands nil nil nil 'helm-bibtex-cite-command-history
+                       helm-bibtex-default-cite-command nil)))
     (if (member cite-command '("nocite" "supercite"))  ; These don't want arguments.
         (format "\\%s{%s}" cite-command (s-join ", " keys))
-      (let ((prenote      (read-from-minibuffer "Prenote: "))
-            (postnote     (read-from-minibuffer "Postnote: ")))
+      (let ((prenote      (if helm-bibtex-cite-prompt-for-notes (read-from-minibuffer "Prenote: ") ""))
+            (postnote     (if helm-bibtex-cite-prompt-for-notes (read-from-minibuffer "Postnote: ") "")))
         (if (and (string= "" prenote) (string= "" postnote))
             (format "\\%s{%s}" cite-command (s-join ", " keys))
           (format "\\%s[%s][%s]{%s}" cite-command prenote postnote (s-join ", " keys)))))))
