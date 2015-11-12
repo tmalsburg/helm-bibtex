@@ -247,8 +247,8 @@ extra arguments."
   :group 'helm-bibtex
   :type '(choice string (repeat string)))
 
-(defcustom helm-bibtex-default-cite-command "cite"
-   "The LaTeX cite command that is used if the user doesn't enter
+(defcustom helm-bibtex-cite-default-command "cite"
+  "The LaTeX cite command that is used if the user doesn't enter
 anything when prompted for such a command."
   :group 'helm-bibtex
   :type 'string)
@@ -256,6 +256,14 @@ anything when prompted for such a command."
 (defcustom helm-bibtex-cite-prompt-for-optional-arguments t
   "If t, helm-bibtex prompts for pre- and postnotes for
 LaTeX cite commands.  Choose nil for no prompts."
+  :group 'helm-bibtex
+  :type 'boolean)
+
+(defcustom helm-bibtex-cite-default-as-initial-input nil
+  "This variable controls how the default command defined in
+`helm-bibtex-cite-default-command' is used.  If t, it is inserted
+into the minibuffer before reading input from the user.  If nil,
+it is used as the default if the user doesn't enter anything."
   :group 'helm-bibtex
   :type 'boolean)
 
@@ -503,10 +511,13 @@ matching PDFs for an entry, the first is opened."
 (defun helm-bibtex-format-citation-cite (keys)
   "Formatter for LaTeX citation commands.  Prompts for the command and
 for arguments if the commands can take any."
-  (let ((cite-command (completing-read
-                       (format "Cite command (default \"%s\"): " helm-bibtex-default-cite-command)
-                       helm-bibtex-cite-commands nil nil nil 'helm-bibtex-cite-command-history
-                       helm-bibtex-default-cite-command nil)))
+  (let* ((initial (and helm-bibtex-cite-default-as-initial-input helm-bibtex-cite-default-command))
+         (default (and (not helm-bibtex-cite-default-as-initial-input) helm-bibtex-cite-default-command))
+         (default-info (if default (format " (default \"%s\")" default) ""))
+         (cite-command (completing-read
+                        (format "Cite command%s: " default-info)
+                        helm-bibtex-cite-commands nil nil initial
+                        'helm-bibtex-cite-command-history default nil)))
     (if (member cite-command '("nocite" "supercite"))  ; These don't want arguments.
         (format "\\%s{%s}" cite-command (s-join ", " keys))
       (let ((prenote  (if helm-bibtex-cite-prompt-for-optional-arguments (read-from-minibuffer "Prenote: ") ""))
