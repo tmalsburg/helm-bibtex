@@ -248,12 +248,7 @@ extra arguments."
   :type '(choice string (repeat string)))
 
 (defcustom helm-bibtex-cite-default-command "cite"
-  "The LaTeX cite command that is used if the user doesn't enter"
-  :group 'helm-bibtex
-  :type 'string)
-  
-(defcustom helm-bibtex-default-cite-command "cite"
-   "The LaTeX cite command that is used if the user doesn't enter
+  "The LaTeX cite command that is used if the user doesn't enter
 anything when prompted for such a command."
   :group 'helm-bibtex
   :type 'string)
