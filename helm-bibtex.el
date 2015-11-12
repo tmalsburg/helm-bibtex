@@ -248,13 +248,10 @@ extra arguments."
   :type '(choice string (repeat string)))
 
 (defcustom helm-bibtex-cite-default-command "cite"
-  "The LaTeX cite command that is used if the user doesn't enter
-(defcustom helm-bibtex-full-frame t
-  "Non-nil means open `helm-bibtex' using the entire window. When
-nil, the window will split below."
+  "The LaTeX cite command that is used if the user doesn't enter"
   :group 'helm-bibtex
   :type 'string)
-
+  
 (defcustom helm-bibtex-default-cite-command "cite"
    "The LaTeX cite command that is used if the user doesn't enter
 anything when prompted for such a command."
@@ -274,6 +271,12 @@ into the minibuffer before reading input from the user.  If nil,
 it is used as the default if the user doesn't enter anything."
   :group 'helm-bibtex
   :type 'boolean)
+
+(defcustom helm-bibtex-full-frame t
+  "Non-nil means open `helm-bibtex' using the entire window. When
+nil, the window will split below."
+  :group 'helm-bibtex
+  :type 'string)
 
 (easy-menu-add-item nil '("Tools" "Helm" "Tools") ["BibTeX" helm-bibtex t])
 
