@@ -511,8 +511,8 @@ matching PDFs for an entry, the first is opened."
 (defun helm-bibtex-format-citation-cite (keys)
   "Formatter for LaTeX citation commands.  Prompts for the command and
 for arguments if the commands can take any."
-  (let* ((initial (and helm-bibtex-cite-default-as-initial-input helm-bibtex-cite-default-command))
-         (default (and (not helm-bibtex-cite-default-as-initial-input) helm-bibtex-cite-default-command))
+  (let* ((initial (when helm-bibtex-cite-default-as-initial-input helm-bibtex-cite-default-command))
+         (default (unless helm-bibtex-cite-default-as-initial-input helm-bibtex-cite-default-command))
          (default-info (if default (format " (default \"%s\")" default) ""))
          (cite-command (completing-read
                         (format "Cite command%s: " default-info)
