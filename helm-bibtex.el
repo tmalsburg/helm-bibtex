@@ -393,25 +393,37 @@ appended to the requested entry."
    collect (helm-bibtex-prepare-entry entry
             (cons (if (assoc-string "author" entry 'case-fold) "author" "editor") fields))))
 
+(defun helm-bibtex-find-pdf-in-field (key-or-entry)
+  "Returns the path of the PDF specified in the field
+`helm-bibtex-pdf-field' if that file exists.  Returns nil if no
+file is specified, or if the specified file does not exist, or if
+`helm-bibtex-pdf-field' is nil."
+  (when helm-bibtex-pdf-field
+    (let* ((entry (if (stringp key-or-entry)
+                      (helm-bibtex-get-entry1 key-or-entry t)
+                    key-or-entry))
+           (path (helm-bibtex-get-value helm-bibtex-pdf-field entry)))
+      (when (f-exists? path) path))))
+
+(defun helm-bibtex-find-pdf-in-library (key-or-entry)
+  "Searches the directories in `helm-bibtex-library-path' for a
+PDF whose names is composed of the BibTeX key plus \".pdf\".  The
+path of the first matching PDF is returned."
+  (let ((key (if (stringp key-or-entry)
+                 key-or-entry
+               (helm-bibtex-get-value "=key=" key-or-entry))))
+     (-first 'f-exists?
+             (--map (f-join it (s-concat key ".pdf"))
+                    (-flatten (list helm-bibtex-library-path))))))
+
 (defun helm-bibtex-find-pdf (key-or-entry)
   "Returns the path of the PDF associated with the specified
 entry.  This is either the path specified in the field
-`helm-bibtex-pdf-field' or if that path doesn't exists the first
-PDF in any of the directories in `helm-bibtex-library-path' whose
-name is key + \".pdf\"."
-  (let ((pdf-path (and helm-bibtex-pdf-field
-                       (let* ((entry (if (stringp key-or-entry)
-                                         (helm-bibtex-get-entry1 key-or-entry t)
-                                       key-or-entry))
-                              (pdf-path (helm-bibtex-get-value helm-bibtex-pdf-field entry)))
-                         (and pdf-path (f-exists? pdf-path) pdf-path)))))
-    (or pdf-path
-        (let ((key (if (stringp key-or-entry)
-                       key-or-entry
-                     (helm-bibtex-get-value "=key=" key-or-entry))))
-          (-first 'f-exists?
-                  (--map (f-join it (s-concat key ".pdf"))
-                         (-flatten (list helm-bibtex-library-path))))))))
+`helm-bibtex-pdf-field' or the first PDF in any of the
+directories in `helm-bibtex-library-path' whose name is key +
+\".pdf\".  Returns nil if no PDF could be found."
+  (or (helm-bibtex-find-pdf-in-field key-or-entry)
+      (helm-bibtex-find-pdf-in-library key-or-entry)))
 
 (defun helm-bibtex-prepare-entry (entry &optional fields do-not-find-pdf)
   "Prepare ENTRY for display.
