@@ -296,7 +296,7 @@ bibliography files were last parsed.")
   "Checks that the files and directories specified by the user
 actually exist."
   (mapc (lambda (file)
-          (unless (f-exists? file)
+          (unless (f-file? file)
                   (user-error "BibTeX file %s could not be found." file)))
         (-flatten (list helm-bibtex-bibliography))))
 
@@ -402,19 +402,33 @@ file is specified, or if the specified file does not exist, or if
     (let* ((entry (if (stringp key-or-entry)
                       (helm-bibtex-get-entry1 key-or-entry t)
                     key-or-entry))
-           (path (helm-bibtex-get-value helm-bibtex-pdf-field entry)))
-      (when (f-exists? path) path))))
+           (value (helm-bibtex-get-value helm-bibtex-pdf-field entry)))
+      (cond
+       ((not value) nil)         ; Field not defined.
+       ((f-file? value) value)   ; A bare path was found.
+       (t
+        ; Assuming Zotero/Mendeley/JabRef format:
+        (cl-loop  ; Looping over the files:
+         for record in (s-split ";" value)
+         for record = (s-split ":" record)
+         for file-name = (nth 0 record)
+         for path = (nth 1 record)
+         if (f-file? path)
+           collect (f-full path)
+         else if (f-file? (f-full (f-join path file-name)))
+           collect (f-full (f-join path file-name))))))))
 
 (defun helm-bibtex-find-pdf-in-library (key-or-entry)
   "Searches the directories in `helm-bibtex-library-path' for a
 PDF whose names is composed of the BibTeX key plus \".pdf\".  The
 path of the first matching PDF is returned."
-  (let ((key (if (stringp key-or-entry)
-                 key-or-entry
-               (helm-bibtex-get-value "=key=" key-or-entry))))
-     (-first 'f-exists?
-             (--map (f-join it (s-concat key ".pdf"))
-                    (-flatten (list helm-bibtex-library-path))))))
+  (let* ((key (if (stringp key-or-entry)
+                  key-or-entry
+                (helm-bibtex-get-value "=key=" key-or-entry)))
+         (x (-first 'f-file?
+                    (--map (f-join it (s-concat key ".pdf"))
+                           (-flatten (list helm-bibtex-library-path))))))
+    (when x (list x))))
 
 (defun helm-bibtex-find-pdf (key-or-entry)
   "Returns the path of the PDF associated with the specified
@@ -440,17 +454,17 @@ find a PDF file."
            (entry (if (and (not do-not-find-pdf) (helm-bibtex-find-pdf entry))
                       (setq entry (cons (cons "=has-pdf=" helm-bibtex-pdf-symbol) entry))
                     entry))
+           (entry-key (cdr (assoc "=key=" entry)))
            ; Check for notes:
            (entry (if (and helm-bibtex-notes-path
-                           (f-exists? (f-join helm-bibtex-notes-path
-                                              (s-concat entry-key helm-bibtex-notes-extension))))
+                           (f-file? (f-join helm-bibtex-notes-path
+                                            (s-concat entry-key helm-bibtex-notes-extension))))
                       (cons (cons "=has-note=" helm-bibtex-notes-symbol) entry)
                     entry))
            ; Remove unwanted fields:
            (entry (if fields
                        (--filter (member-ignore-case (car it) fields) entry)
-                     entry))
-           (entry-key (cdr (assoc "=key=" entry))))
+                     entry)))
       ;; Normalize case of entry type:
       (setcdr (assoc "=type=" entry) (downcase (cdr (assoc "=type=" entry))))
       ;; Remove duplicated fields:
@@ -522,7 +536,7 @@ function specified in `helm-bibtex-pdf-open-function'.  All paths
 in `helm-bibtex-library-path' are searched.  If there are several
 matching PDFs for an entry, the first is opened."
   (--if-let
-      (-non-nil
+      (-flatten
        (-map 'helm-bibtex-find-pdf (helm-marked-candidates :with-wildcard t)))
       (-each it helm-bibtex-pdf-open-function)
     (message "No PDF(s) found.")))
@@ -581,10 +595,10 @@ for arguments if the commands can take any."
   "Formatter for org-links to PDF.  Uses first matching PDF if
 several are available.  Entries for which no PDF is available are
 omitted."
-  (s-join ", " (-non-nil
-                (--map (when (cdr it)
-                           (format "[[%s][%s]]" (cdr it) (car it)))
-                       (--map (cons it (helm-bibtex-find-pdf it)) keys)))))
+  (s-join ", " (cl-loop
+                for key in keys
+                for pdfs = (helm-bibtex-find-pdf key)
+                append (--map (format "[[%s][%s]]" it key) pdfs))))
 
 (defun helm-bibtex-insert-citation (_)
   "Insert citation at point.  The format depends on
@@ -787,7 +801,7 @@ defined.  Surrounding curly braces are stripped."
 (defun helm-bibtex-add-PDF-attachment (_)
   "Attach the PDFs of the selected entries where available."
   (--if-let
-      (-non-nil
+      (-flatten
        (-map 'helm-bibtex-find-pdf (helm-marked-candidates :with-wildcard t)))
       (-each it 'mml-attach-file)
     (message "No PDF(s) found.")))
