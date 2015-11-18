@@ -25,6 +25,9 @@
 ;; A BibTeX bibliography manager based on Helm.
 ;;
 ;; News:
+;; - 11/10/2015: Added support for PDFs specified in a BibTeX
+;;               field.  See customization variable
+;;               `helm-bibtex-pdf-field'.
 ;; - 11/09/2015: Improved insertion of LaTeX cite commands.
 ;; - 05/14/2015: Added support for multiple PDF directories.
 ;; - 02/23/2015: Added a workaround for a bug in Emacs 24.3.1.  If you
@@ -261,6 +264,15 @@ it is used as the default if the user doesn't enter anything."
   :group 'helm-bibtex
   :type 'boolean)
 
+(defcustom helm-bibtex-pdf-field nil
+  "The name of the BibTeX field in which the path to PDF files is
+stored or nil if no such field should be used.  If an entry has
+no value for this field, or if the specified file does not exist,
+or if this variable is nil, helm-bibtex will look up the PDF in
+the directories listed in `helm-bibtex-library-path'."
+  :group 'helm-bibtex
+  :type 'string)
+
 (defcustom helm-bibtex-full-frame t
   "Non-nil means open `helm-bibtex' using the entire window. When
 nil, the window will split below."
@@ -290,7 +302,7 @@ bibliography files were last parsed.")
   "Checks that the files and directories specified by the user
 actually exist."
   (mapc (lambda (file)
-          (unless (f-exists? file)
+          (unless (f-file? file)
                   (user-error "BibTeX file %s could not be found." file)))
         (-flatten (list helm-bibtex-bibliography))))
 
@@ -366,7 +378,7 @@ appended to the requested entry."
                           :test (lambda (x y) (string= (s-downcase x) (s-downcase y)))
                           :key 'car :from-end t)))
 
-(defun helm-bibtex-get-entry1 (entry-key)
+(defun helm-bibtex-get-entry1 (entry-key &optional do-not-find-pdf)
   (with-temp-buffer
     (mapc #'insert-file-contents
           (-flatten (list helm-bibtex-bibliography)))
@@ -375,7 +387,7 @@ appended to the requested entry."
                                "\\)[[:space:]]*[\(\{][[:space:]]*"
                                (regexp-quote entry-key) "[[:space:]]*,"))
     (let ((entry-type (match-string 1)))
-      (reverse (helm-bibtex-prepare-entry (parsebib-read-entry entry-type))))))
+      (reverse (helm-bibtex-prepare-entry (parsebib-read-entry entry-type) nil do-not-find-pdf)))))
 
 (defun helm-bibtex-prepare-entries (entries)
   "Do some preprocessing of the entries."
@@ -387,36 +399,80 @@ appended to the requested entry."
    collect (helm-bibtex-prepare-entry entry
             (cons (if (assoc-string "author" entry 'case-fold) "author" "editor") fields))))
 
-(defun helm-bibtex-find-pdf (key)
-  "Searches in all directories in `helm-bibtex-library-path' for
-a PDF whose name is KEY + \".pdf\".  Returns the first matching PDF."
-  (-first 'f-exists?
-          (--map (f-join it (s-concat key ".pdf"))
-                 (-flatten (list helm-bibtex-library-path)))))
-  
-(defun helm-bibtex-prepare-entry (entry &optional fields)
+(defun helm-bibtex-find-pdf-in-field (key-or-entry)
+  "Returns the path of the PDF specified in the field
+`helm-bibtex-pdf-field' if that file exists.  Returns nil if no
+file is specified, or if the specified file does not exist, or if
+`helm-bibtex-pdf-field' is nil."
+  (when helm-bibtex-pdf-field
+    (let* ((entry (if (stringp key-or-entry)
+                      (helm-bibtex-get-entry1 key-or-entry t)
+                    key-or-entry))
+           (value (helm-bibtex-get-value helm-bibtex-pdf-field entry)))
+      (cond
+       ((not value) nil)         ; Field not defined.
+       ((f-file? value) value)   ; A bare path was found.
+       (t
+        ; Assuming Zotero/Mendeley/JabRef format:
+        (cl-loop  ; Looping over the files:
+         for record in (s-split ";" value)
+         for record = (s-split ":" record)
+         for file-name = (nth 0 record)
+         for path = (nth 1 record)
+         if (f-file? path)
+           collect (f-full path)
+         else if (f-file? (f-full (f-join path file-name)))
+           collect (f-full (f-join path file-name))))))))
+
+(defun helm-bibtex-find-pdf-in-library (key-or-entry)
+  "Searches the directories in `helm-bibtex-library-path' for a
+PDF whose names is composed of the BibTeX key plus \".pdf\".  The
+path of the first matching PDF is returned."
+  (let* ((key (if (stringp key-or-entry)
+                  key-or-entry
+                (helm-bibtex-get-value "=key=" key-or-entry)))
+         (path (-first 'f-file?
+                       (--map (f-join it (s-concat key ".pdf"))
+                              (-flatten (list helm-bibtex-library-path))))))
+    (when path (list path))))
+
+(defun helm-bibtex-find-pdf (key-or-entry)
+  "Returns the path of the PDF associated with the specified
+entry.  This is either the path specified in the field
+`helm-bibtex-pdf-field' or, if that does not exist, the first PDF
+in any of the directories in `helm-bibtex-library-path' whose
+name is \"<bibtex-key>.pdf\".  Returns nil if no PDF is found."
+  (or (helm-bibtex-find-pdf-in-field key-or-entry)
+      (helm-bibtex-find-pdf-in-library key-or-entry)))
+
+(defun helm-bibtex-prepare-entry (entry &optional fields do-not-find-pdf)
   "Prepare ENTRY for display.
 ENTRY is an alist representing an entry as returned by
 parsebib-read-entry. All the fields not in FIELDS are removed
 from ENTRY, with the exception of the \"=type=\" and \"=key=\"
 fields. If FIELDS is empty, all fields are kept. Also add a
-=has-pdf= and/or =has-notes= field, if they exist for ENTRY."
+=has-pdf= and/or =has-notes= field, if they exist for ENTRY.  If
+DO-NOT-FIND-PDF is non-nil, this function does not attempt to
+find a PDF file."
   (when entry ; entry may be nil, in which case just return nil
-    (when fields
-      (setq fields (append fields (list "=type=" "=key="))))
-    (let* ((entry (if fields
+    (let* ((fields (when fields (append fields (list "=type=" "=key=" "=has-pdf=" "=has-note="))))
+           ; Check for PDF:
+           (entry (if (and (not do-not-find-pdf) (helm-bibtex-find-pdf entry))
+                      (setq entry (cons (cons "=has-pdf=" helm-bibtex-pdf-symbol) entry))
+                    entry))
+           (entry-key (cdr (assoc "=key=" entry)))
+           ; Check for notes:
+           (entry (if (and helm-bibtex-notes-path
+                           (f-file? (f-join helm-bibtex-notes-path
+                                            (s-concat entry-key helm-bibtex-notes-extension))))
+                      (cons (cons "=has-note=" helm-bibtex-notes-symbol) entry)
+                    entry))
+           ; Remove unwanted fields:
+           (entry (if fields
                        (--filter (member-ignore-case (car it) fields) entry)
-                     entry))
-           (entry-key (cdr (assoc "=key=" entry))))
+                     entry)))
       ;; Normalize case of entry type:
       (setcdr (assoc "=type=" entry) (downcase (cdr (assoc "=type=" entry))))
-      ;; Check for PDF and notes:
-      (if (helm-bibtex-find-pdf entry-key)
-          (setq entry (cons (cons "=has-pdf=" helm-bibtex-pdf-symbol) entry)))
-      (if (and helm-bibtex-notes-path
-               (f-exists? (f-join helm-bibtex-notes-path
-                                  (s-concat entry-key helm-bibtex-notes-extension))))
-          (setq entry (cons (cons "=has-note=" helm-bibtex-notes-symbol) entry)))
       ;; Remove duplicated fields:
       (cl-remove-duplicates entry
                             :test (lambda (x y) (string= (s-downcase x) (s-downcase y)))
@@ -486,7 +542,7 @@ function specified in `helm-bibtex-pdf-open-function'.  All paths
 in `helm-bibtex-library-path' are searched.  If there are several
 matching PDFs for an entry, the first is opened."
   (--if-let
-      (-non-nil
+      (-flatten
        (-map 'helm-bibtex-find-pdf (helm-marked-candidates :with-wildcard t)))
       (-each it helm-bibtex-pdf-open-function)
     (message "No PDF(s) found.")))
@@ -517,8 +573,8 @@ matching PDFs for an entry, the first is opened."
 (defun helm-bibtex-format-citation-cite (keys)
   "Formatter for LaTeX citation commands.  Prompts for the command and
 for arguments if the commands can take any."
-  (let* ((initial (and helm-bibtex-cite-default-as-initial-input helm-bibtex-cite-default-command))
-         (default (and (not helm-bibtex-cite-default-as-initial-input) helm-bibtex-cite-default-command))
+  (let* ((initial (when helm-bibtex-cite-default-as-initial-input helm-bibtex-cite-default-command))
+         (default (unless helm-bibtex-cite-default-as-initial-input helm-bibtex-cite-default-command))
          (default-info (if default (format " (default \"%s\")" default) ""))
          (cite-command (completing-read
                         (format "Cite command%s: " default-info)
@@ -556,10 +612,10 @@ for arguments if the commands can take any."
   "Formatter for org-links to PDF.  Uses first matching PDF if
 several are available.  Entries for which no PDF is available are
 omitted."
-  (s-join ", " (-non-nil
-                (--map (when (cdr it)
-                           (format "[[%s][%s]]" (cdr it) (car it)))
-                       (--map (cons it (helm-bibtex-find-pdf it)) keys)))))
+  (s-join ", " (cl-loop
+                for key in keys
+                for pdfs = (helm-bibtex-find-pdf key)
+                append (--map (format "[[%s][%s]]" it key) pdfs))))
 
 (defun helm-bibtex-insert-citation (_)
   "Insert citation at point.  The format depends on
@@ -762,7 +818,7 @@ defined.  Surrounding curly braces are stripped."
 (defun helm-bibtex-add-PDF-attachment (_)
   "Attach the PDFs of the selected entries where available."
   (--if-let
-      (-non-nil
+      (-flatten
        (-map 'helm-bibtex-find-pdf (helm-marked-candidates :with-wildcard t)))
       (-each it 'mml-attach-file)
     (message "No PDF(s) found.")))

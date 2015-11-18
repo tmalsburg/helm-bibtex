@@ -4,6 +4,7 @@
 [[http://melpa.org/#/helm-bibtex][http://melpa.org/packages/helm-bibtex-badge.svg]]
 
 * News
+- [2015-11-10 Tue] :: Added support for PDFs specified in a BibTeX field.  See customization variable ~helm-bibtex-pdf-field~.
 - [2015-11-09 Mon] :: Improved insertion of LaTeX cite commands.
 - [2015-05-14 Thu] :: Added support for multiple PDF directories.
 - [2015-02-23 Mon] :: Added a workaround for a bug in Emacs 24.3.1.  If you
@@ -71,7 +72,21 @@ Specify where PDFs can be found:
 (setq helm-bibtex-library-path '("/path1/to/pdfs" "/path2/to/pdfs"))
 #+END_SRC
 
-Helm-bibtex assumes that the name of a PDF consists of the BibTeX key followed by the suffix ~.pdf~.  Example, if a BibTeX entry has the key ~Darwin1859~, helm-bibtex searches for ~Darvin1859.pdf~ when trying to open the corresponding PDF.
+Helm-bibtex assumes that the name of a PDF consists of the BibTeX key followed by the suffix ~.pdf~.  For example, if a BibTeX entry has the key ~Darwin1859~, helm-bibtex searches for ~Darvin1859.pdf~ when trying to open the corresponding PDF.
+
+If the BibTeX entries have a field that specifies the full path to the PDFs, that field can also be used.  For example, JabRef stores the location of the PDFs in a field called ~File~:
+
+#+BEGIN_SRC emacs-lisp
+(setq helm-bibtex-pdf-field "File")
+#+END_SRC
+
+If ~helm-bibtex-pdf-field~ is non-nil, helm-bibtex will first try to retrieve the file specified in this field.  If the field is not set for an entry or if the specified file does not exists, helm-bibtex falls back to the method described above (searching for key + ~.pdf~ in the directories listed in ~helm-bibtex-library-path~).
+
+File specifications can be bare paths or follow the format used by JabRef, Zotero, and Mendeley.  This format also allows the specification of multiple files (e.g., the main paper and supplementary material).  Examples:
+
+- ~File = {/path/to/article.pdf}~
+- ~File = {:/path/to/article.pdf:PDF}~
+- ~File = {:/path/to/article.pdf:PDF;:/path/to/supplementary_materials.pdf:PDF}~
 
 ** Notes
 
@@ -96,7 +111,7 @@ The default fields used for searching are: author, title, year, BibTeX key, entr
 
 ** Different naming schemes for PDF files
 
-If the PDFs files follow a different naming scheme than BibTeX key + ~.pdf~, the function ~helm-bibtex-find-pdf~ can be modified to accommodate that.
+If the PDFs files follow a different naming scheme than BibTeX key + ~.pdf~, the function ~helm-bibtex-find-pdf-in-library~ can be modified to accommodate that.
 
 ** Symbols used for indicating the availability of notes and PDF files
 
@@ -163,7 +178,11 @@ A citation function has to accept a list of keys as input and return a string co
 
 *** LaTeX citation commands
 
-Helm-bibtex prompts for a LaTeX citation command when inserting citations in LaTeX documents.  The list of commands available for auto-completion can be defined using the variable ~helm-bibtex-cite-commands~.  The default setting includes all cite commands defined in biblatex (except multicite commands and ~\volcite~ et al.).  If no command is entered, a default command is used which can be configured using ~helm-bibtex-default-cite-command~.  The default value for the default command is ~cite~.  By default, helm-bibtex also prompts for pre- and postnotes for the citation.  This can be switched off by setting the variable ~helm-bibtex-cite-prompt-for-optional-arguments~ to ~nil~.
+Helm-bibtex prompts for a LaTeX citation command when inserting citations in LaTeX documents.  The list of commands available for auto-completion can be defined using the variable ~helm-bibtex-cite-commands~.
+
+The default setting includes all cite commands defined in biblatex (except multicite commands and ~\volcite~ et al.).  If no command is entered, a default command is used which can be configured using ~helm-bibtex-default-cite-command~.  The default value for the default command is ~cite~.  The variable `helm-bibtex-cite-default-as-initial-input` controls how the default command is used.  If `t`, it is inserted into the minibuffer before reading input from the user.  If nil, it is not inserted into the minibuffer but used as the default if the user doesn't enter anything."
+
+By default, helm-bibtex also prompts for the optional pre- and postnotes for the citation.  This can be switched off by setting the variable ~helm-bibtex-cite-prompt-for-optional-arguments~ to ~nil~.
 
 See also the section [[Insertion of LaTeX cite commands]] below.
 
