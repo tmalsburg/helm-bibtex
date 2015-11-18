@@ -72,7 +72,7 @@ Specify where PDFs can be found:
 (setq helm-bibtex-library-path '("/path1/to/pdfs" "/path2/to/pdfs"))
 #+END_SRC
 
-Helm-bibtex assumes that the name of a PDF consists of the BibTeX key followed by the suffix ~.pdf~.  Example, if a BibTeX entry has the key ~Darwin1859~, helm-bibtex searches for ~Darvin1859.pdf~ when trying to open the corresponding PDF.
+Helm-bibtex assumes that the name of a PDF consists of the BibTeX key followed by the suffix ~.pdf~.  For example, if a BibTeX entry has the key ~Darwin1859~, helm-bibtex searches for ~Darvin1859.pdf~ when trying to open the corresponding PDF.
 
 If the BibTeX entries have a field that specifies the full path to the PDFs, that field can also be used.  For example, JabRef stores the location of the PDFs in a field called ~File~:
 
@@ -81,6 +81,12 @@ If the BibTeX entries have a field that specifies the full path to the PDFs, tha
 #+END_SRC
 
 If ~helm-bibtex-pdf-field~ is non-nil, helm-bibtex will first try to retrieve the file specified in this field.  If the field is not set for an entry or if the specified file does not exists, helm-bibtex falls back to the method described above (searching for key + ~.pdf~ in the directories listed in ~helm-bibtex-library-path~).
+
+File specifications can be bare paths or follow the format used by JabRef, Zotero, and Mendeley.  This format also allows the specification of multiple files (e.g., the main paper and supplementary material).  Examples:
+
+- ~File = {/path/to/article.pdf}~
+- ~File = {:/path/to/article.pdf:PDF}~
+- ~File = {:/path/to/article.pdf:PDF;:/path/to/supplementary_materials.pdf:PDF}~
 
 ** Notes
 
@@ -105,7 +111,7 @@ The default fields used for searching are: author, title, year, BibTeX key, entr
 
 ** Different naming schemes for PDF files
 
-If the PDFs files follow a different naming scheme than BibTeX key + ~.pdf~, the function ~helm-bibtex-find-pdf~ can be modified to accommodate that.
+If the PDFs files follow a different naming scheme than BibTeX key + ~.pdf~, the function ~helm-bibtex-find-pdf-in-library~ can be modified to accommodate that.
 
 ** Symbols used for indicating the availability of notes and PDF files
 
