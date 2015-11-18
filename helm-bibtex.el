@@ -425,17 +425,17 @@ path of the first matching PDF is returned."
   (let* ((key (if (stringp key-or-entry)
                   key-or-entry
                 (helm-bibtex-get-value "=key=" key-or-entry)))
-         (x (-first 'f-file?
-                    (--map (f-join it (s-concat key ".pdf"))
-                           (-flatten (list helm-bibtex-library-path))))))
+         (path (-first 'f-file?
+                       (--map (f-join it (s-concat key ".pdf"))
+                              (-flatten (list helm-bibtex-library-path))))))
     (when x (list x))))
 
 (defun helm-bibtex-find-pdf (key-or-entry)
   "Returns the path of the PDF associated with the specified
 entry.  This is either the path specified in the field
-`helm-bibtex-pdf-field' or the first PDF in any of the
-directories in `helm-bibtex-library-path' whose name is key +
-\".pdf\".  Returns nil if no PDF could be found."
+`helm-bibtex-pdf-field' or, if that does not exist, the first PDF
+in any of the directories in `helm-bibtex-library-path' whose
+name is \"<bibtex-key>.pdf\".  Returns nil if no PDF is found."
   (or (helm-bibtex-find-pdf-in-field key-or-entry)
       (helm-bibtex-find-pdf-in-library key-or-entry)))
 
