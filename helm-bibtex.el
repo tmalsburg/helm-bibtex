@@ -256,12 +256,6 @@ anything when prompted for such a command."
   :group 'helm-bibtex
   :type 'string)
 
-(defcustom helm-bibtex-cite-prompt-for-optional-arguments t
-  "If t, helm-bibtex prompts for pre- and postnotes for
-LaTeX cite commands.  Choose nil for no prompts."
-  :group 'helm-bibtex
-  :type 'boolean)
-
 (defcustom helm-bibtex-cite-default-as-initial-input nil
   "This variable controls how the default command defined in
 `helm-bibtex-cite-default-command' is used.  If t, it is inserted
@@ -278,6 +272,18 @@ or if this variable is nil, helm-bibtex will look up the PDF in
 the directories listed in `helm-bibtex-library-path'."
   :group 'helm-bibtex
   :type 'string)
+
+(defcustom helm-bibtex-full-frame t
+  "Non-nil means open `helm-bibtex' using the entire window. When
+nil, the window will split below."
+  :group 'helm-bibtex
+  :type 'boolean)
+
+(defcustom helm-bibtex-number-of-optional-arguments 2
+  "The number of optional arguments used for LaTeX citation.
+Choose between 0 and 2."
+  :group 'helm-bibtex
+  :type 'number)
 
 (easy-menu-add-item nil '("Tools" "Helm" "Tools") ["BibTeX" helm-bibtex t])
 
@@ -576,11 +582,22 @@ for arguments if the commands can take any."
                         'helm-bibtex-cite-command-history default nil)))
     (if (member cite-command '("nocite" "supercite"))  ; These don't want arguments.
         (format "\\%s{%s}" cite-command (s-join ", " keys))
-      (let ((prenote  (if helm-bibtex-cite-prompt-for-optional-arguments (read-from-minibuffer "Prenote: ") ""))
-            (postnote (if helm-bibtex-cite-prompt-for-optional-arguments (read-from-minibuffer "Postnote: ") "")))
-        (if (and (string= "" prenote) (string= "" postnote))
-            (format "\\%s{%s}" cite-command (s-join ", " keys))
-          (format "\\%s[%s][%s]{%s}" cite-command prenote postnote (s-join ", " keys)))))))
+      (if (= helm-bibtex-number-of-optional-arguments 0)
+          (format "\\%s{%s}" cite-command (s-join ", " keys))
+        (if (= helm-bibtex-number-of-optional-arguments 1)
+            (let ((pos (if (= helm-bibtex-number-of-optional-arguments 1)
+                           (read-from-minibuffer "Postnote[1]: ") "")))
+              (if (and (= helm-bibtex-number-of-optional-arguments 1) (string= "" pos))
+                  (format "\\%s{%s}" cite-command (s-join ", " keys))
+                (format "\\%s[%s]{%s}"  cite-command pos (s-join ", " keys))))
+          (let ((pre (if (= helm-bibtex-number-of-optional-arguments 2)
+                         (read-from-minibuffer "Prenote[1]: ") ""))
+                (pos (if (= helm-bibtex-number-of-optional-arguments 2)
+                         (read-from-minibuffer "Postnote[2]: ") "")))
+            (if (and (= helm-bibtex-number-of-optional-arguments 2) (string= "" pre) (string= "" pos))
+                (format "\\%s{%s}" cite-command (s-join ", " keys))
+              (format "\\%s[%s][%s]{%s}" cite-command pre pos (s-join ", " keys)))
+            ))))))
 
 (defun helm-bibtex-format-citation-pandoc-citeproc (keys)
   "Formatter for pandoc-citeproc citations."
@@ -894,7 +911,7 @@ entry for each BibTeX file that will open that file for editing."
   "Search BibTeX entries."
   (interactive)
   (helm :sources '(helm-source-bibtex helm-source-fallback-options)
-        :full-frame t
+        :full-frame helm-bibtex-full-frame
         :candidate-number-limit 500))
 
 (provide 'helm-bibtex)

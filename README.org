@@ -234,6 +234,10 @@ The second argument of ~helm-add-action-to-source~ is the function that executes
 
 The function ~helm-add-action-to-source~ can also be used to add new actions to helm-bibtex.
 
+** Window size
+
+By default ~helm-bibtex~ uses the entire window to display the bibliography. This can be changed by setting the variable ~helm-bibtex-full-frame~ to ~nil~, which will split the window below instead.
+
 * Usage
 
 ** Searching publications
@@ -340,5 +344,5 @@ There are many other ways in which tags can be used.  For example, they can be u
 
 ** Insertion of LaTeX cite commands
 
-The action for inserting a citation command into a LaTeX document prompts for the citation command and, if applicable, for the pre- and postnote arguments.  The prompt for the citation command has its own minibuffer history, which means that previous inputs can be accessed by pressing the ~<up>~ key.  By pressing ~<down>~ it is also possible to access the list of all citation commands defined in biblatex (except for multicite commands and volcite et al. which have different argument structures).  The prompt also supports auto-completion via the ~tab~ key.  If no command is entered, the default command is used.  The default command is defined in the customization variable ~helm-bibtex-default-cite-command~.  By default, helm-bibtex prompts for pre- and postnotes for the citation.  This can be switched off by setting the variable ~helm-bibtex-cite-prompt-for-optional-arguments~ to ~nil~.
+The action for inserting a citation command into a LaTeX document prompts for the citation command and, if applicable, for the pre- and postnote arguments.  The prompt for the citation command has its own minibuffer history, which means that previous inputs can be accessed by pressing the ~<up>~ key.  By pressing ~<down>~ it is also possible to access the list of all citation commands defined in biblatex (except for multicite commands and volcite et al. which have different argument structures).  The prompt also supports auto-completion via the ~tab~ key.  If no command is entered, the default command is used.  The default command is defined in the customization variable ~helm-bibtex-default-cite-command~.  By default, helm-bibtex prompts for pre- and postnotes for the citation. The number of prompts is defined by the variable ~helm-bibtex-number-of-optional-arguments~ which accepts integers between 0 and 2.
 
