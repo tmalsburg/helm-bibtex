@@ -416,7 +416,10 @@ file is specified, or if the specified file does not exist, or if
          if (f-file? path)
            collect (f-full path)
          else if (f-file? (f-full (f-join path file-name)))
-           collect (f-full (f-join path file-name))))))))
+           collect (f-full (f-join path file-name))
+         ;; This is to work around a bug in Mendeley.
+         else if (f-file? (f-full (f-join path file-name)))
+           collect (f-full (concat "/" path))))))))
 
 (defun helm-bibtex-find-pdf-in-library (key-or-entry)
   "Searches the directories in `helm-bibtex-library-path' for a
