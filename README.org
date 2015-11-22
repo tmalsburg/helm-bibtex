@@ -239,7 +239,6 @@ The function ~helm-add-action-to-source~ can also be used to add new actions to 
 By default ~helm-bibtex~ uses the entire window to display the bibliography.  This can be changed by setting the variable ~helm-bibtex-full-frame~ to ~nil~, in which case helm’s standard is used (typically vertical split, with the helm search being shown in the lower window).  
 
 * Usage
-
 ** Searching publications
 
 The command ~M-x helm-bibtex~ starts a new search in your bibliography.  The default fields for searching are: author, title, year, BibTeX key, and entry type.  Regular expressions can be used.  Example searches:
@@ -341,8 +340,9 @@ Since ~tags~ is not a standard BibTeX field, helm-bibtex by default doesn’t co
 
 There are many other ways in which tags can be used.  For example, they can be used to mark articles that you plan to read or important articles or manuscripts in progress, etc.  Be creative.
 
-
 ** Insertion of LaTeX cite commands
 
 The action for inserting a citation command into a LaTeX document prompts for the citation command and, if applicable, for the pre- and postnote arguments.  The prompt for the citation command has its own minibuffer history, which means that previous inputs can be accessed by pressing the ~<up>~ key.  By pressing ~<down>~ it is also possible to access the list of all citation commands defined in biblatex (except for multicite commands and volcite et al. which have different argument structures).  The prompt also supports auto-completion via the ~tab~ key.  If no command is entered, the default command is used.  The default command is defined in the customization variable ~helm-bibtex-cite-default-command~.  By default, helm-bibtex prompts for pre- and postnotes for the citation.  This can be switched off by setting the variable ~helm-bibtex-cite-prompt-for-optional-arguments~ to ~nil~.
 
+** Force rereading the bibliography
+Helm-bibtex caches the bibliography to prevent a costly reread when a new query is started.  However, helm-bibtex does not check whether new PDFs or notes were added since the last read and hence the symbols indicating the presence or absence of these items may be incorrect.  A reread can be forced using a prefix argument.  Either do `C-u M-x helm-bibtex` or `C-u` followed by whatever key binding you use to invoke helm-bibtex.

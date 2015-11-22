@@ -899,9 +899,14 @@ entry for each BibTeX file that will open that file for editing."
   "Source for online look-up.")
 
 ;;;###autoload
-(defun helm-bibtex ()
-  "Search BibTeX entries."
-  (interactive)
+(defun helm-bibtex (&optional arg)
+  "Search BibTeX entries.
+
+With a prefix ARG the cache is invalidated and the bibliography
+reread."
+  (interactive "P")
+  (when arg
+    (setq helm-bibtex-bibliography-hash ""))
   (helm :sources '(helm-source-bibtex helm-source-fallback-options)
         :full-frame helm-bibtex-full-frame
         :candidate-number-limit 500))
