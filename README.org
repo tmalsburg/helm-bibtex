@@ -236,7 +236,7 @@ The function ~helm-add-action-to-source~ can also be used to add new actions to 
 
 ** Window size
 
-By default ~helm-bibtex~ uses the entire window to display the bibliography. This can be changed by setting the variable ~helm-bibtex-full-frame~ to ~nil~, which will split the window below instead.
+By default ~helm-bibtex~ uses the entire window to display the bibliography.  This can be changed by setting the variable ~helm-bibtex-full-frame~ to ~nil~, in which case helm’s standard is used (typically vertical split, with the helm search being shown in the lower window).  
 
 * Usage
 
