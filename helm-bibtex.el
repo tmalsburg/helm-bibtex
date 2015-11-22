@@ -146,18 +146,29 @@ suffix that is specified in `helm-bibtex-notes-extension'."
   :group 'helm-bibtex
   :type '(choice file directory))
 
-(defcustom helm-bibtex-notes-template
+(defcustom helm-bibtex-notes-template-many-files
+  "#+TITLE: ${title}\n#+AUTHOR: ${author}\n#+DATE: ${year}\n\n"
+  "Template used to create a new note when each note is stored in
+a separate file.  '${field-name}' can be used to insert the value
+of a BibTeX field into the template."
+  :group 'helm-bibtex
+  :type 'string)
+
+(defcustom helm-bibtex-notes-template-one-file
   "* ${author} (${year}): ${title}\n  :PROPERTIES:\n  :Custom_ID: ${=key=}\n  :END:\n\n"
-  "Template used to create a new note.  '${field-name}' can be
-used to insert the value of a BibTeX field into the template."
+  "Template used to create a new note when all notes are stored
+in one file.  '${field-name}' can be used to insert the value of
+a BibTeX field into the template."
   :group 'helm-bibtex
   :type 'string)
 
 (defcustom helm-bibtex-notes-key-pattern
   ":Custom_ID: +%s\\( \\|$\\)"
   "The pattern used to find entries in the notes file.  Only
-relevant if all notes are stored in one file.  The key can be
-inserted into the pattern using the `format` function.")
+relevant when all notes are stored in one file.  The key can be
+inserted into the pattern using the `format` function."
+  :group 'helm-bibtex
+  :type 'string)
 
 (defcustom helm-bibtex-notes-extension ".org"
   "The extension of the files containing notes.  This is only
@@ -724,30 +735,34 @@ defined.  Surrounding curly braces are stripped."
 (defun helm-bibtex-edit-notes (key)
   "Open the notes associated with the entry using `find-file'."
   (if (f-directory? helm-bibtex-notes-path)
-      ;; One notes file per publication: just open the file.
+                                        ; One notes file per publication:
       (let ((path (f-join helm-bibtex-notes-path
                           (s-concat key helm-bibtex-notes-extension))))
         (find-file path)
         (unless (f-exists? path)
-          (insert (s-format helm-bibtex-notes-template
+          (insert (s-format helm-bibtex-notes-template-many-files
                             'helm-bibtex-apa-get-value
                             (helm-bibtex-get-entry key)))))
-    ;; One file for all notes: find the notes or create new section
-    ;; from the template:
-    (find-file helm-bibtex-notes-path)
+                                        ; One file for all notes:
+    (unless (f-same? helm-bibtex-notes-path buffer-file-name)
+      (find-file-other-window helm-bibtex-notes-path))
+    (widen)
     (goto-char (point-min))
     (if (re-search-forward (format helm-bibtex-notes-key-pattern key) nil t)
+                                        ; Existing entry found:
         (when (eq major-mode 'org-mode)
-          (hide-other)
-          (show-subtree)
           (outline-previous-visible-heading 1)
-          (recenter-top-bottom 1))
-      (when (eq major-mode 'org-mode)
-        (hide-sublevels 1))
-      (insert (s-format helm-bibtex-notes-template
+          (org-narrow-to-subtree)
+          (org-show-subtree))
+                                        ; Create a new entry:
+      (goto-char (point-min))
+      (insert (s-format helm-bibtex-notes-template-one-file
                         'helm-bibtex-apa-get-value
                         (helm-bibtex-get-entry key)))
-      (goto-char (- (point) 1)))))
+      (when (eq major-mode 'org-mode)
+        (outline-previous-visible-heading 1)
+        (org-narrow-to-subtree)
+        (goto-char (point-max))))))
 
 (defun helm-bibtex-buffer-visiting (file)
   (or (get-file-buffer file)
