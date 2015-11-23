@@ -755,10 +755,11 @@ defined.  Surrounding curly braces are stripped."
           (org-narrow-to-subtree)
           (org-show-subtree))
                                         ; Create a new entry:
-      (goto-char (point-min))
-      (insert (s-format helm-bibtex-notes-template-one-file
-                        'helm-bibtex-apa-get-value
-                        (helm-bibtex-get-entry key)))
+      (let ((entry (helm-bibtex-get-entry key)))
+        (goto-char (point-max))
+        (insert (s-format helm-bibtex-notes-template-one-file
+                          'helm-bibtex-apa-get-value
+                          entry)))
       (when (eq major-mode 'org-mode)
         (outline-previous-visible-heading 1)
         (org-narrow-to-subtree)
