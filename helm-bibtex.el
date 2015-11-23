@@ -754,7 +754,8 @@ defined.  Surrounding curly braces are stripped."
         (when (eq major-mode 'org-mode)
           (outline-previous-visible-heading 1)
           (org-narrow-to-subtree)
-          (org-show-subtree))
+          (org-show-subtree)
+          (org-cycle-hide-drawers nil))
                                         ; Create a new entry:
       (let ((entry (helm-bibtex-get-entry key)))
         (goto-char (point-max))
@@ -764,6 +765,7 @@ defined.  Surrounding curly braces are stripped."
       (when (eq major-mode 'org-mode)
         (outline-previous-visible-heading 1)
         (org-narrow-to-subtree)
+        (org-cycle-hide-drawers nil)
         (goto-char (point-max))))))
 
 (defun helm-bibtex-buffer-visiting (file)
