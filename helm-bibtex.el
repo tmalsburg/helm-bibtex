@@ -744,7 +744,8 @@ defined.  Surrounding curly braces are stripped."
                             'helm-bibtex-apa-get-value
                             (helm-bibtex-get-entry key)))))
                                         ; One file for all notes:
-    (unless (f-same? helm-bibtex-notes-path buffer-file-name)
+    (unless (and buffer-file-name
+                 (f-same? helm-bibtex-notes-path buffer-file-name))
       (find-file-other-window helm-bibtex-notes-path))
     (widen)
     (goto-char (point-min))
