@@ -25,6 +25,9 @@
 ;; A BibTeX bibliography manager based on Helm.
 ;;
 ;; News:
+;; - 11/23/2015: Added support for keeping all notes in one
+;;               org-file.  See customization variable
+;;               `helm-bibtex-notes-path'.
 ;; - 11/10/2015: Added support for PDFs specified in a BibTeX
 ;;               field.  See customization variable
 ;;               `helm-bibtex-pdf-field'.
@@ -141,14 +144,42 @@ e.g. \cite{key1,key2}. See the functions
   :type '(alist :key-type symbol :value-type function))
 
 (defcustom helm-bibtex-notes-path nil
-  "The directory in which notes are stored.  Helm-bibtex assumes
-that the names of these notes are composed of the BibTeX-key plus
-a suffix that is specified in `helm-bibtex-notes-extension'."
+  "The place where notes are stored.  This is either a file, in
+which case all notes are stored in that file, or a directory, in
+which case each publication gets its own notes file in that
+directory.  In the latter case, helm-bibtex assumes that the
+names of the note files are composed of the BibTeX-key plus a
+suffix that is specified in `helm-bibtex-notes-extension'."
   :group 'helm-bibtex
-  :type 'directory)
+  :type '(choice file directory))
+
+(defcustom helm-bibtex-notes-template-many-files
+  "#+TITLE: ${title}\n#+AUTHOR: ${author}\n#+DATE: ${year}\n\n"
+  "Template used to create a new note when each note is stored in
+a separate file.  '${field-name}' can be used to insert the value
+of a BibTeX field into the template."
+  :group 'helm-bibtex
+  :type 'string)
+
+(defcustom helm-bibtex-notes-template-one-file
+  "* ${author} (${year}): ${title}\n  :PROPERTIES:\n  :Custom_ID: ${=key=}\n  :END:\n\n"
+  "Template used to create a new note when all notes are stored
+in one file.  '${field-name}' can be used to insert the value of
+a BibTeX field into the template."
+  :group 'helm-bibtex
+  :type 'string)
+
+(defcustom helm-bibtex-notes-key-pattern
+  ":Custom_ID: +%s\\( \\|$\\)"
+  "The pattern used to find entries in the notes file.  Only
+relevant when all notes are stored in one file.  The key can be
+inserted into the pattern using the `format` function."
+  :group 'helm-bibtex
+  :type 'string)
 
 (defcustom helm-bibtex-notes-extension ".org"
-  "The extension of the files containing notes."
+  "The extension of the files containing notes.  This is only
+used when `helm-bibtex-notes-path' is a directory (not a file)."
   :group 'helm-bibtex
   :type 'string)
 
@@ -454,20 +485,30 @@ ENTRY is an alist representing an entry as returned by
 parsebib-read-entry. All the fields not in FIELDS are removed
 from ENTRY, with the exception of the \"=type=\" and \"=key=\"
 fields. If FIELDS is empty, all fields are kept. Also add a
-=has-pdf= and/or =has-notes= field, if they exist for ENTRY.  If
+=has-pdf= and/or =has-note= field, if they exist for ENTRY.  If
 DO-NOT-FIND-PDF is non-nil, this function does not attempt to
 find a PDF file."
   (when entry ; entry may be nil, in which case just return nil
     (let* ((fields (when fields (append fields (list "=type=" "=key=" "=has-pdf=" "=has-note="))))
            ; Check for PDF:
            (entry (if (and (not do-not-find-pdf) (helm-bibtex-find-pdf entry))
-                      (setq entry (cons (cons "=has-pdf=" helm-bibtex-pdf-symbol) entry))
+                      (cons (cons "=has-pdf=" helm-bibtex-pdf-symbol) entry)
                     entry))
            (entry-key (cdr (assoc "=key=" entry)))
            ; Check for notes:
-           (entry (if (and helm-bibtex-notes-path
-                           (f-file? (f-join helm-bibtex-notes-path
-                                            (s-concat entry-key helm-bibtex-notes-extension))))
+           (entry (if (or
+                       ;; One note file per entry:
+                       (and helm-bibtex-notes-path
+                            (f-directory? helm-bibtex-notes-path)
+                            (f-file? (f-join helm-bibtex-notes-path
+                                             (s-concat entry-key
+                                                       helm-bibtex-notes-extension))))
+                       ;; All notes in one file:
+                       (and helm-bibtex-notes-path
+                            (f-file? helm-bibtex-notes-path)
+                            (with-current-buffer (find-file-noselect helm-bibtex-notes-path)
+                              (goto-char (point-min))
+                              (re-search-forward (format helm-bibtex-notes-key-pattern entry-key) nil t))))
                       (cons (cons "=has-note=" helm-bibtex-notes-symbol) entry)
                     entry))
            ; Remove unwanted fields:
@@ -817,8 +858,39 @@ defined.  Surrounding curly braces are stripped."
 
 (defun helm-bibtex-edit-notes (key)
   "Open the notes associated with the entry using `find-file'."
-  (let ((path (f-join helm-bibtex-notes-path (s-concat key helm-bibtex-notes-extension))))
-    (find-file path)))
+  (if (f-directory? helm-bibtex-notes-path)
+                                        ; One notes file per publication:
+      (let ((path (f-join helm-bibtex-notes-path
+                          (s-concat key helm-bibtex-notes-extension))))
+        (find-file path)
+        (unless (f-exists? path)
+          (insert (s-format helm-bibtex-notes-template-many-files
+                            'helm-bibtex-apa-get-value
+                            (helm-bibtex-get-entry key)))))
+                                        ; One file for all notes:
+    (unless (and buffer-file-name
+                 (f-same? helm-bibtex-notes-path buffer-file-name))
+      (find-file-other-window helm-bibtex-notes-path))
+    (widen)
+    (goto-char (point-min))
+    (if (re-search-forward (format helm-bibtex-notes-key-pattern key) nil t)
+                                        ; Existing entry found:
+        (when (eq major-mode 'org-mode)
+          (outline-previous-visible-heading 1)
+          (org-narrow-to-subtree)
+          (org-show-subtree)
+          (org-cycle-hide-drawers nil))
+                                        ; Create a new entry:
+      (let ((entry (helm-bibtex-get-entry key)))
+        (goto-char (point-max))
+        (insert (s-format helm-bibtex-notes-template-one-file
+                          'helm-bibtex-apa-get-value
+                          entry)))
+      (when (eq major-mode 'org-mode)
+        (outline-previous-visible-heading 1)
+        (org-narrow-to-subtree)
+        (org-cycle-hide-drawers nil)
+        (goto-char (point-max))))))
 
 (defun helm-bibtex-buffer-visiting (file)
   (or (get-file-buffer file)
