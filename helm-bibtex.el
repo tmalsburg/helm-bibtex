@@ -32,9 +32,6 @@
 ;;               field.  See customization variable
 ;;               `helm-bibtex-pdf-field'.
 ;; - 11/09/2015: Improved insertion of LaTeX cite commands.
-;; - 05/14/2015: Added support for multiple PDF directories.
-;; - 02/23/2015: Added a workaround for a bug in Emacs 24.3.1.  If you
-;;   didn't see any publications, this should fix it.
 ;; See NEWS.org for old news.
 ;;
 ;; Key features:

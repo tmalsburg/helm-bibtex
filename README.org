@@ -7,9 +7,6 @@
 - [2015-11-23 Mon] :: Added support for keeping all notes in one org-file.  See customization variable ~helm-bibtex-notes-path~.
 - [2015-11-10 Tue] :: Added support for PDFs specified in a BibTeX field.  See customization variable ~helm-bibtex-pdf-field~.
 - [2015-11-09 Mon] :: Improved insertion of LaTeX cite commands.
-- [2015-05-14 Thu] :: Added support for multiple PDF directories.
-- [2015-02-23 Mon] :: Added a workaround for a bug in Emacs 24.3.1.  If you
-     didn't see any publications, this should fix it.
 See [[file:NEWS.org]] for old news.
 
 * Key features:
