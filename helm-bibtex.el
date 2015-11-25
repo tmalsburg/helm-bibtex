@@ -873,10 +873,12 @@ defined.  Surrounding curly braces are stripped."
     (if (re-search-forward (format helm-bibtex-notes-key-pattern key) nil t)
                                         ; Existing entry found:
         (when (eq major-mode 'org-mode)
-          (outline-previous-visible-heading 1)
           (org-narrow-to-subtree)
-          (org-show-subtree)
-          (org-cycle-hide-drawers nil))
+          (save-restriction
+            (outline-previous-visible-heading 1)
+            (org-narrow-to-subtree)
+            (org-show-subtree)
+            (org-cycle-hide-drawers nil)))
                                         ; Create a new entry:
       (let ((entry (helm-bibtex-get-entry key)))
         (goto-char (point-max))
