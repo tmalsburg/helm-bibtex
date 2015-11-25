@@ -374,7 +374,7 @@ The action for inserting a citation command into a LaTeX document prompts for th
 
 ** Force rereading the bibliography
 Helm-bibtex caches the bibliography to prevent a costly reread when a new query is started.  However, helm-bibtex does not check whether new PDFs or notes were added since the last read and hence the symbols indicating the presence or absence of these items may be incorrect.  A reread can be forced using a prefix argument.  Either do `C-u M-x helm-bibtex` or `C-u` followed by whatever key binding you use to invoke helm-bibtex.
-* Hacks (a.k.a. advanced usage)
+* Advanced usage (a.k.a. hacks)
 Below I provide code that was useful for me.  Note that this code may make assumptions that do not hold in your setup.  Read the code carefully before executing it and make changes as needed.
 
 ** Convert multiple note files to one notes file
