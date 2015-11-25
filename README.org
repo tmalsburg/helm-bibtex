@@ -374,3 +374,41 @@ The action for inserting a citation command into a LaTeX document prompts for th
 
 ** Force rereading the bibliography
 Helm-bibtex caches the bibliography to prevent a costly reread when a new query is started.  However, helm-bibtex does not check whether new PDFs or notes were added since the last read and hence the symbols indicating the presence or absence of these items may be incorrect.  A reread can be forced using a prefix argument.  Either do `C-u M-x helm-bibtex` or `C-u` followed by whatever key binding you use to invoke helm-bibtex.
+* Hacks (a.k.a. advanced usage)
+Below I provide code that was useful for me.  Note that this code may make assumptions that do not hold in your setup.  Read the code carefully before executing it and make changes as needed.
+
+** Convert multiple note files to one notes file
+The code below reads all note files in your ~helm-bibtex-notes-path~ and creates a new notes file containing a section for each publication.  This code assumes that helm-bibtex is still configured for multiple note files and that you want to store the notes in the file ~notes.org~ in your ~helm-bibtex-notes-path~.  The code also adds a level to all org headlines found in the individual note files (because top-level headings are used for the publications in the new notes file).
+
+#+BEGIN_SRC elisp
+(let ((note-files (directory-files helm-bibtex-notes-path t "^[^.]+\\.org$"))
+			(helm-bibtex-notes-path (f-join helm-bibtex-notes-path "notes.org")))
+	(cl-loop
+	 for note-file in note-files
+	 for key = (f-no-ext (f-filename note-file))
+	 do (progn
+				(helm-bibtex-edit-notes key)
+				(insert (with-temp-buffer
+									(insert-file-contents note-file)
+									(replace-regexp "^*" "**")
+									(buffer-string))))))
+#+END_SRC
+
+** Create a BibTeX file containing only specific entries
+
+Say you want to create a BibTeX file containing only entries that you cited in an article, then you can use the following code to populate the new BibTeX file with entries:
+
+#+BEGIN_SRC elisp
+(progn
+	(switch-to-buffer (generate-new-buffer "my_new_bibliography.bib"))
+	(--map (insert (helm-bibtex-make-bibtex it)) (-distinct '("Key1" "Key2"))))
+#+END_SRC
+
+If LaTeX is used to write the article, grep and sed can be used to extract the cited keys:
+
+#+BEGIN_SRC sh
+grep '\entry{' manuscript.bbl | sed 's/^.*\entry{\([^}]*\)}.*$/\1/'
+#+END_SRC
+
+
+
