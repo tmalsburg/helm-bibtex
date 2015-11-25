@@ -159,7 +159,7 @@ of a BibTeX field into the template."
   :type 'string)
 
 (defcustom helm-bibtex-notes-template-one-file
-  "* ${author} (${year}): ${title}\n  :PROPERTIES:\n  :Custom_ID: ${=key=}\n  :END:\n\n"
+  "\n* ${author} (${year}): ${title}\n  :PROPERTIES:\n  :Custom_ID: ${=key=}\n  :END:\n\n"
   "Template used to create a new note when all notes are stored
 in one file.  '${field-name}' can be used to insert the value of
 a BibTeX field into the template."
