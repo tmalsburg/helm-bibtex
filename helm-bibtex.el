@@ -869,13 +869,13 @@ defined.  Surrounding curly braces are stripped."
                  (f-same? helm-bibtex-notes-path buffer-file-name))
       (find-file-other-window helm-bibtex-notes-path))
     (widen)
+    (show-all)
     (goto-char (point-min))
     (if (re-search-forward (format helm-bibtex-notes-key-pattern key) nil t)
                                         ; Existing entry found:
         (when (eq major-mode 'org-mode)
           (org-narrow-to-subtree)
-          (re-search-backward "^\* " nil t)
-          (org-show-subtree)
+          (re-search-backward "^\*+ " nil t)
           (org-cycle-hide-drawers nil))
                                         ; Create a new entry:
       (let ((entry (helm-bibtex-get-entry key)))
@@ -885,7 +885,7 @@ defined.  Surrounding curly braces are stripped."
                           entry)))
       (when (eq major-mode 'org-mode)
         (org-narrow-to-subtree)
-        (re-search-backward "^\* " nil t)
+        (re-search-backward "^\*+ " nil t)
         (org-cycle-hide-drawers nil)
         (goto-char (point-max))))))
 
