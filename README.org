@@ -382,16 +382,16 @@ The code below reads all note files in your ~helm-bibtex-notes-path~ and creates
 
 #+BEGIN_SRC elisp
 (let ((note-files (directory-files helm-bibtex-notes-path t "^[^.]+\\.org$"))
-			(helm-bibtex-notes-path (f-join helm-bibtex-notes-path "notes.org")))
-	(cl-loop
-	 for note-file in note-files
-	 for key = (f-no-ext (f-filename note-file))
-	 do (progn
-				(helm-bibtex-edit-notes key)
-				(insert (with-temp-buffer
-									(insert-file-contents note-file)
-									(replace-regexp "^*" "**")
-									(buffer-string))))))
+      (helm-bibtex-notes-path (f-join helm-bibtex-notes-path "notes.org")))
+  (cl-loop
+   for note-file in note-files
+   for key = (f-no-ext (f-filename note-file))
+   do (progn
+        (helm-bibtex-edit-notes key)
+        (insert (with-temp-buffer
+                  (insert-file-contents note-file)
+                  (replace-regexp "^*" "**")
+                  (buffer-string))))))
 #+END_SRC
 
 ** Create a BibTeX file containing only specific entries
@@ -400,8 +400,8 @@ Say you want to create a BibTeX file containing only entries that you cited in a
 
 #+BEGIN_SRC elisp
 (progn
-	(switch-to-buffer (generate-new-buffer "my_new_bibliography.bib"))
-	(--map (insert (helm-bibtex-make-bibtex it)) (-distinct '("Key1" "Key2"))))
+  (switch-to-buffer (generate-new-buffer "my_new_bibliography.bib"))
+  (--map (insert (helm-bibtex-make-bibtex it)) (-distinct '("Key1" "Key2"))))
 #+END_SRC
 
 If LaTeX is used to write the article, grep and sed can be used to extract the cited keys:
