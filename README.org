@@ -53,8 +53,7 @@ A minimal configuration involves telling helm-bibtex where your bibliographies c
 (setq helm-bibtex-bibliography '("/path/to/bibtex-file-1.bib" "/path/to/bibtex-file-2.bib"))
 #+END_SRC
 
-* Basic configuration
-
+* Basic configuration (recommended)
 ** PDF files
 Specify where PDFs can be found:
 
@@ -233,7 +232,7 @@ The function ~helm-add-action-to-source~ can also be used to add new actions to 
 
 ** Window size
 
-By default ~helm-bibtex~ uses the entire window to display the bibliography.  This can be changed by setting the variable ~helm-bibtex-full-frame~ to ~nil~, in which case helm’s standard is used (typically vertical split, with the helm search being shown in the lower window).  
+By default ~helm-bibtex~ uses the entire frame to display the bibliography.  This can be changed by setting the variable ~helm-bibtex-full-frame~ to ~nil~, in which case helm’s standard is used (typically vertical split, with the helm search being shown in the lower window).  
 
 ** Templates for new notes
 
