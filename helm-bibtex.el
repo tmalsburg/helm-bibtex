@@ -873,8 +873,8 @@ defined.  Surrounding curly braces are stripped."
     (if (re-search-forward (format helm-bibtex-notes-key-pattern key) nil t)
                                         ; Existing entry found:
         (when (eq major-mode 'org-mode)
-          (re-search-backward "^\* " nil t)
           (org-narrow-to-subtree)
+          (re-search-backward "^\* " nil t)
           (org-show-subtree)
           (org-cycle-hide-drawers nil))
                                         ; Create a new entry:
@@ -884,8 +884,8 @@ defined.  Surrounding curly braces are stripped."
                           'helm-bibtex-apa-get-value
                           entry)))
       (when (eq major-mode 'org-mode)
-        (re-search-backward "^\* " nil t)
         (org-narrow-to-subtree)
+        (re-search-backward "^\* " nil t)
         (org-cycle-hide-drawers nil)
         (goto-char (point-max))))))
 
