@@ -22,8 +22,6 @@ See [[file:NEWS.org]] for old news.
 - Quick access to online bibliographic databases such as Pubmed,
   arXiv, Google Scholar, Library of Congress, etc.
 
-* Description
-
 Helm-bibtex’ main selling points are efficient search in large bibliographies using powerful search expressions and tight integration into your Emacs workflows.  Helm-bibtex can perform the following actions on entries matching the search expression: open the PDF, URL, or DOI, insert a citation, the BibTeX key, the BibTeX entry, or a plain text reference, attach a PDF to an email, take notes, edit the BibTeX entry.  Many aspects of helm-bibtex can be configured to suit personal preferences.
 
 * Example
@@ -33,7 +31,7 @@ Below is a screenshot showing a search for entries containing the expression “
 #+CAPTION: A search for publications containing the expression “eye tracking”
 [[file:screenshot.png]]
 
-The regular expression ~eye.?tracking~ allows searching for different spellings (“eye tracking”, “eye-tracking”, “eyetracking”).  A looped square symbol (⌘) next to an entry indicates that a PDF is available.  A pen symbol (✎) means that notes were attached.  At the bottom, there are dummy entries that can be used to search in online databases.
+The regular expression ~eye.?tracking~ allows searching for different spellings (“eye tracking”, “eye-tracking”, “eyetracking”).  A looped square symbol (⌘) next to an entry indicates that a PDF is available.  A pen symbol (✎) means that there are notes attached to this entry.  At the bottom, there are entries that can be used to search in online databases.
 
 * Installation
 
@@ -70,9 +68,9 @@ Specify where PDFs can be found:
 (setq helm-bibtex-library-path '("/path1/to/pdfs" "/path2/to/pdfs"))
 #+END_SRC
 
-Helm-bibtex assumes that the name of a PDF consists of the BibTeX key followed by the suffix ~.pdf~.  For example, if a BibTeX entry has the key ~Darwin1859~, helm-bibtex searches for ~Darvin1859.pdf~ when trying to open the corresponding PDF.
+Helm-bibtex assumes that the name of a PDF consists of the BibTeX key followed by the suffix ~.pdf~.  For example, if a BibTeX entry has the key ~Darwin1859~, helm-bibtex searches for ~Darwin1859.pdf~.
 
-If the BibTeX entries have a field that specifies the full path to the PDFs, that field can also be used.  For example, JabRef stores the location of the PDFs in a field called ~File~:
+If the BibTeX entries have a field that specifies the full path to the PDFs, that field can also be used.  For example, JabRef and Zotero store the location of PDFs in a field called ~File~:
 
 #+BEGIN_SRC emacs-lisp
 (setq helm-bibtex-pdf-field "File")
@@ -88,12 +86,19 @@ File specifications can be bare paths or follow the format used by JabRef, Zoter
 
 ** Notes
 
-Notes for a publication are currently stored in separate files, one file per publication.  The names of these files consist of the BibTeX key plus a user-defined suffix (~.org~ by default).
+Helm-bibtex supports two methods for storing notes.  It can either store all notes in one file or store notes in multiple files, one file per publication.  In the first case, the customization variable ~helm-bibtex-notes-path~ has to be set to the full path of the notes file: 
+
+#+BEGIN_SRC emacs-lisp
+(setq helm-bibtex-notes-path "/path/to/notes.org")
+#+END_SRC
+
+If one file per publication is preferred, ~helm-bibtex-notes-path~ should point to the directory used for storing the notes files:
 
 #+BEGIN_SRC emacs-lisp
 (setq helm-bibtex-notes-path "/path/to/notes")
-(setq helm-bibtex-notes-extension ".org")
 #+END_SRC
+
+The names of these files consist of the BibTeX key plus a user-defined suffix (~.org~ by default).
 
 At this point most people will be ready to go.  Skip to [[#usage][Usage]] below to see how to use helm-bibtex.
 
@@ -235,6 +240,38 @@ The function ~helm-add-action-to-source~ can also be used to add new actions to 
 ** Window size
 
 By default ~helm-bibtex~ uses the entire window to display the bibliography.  This can be changed by setting the variable ~helm-bibtex-full-frame~ to ~nil~, in which case helm’s standard is used (typically vertical split, with the helm search being shown in the lower window).  
+
+** Templates for new notes
+
+Helm-bibtex populates new notes with some basic information about the publication.  In the case of just one note file for all publications, a new entry looks like the following example:
+
+#+BEGIN_EXAMPLE
+ * Gigerenzer, G. (1998): We need statistical thinking, not statistical rituals
+   :PROPERTIES:
+   :Custom_ID: Gigerenzer1998
+   :END:
+#+END_EXAMPLE
+
+The title of the new section consists of the author names, the year, and the title of the publication.  The property ~Custom_ID~ specifies the BibTeX key of the entry (it’s named ~Custom_ID~ for compatibility with org-ref).
+
+In the case of one file per publication, a new notes file contains a title in the following format:
+
+#+BEGIN_EXAMPLE
+#+TITLE: Notes on: Gigerenzer, G. (1998): We need statistical thinking, not statistical rituals
+#+END_EXAMPLE
+
+If other formats are desired, the templates for new notes can be changed using the customization variables ~helm-bibtex-notes-template-one-file~ and ~helm-bibtex-notes-template-multiple-files~.
+
+** File type of note files
+
+By default helm-bibtex assumes that note files are in org-mode format.  However, any other format can be used as well.  In the case of just one notes file, it is enough to set ~helm-bibtex-notes-path~ to point to the desired file.  In the case of multiple note files, the type of the files can be specified using the customization variable ~helm-bibtex-notes-extension~.  For example, if Markdown is the desired file type:
+
+#+BEGIN_SRC emacs-lisp
+(setq helm-bibtex-notes-path "/path/to/notes")
+(setq helm-bibtex-notes-extension ".md")
+#+END_SRC
+
+If the file type is set to something else than org-mode, the templates for new note files need to be adjusted as well.  See the section above for details.
 
 * Usage
 ** Searching publications

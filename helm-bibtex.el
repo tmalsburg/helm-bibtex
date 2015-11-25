@@ -150,8 +150,8 @@ suffix that is specified in `helm-bibtex-notes-extension'."
   :group 'helm-bibtex
   :type '(choice file directory))
 
-(defcustom helm-bibtex-notes-template-many-files
-  "#+TITLE: ${title}\n#+AUTHOR: ${author}\n#+DATE: ${year}\n\n"
+(defcustom helm-bibtex-notes-template-multiple-files
+  "#+TITLE: Notes on: ${author} (${year}): ${title}\n\n"
   "Template used to create a new note when each note is stored in
 a separate file.  '${field-name}' can be used to insert the value
 of a BibTeX field into the template."
@@ -861,7 +861,7 @@ defined.  Surrounding curly braces are stripped."
                           (s-concat key helm-bibtex-notes-extension))))
         (find-file path)
         (unless (f-exists? path)
-          (insert (s-format helm-bibtex-notes-template-many-files
+          (insert (s-format helm-bibtex-notes-template-multiple-files
                             'helm-bibtex-apa-get-value
                             (helm-bibtex-get-entry key)))))
                                         ; One file for all notes:
