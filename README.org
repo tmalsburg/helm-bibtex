@@ -343,7 +343,7 @@ Select one or more entries (see above) and press ~<return>~ to open the PDF (def
 
 ** A colleague asks for copies of your new papers
 
-Start an email to your colleague and ~M-x helm-bibtex~.  Select your new publications and select “Attach PDF to email.”  Then ~M-x helm-resume~ (the publications are still marked) and select “Insert BibTeX entry.”  Optionally insert more human readable references by ~M-x helm-resume~ and “Insert reference.”  Send email.  Done.  This takes less than 10 seconds.  Of course, this assumes that you’re sending email from Emacs, e.g. via [[http://www.djcbsoftware.nl/code/mu/mu4e.html][Mu4e]].
+Start an email to your colleague (~C-x m~) and ~M-x helm-bibtex~.  Select your new publications and select the action “Attach PDF to email.”  Then ~M-x helm-resume~ (the publications are still marked) and select “Insert BibTeX entry”.  Optionally insert more human readable references using ~M-x helm-resume~ and “Insert reference”.  Send email (~C-c C-c~).  Done.  This takes less than 10 seconds.  Of course, this assumes that you’re sending email from Emacs, e.g. via [[http://www.djcbsoftware.nl/code/mu/mu4e.html][Mu4e]].
 
 ** Tagging publications
 
