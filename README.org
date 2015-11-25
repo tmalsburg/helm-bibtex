@@ -378,7 +378,7 @@ Helm-bibtex caches the bibliography to prevent a costly reread when a new query 
 Below I provide code that was useful for me.  Note that this code may make assumptions that do not hold in your setup.  Read the code carefully before executing it and make changes as needed.
 
 ** Convert multiple note files to one notes file
-The code below reads all note files in your ~helm-bibtex-notes-path~ and creates a new notes file containing a section for each publication.  This code assumes that helm-bibtex is still configured for multiple note files and that you want to store the notes in the file ~notes.org~ in your ~helm-bibtex-notes-path~.  The code also adds a level to all org headlines found in the individual note files (because top-level headings are used for the publications in the new notes file).
+The code below reads all note files in your ~helm-bibtex-notes-path~ and creates a new notes file containing a section for each publication.  This code assumes that helm-bibtex is still configured for multiple note files and that you want to store the notes in the file ~notes.org~ in your ~helm-bibtex-notes-path~.  The code also adds a level to all org headlines found in the individual note files (because top-level headings are used for the publications in the new notes file).  If a note file doesn't have a corresponding entry in the bibliography, it is ignored.
 
 #+BEGIN_SRC elisp
 (let ((note-files (directory-files helm-bibtex-notes-path t "^[^.]+\\.org$"))
@@ -386,12 +386,14 @@ The code below reads all note files in your ~helm-bibtex-notes-path~ and creates
   (cl-loop
    for note-file in note-files
    for key = (f-no-ext (f-filename note-file))
-   do (progn
-        (helm-bibtex-edit-notes key)
-        (insert (with-temp-buffer
-                  (insert-file-contents note-file)
-                  (replace-regexp "^*" "**")
-                  (buffer-string))))))
+   do (condition-case nil
+          (progn
+            (helm-bibtex-edit-notes key)
+            (insert (with-temp-buffer
+                      (insert-file-contents note-file)
+                      (replace-regexp "^*" "**")
+                      (buffer-string))))
+        (error nil))))
 #+END_SRC
 
 ** Create a BibTeX file containing only specific entries
