@@ -446,14 +446,13 @@ file is specified, or if the specified file does not exist, or if
          for record in (s-split ";" value)
          for record = (s-split ":" record)
          for file-name = (nth 0 record)
-         for path = (nth 1 record)
-         if (f-file? path)
+         for path = (or (nth 1 record) "")
+         ; f-full prepends missing slashes, so we don't need a special
+         ; case for Mendeley which omits the beginning slash.
+         if (f-file? (f-full path))
            collect (f-full path)
          else if (f-file? (f-full (f-join path file-name)))
-           collect (f-full (f-join path file-name))
-         ;; This is to work around a bug in Mendeley.
-         else if (f-file? (f-full (f-join path file-name)))
-           collect (f-full (concat "/" path))))))))
+           collect (f-full (f-join path file-name))))))))
 
 (defun helm-bibtex-find-pdf-in-library (key-or-entry)
   "Searches the directories in `helm-bibtex-library-path' for a
