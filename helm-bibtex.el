@@ -84,6 +84,7 @@
 ;;; Code:
 
 (require 'helm)
+(require 'helm-config)
 (require 'helm-net)
 (require 'helm-plugin)
 (require 'parsebib)
