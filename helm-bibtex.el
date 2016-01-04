@@ -94,8 +94,9 @@
 (require 'f)
 
 (unless (featurep 'helm-config)
-    (warn "Helm is not properly configured.  Please see
-    Helm's documentation for details on how to do this:
+    (warn "Helm was not properly configured when helm-bibtex was
+    loaded.  Please make sure Helm is configured.  See Helm's
+    documentation for details on how to do this:
     https://github.com/emacs-helm/helm#install-from-emacs-packaging-system"))
 
 (defgroup helm-bibtex nil
