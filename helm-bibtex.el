@@ -66,7 +66,7 @@
 ;; Requirements are parsebib, helm, s, dash, and f.  The easiest way
 ;; to install these packages is through MELPA.  Make sure helm is
 ;; properly configured (see
-;; https://github.com/emacs-helm/helm#quick-install-from-git).
+;; https://github.com/emacs-helm/helm#install-from-emacs-packaging-system).
 ;;
 ;; Let helm-bibtex know where it can find your bibliography by setting
 ;; the variable `helm-bibtex-bibliography'.  See the manual for more details:
