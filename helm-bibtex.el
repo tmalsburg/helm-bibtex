@@ -93,12 +93,6 @@
 (require 's)
 (require 'f)
 
-(unless (featurep 'helm-config)
-    (warn "Helm was not properly configured when helm-bibtex was
-    loaded.  Please make sure Helm is configured.  See Helm's
-    documentation for details on how to do this:
-    https://github.com/emacs-helm/helm#install-from-emacs-packaging-system"))
-
 (defgroup helm-bibtex nil
   "Helm plugin for searching entries in a BibTeX bibliography."
   :group 'helm)
