@@ -560,7 +560,7 @@ find a PDF file."
   "Removes quoting and superfluous white space from BibTeX field
 values."
   (if s (replace-regexp-in-string "[\n\t ]+" " "
-         (replace-regexp-in-string "[\\\"{}]+" "" s))
+         (replace-regexp-in-string "[\"{}]+" "" s))
     nil))
 
 (defun helm-bibtex-shorten-authors (authors)
@@ -738,7 +738,7 @@ guidelines.  Return DEFAULT if FIELD is not present in ENTRY."
                     'upcase
                     (replace-regexp-in-string ; preserve stuff in braces from being downcased
                      "\\(^[^{]*{\\)\\|\\(}[^{]*{\\)\\|\\(}.*$\\)\\|\\(^[^{}]*$\\)"
-                     'downcase
+                     (lambda (x) (downcase (s-replace "\\" "\\\\" x)))
                      value))))
          ("booktitle" value)
          ;; Maintain the punctuation and capitalization that is used by
