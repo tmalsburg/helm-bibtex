@@ -180,7 +180,7 @@ The default setting includes all cite commands defined in biblatex (except multi
 
 By default, helm-bibtex also prompts for the optional pre- and postnotes for the citation.  This can be switched off by setting the variable ~helm-bibtex-cite-prompt-for-optional-arguments~ to ~nil~.
 
-See also the section [[Insertion of LaTeX cite commands]] below.
+See also the section [[https://github.com/tmalsburg/helm-bibtex#insertion-of-latex-cite-commands][Insertion of LaTeX cite commands]] below.
 
 ** Online databases
 
