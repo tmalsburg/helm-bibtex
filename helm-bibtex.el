@@ -342,7 +342,7 @@ containing authors, editors, title, year, type, and key of the
 entry.  This is string is used for matching.  The second element
 is the entry (only the fields listed above) as an alist."
   ;; Open configured bibliographies in temporary buffer:
-  (with-temp-buffer 
+  (with-temp-buffer
     (mapc #'insert-file-contents
           (-flatten (list helm-bibtex-bibliography)))
     ;; Check hash of bibliography and reparse if necessary:
@@ -364,7 +364,7 @@ is the entry (only the fields listed above) as an alist."
 (defun helm-bibtex-resolve-crossrefs (entries)
   "Expand all entries with fields from cross-references entries."
    (cl-loop
-    with entry-hash = 
+    with entry-hash =
       (cl-loop
        with ht = (make-hash-table :test #'equal :size (length entries))
        for entry in entries
@@ -912,7 +912,7 @@ defined.  Surrounding curly braces are stripped."
   (let ((browse-url-browser-function
           (or helm-bibtex-browser-function
               browse-url-browser-function)))
-    (cond 
+    (cond
       ((stringp url-or-function)
         (helm-browse-url (format url-or-function (url-hexify-string helm-pattern))))
       ((functionp url-or-function)
@@ -935,7 +935,7 @@ defined.  Surrounding curly braces are stripped."
 resources defined in `helm-bibtex-fallback-options' plus one
 entry for each BibTeX file that will open that file for editing."
   (let ((bib-files (-flatten (list helm-bibtex-bibliography))))
-    (-concat 
+    (-concat
       (--map (cons (s-concat "Create new entry in " (f-filename it))
                    `(lambda () (find-file ,it) (goto-char (point-max))))
              bib-files)
@@ -978,6 +978,7 @@ reread."
     (setq helm-bibtex-bibliography-hash ""))
   (helm :sources '(helm-source-bibtex helm-source-fallback-options)
         :full-frame helm-bibtex-full-frame
+        :buffer "*helm bibtex*"
         :candidate-number-limit 500))
 
 (provide 'helm-bibtex)
