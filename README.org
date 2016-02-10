@@ -125,7 +125,7 @@ To configure another PDF viewer the customization variable ~helm-bibtex-pdf-open
 #+BEGIN_SRC emacs-lisp
 (setq helm-bibtex-pdf-open-function
   (lambda (fpath)
-    (call-process "open" nil 0 nil "-a /Applications/Skim.app" fpath)))
+    (call-process "open" nil 0 nil "-a" "/Applications/Skim.app" fpath)))
 #+END_SRC
 
 Here is another example for the Linux PDF viewer Evince:
