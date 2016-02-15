@@ -314,6 +314,33 @@ nil, the window will split below."
   :group 'helm-bibtex
   :type 'boolean)
 
+(defcustom helm-bibtex-display-format
+  '((fields-to-display . ("author" "title" "year"
+                          "=has-pdf=" "=has-note=" "=type="))
+    (fields-format     . "$0 $1 $2 $3$4 $5")
+    (fields-width      . (lambda (width) (list 36 (- width 53) 4 1 1 7))))
+  "Fields to display in the *helm bibtex* buffer and their format.
+
+An alist with the following KEYs:
+ - fields-to-display: a list of fields to display
+ - fields-format:     their format as accepted by `s-format'
+ - fields-width:      a function that takes as argument the
+                      width of the helm window and returns a
+                      list of widths per displayed field
+
+Some examples:
+ 1. Display key, title and note availability per entry:
+    fields-to-display: (\"=key=\", \"title\", \"=has-note=\")
+    fields-format:     \"$0 $1 $2\"
+    fields-width:      (lambda (width) (list 25 (- width 30) 2))
+
+ 2. Display note availability, key, title and authors per entry:
+    fields-to-display: (\"=has-note=\" \"=key=\" \"title\" \"author\")
+    fields-format:     \"$0 $1 $2 $3\"
+    fields-width:      (lambda (width) (list 2 25 (- width 65) 35))"
+  :group 'helm-bibtex
+  :type '(alist :key-type symbol :value-type sexp))
+
 (easy-menu-add-item nil '("Tools" "Helm" "Tools") ["BibTeX" helm-bibtex t])
 
 (defvar helm-bibtex-bibliography-hash nil
@@ -541,18 +568,33 @@ find a PDF file."
    for entry = (cdr entry)
    for entry-key = (helm-bibtex-get-value "=key=" entry)
    if (assoc-string "author" entry 'case-fold)
-     for fields = '("author" "title" "year" "=has-pdf=" "=has-note=" "=type=")
+     for fields = (cdr (assoc 'fields-to-display helm-bibtex-display-format))
    else
-     for fields = '("editor" "title" "year" "=has-pdf=" "=has-note=" "=type=")
+     for fields = (-replace-first
+                   "author" "editor"
+                   (cdr (assoc 'fields-to-display helm-bibtex-display-format)))
    for fields = (-map (lambda (it)
                         (helm-bibtex-clean-string
                           (helm-bibtex-get-value it entry " ")))
                       fields)
-   for fields = (-update-at 0 'helm-bibtex-shorten-authors fields)
+   for fields = (-update-at
+                 (or
+                  (-elem-index
+                   "author"
+                   (cdr (assoc 'fields-to-display helm-bibtex-display-format)))
+                  (-elem-index
+                   "editor"
+                   (cdr (assoc 'fields-to-display helm-bibtex-display-format)))
+                  0)
+                 'helm-bibtex-shorten-authors fields)
    collect
-   (cons (s-format "$0 $1 $2 $3$4 $5" 'elt
-                   (-zip-with (lambda (f w) (truncate-string-to-width f w 0 ?\s))
-                              fields (list 36 (- width 53) 4 1 1 7)))
+   (cons (s-format (cdr (assoc 'fields-format helm-bibtex-display-format)) 'elt
+                   (-zip-with (lambda (f w)
+                                (truncate-string-to-width f w 0 ?\s))
+                              fields
+                              (funcall
+                               (cdr (assoc 'fields-width helm-bibtex-display-format))
+                               width)))
          entry-key)))
 
 
