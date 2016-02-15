@@ -26,12 +26,11 @@
 ;;
 ;; News:
 ;; - 11/23/2015: Added support for keeping all notes in one
-;;               org-file.  See customization variable
-;;               `helm-bibtex-notes-path'.
+;;   org-file.  See customization variable `helm-bibtex-notes-path'.
 ;; - 11/10/2015: Added support for PDFs specified in a BibTeX
-;;               field.  See customization variable
-;;               `helm-bibtex-pdf-field'.
+;;   field.  See customization variable `helm-bibtex-pdf-field'.
 ;; - 11/09/2015: Improved insertion of LaTeX cite commands.
+;;
 ;; See NEWS.org for old news.
 ;;
 ;; Key features:
