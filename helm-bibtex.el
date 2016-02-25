@@ -25,6 +25,8 @@
 ;; A BibTeX bibliography manager based on Helm.
 ;;
 ;; News:
+;; - 02/25/2016: Support for pre- and postnotes for pandoc-citeproc
+;;   citations.
 ;; - 11/23/2015: Added support for keeping all notes in one
 ;;   org-file.  See customization variable `helm-bibtex-notes-path'.
 ;; - 11/10/2015: Added support for PDFs specified in a BibTeX

@@ -4,6 +4,7 @@
 [[http://melpa.org/#/helm-bibtex][http://melpa.org/packages/helm-bibtex-badge.svg]]
 
 * News
+- [2016-02-25 Thu] :: Support for pre- and postnotes for pandoc-citeproc citations.
 - [2015-11-23 Mon] :: Added support for keeping all notes in one org-file.  See customization variable ~helm-bibtex-notes-path~.
 - [2015-11-10 Tue] :: Added support for PDFs specified in a BibTeX field.  See customization variable ~helm-bibtex-pdf-field~.
 - [2015-11-09 Mon] :: Improved insertion of LaTeX cite commands.
