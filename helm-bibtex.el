@@ -630,7 +630,11 @@ for arguments if the commands can take any."
 
 (defun helm-bibtex-format-citation-pandoc-citeproc (keys)
   "Formatter for pandoc-citeproc citations."
-  (format "[%s]" (s-join "; " (--map (concat "@" it) keys))))
+  (let* ((prenote  (if helm-bibtex-cite-prompt-for-optional-arguments (read-from-minibuffer "Prenote: ") ""))
+         (postnote (if helm-bibtex-cite-prompt-for-optional-arguments (read-from-minibuffer "Postnote: ") ""))
+         (prenote  (if (string= "" prenote)  "" (concat prenote  " ")))
+         (postnote (if (string= "" postnote) "" (concat ", " postnote))))
+    (format "[%s%s%s]" prenote (s-join "; " (--map (concat "@" it) keys)) postnote)))
 
 (defun helm-bibtex-format-citation-ebib (keys)
   "Formatter for ebib references."
