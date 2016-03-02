@@ -137,7 +137,7 @@ Here is another example for the Linux PDF viewer Evince:
     (call-process "evince" nil 0 nil fpath)))
 #+END_SRC
 
-** Actions for opening annotated PDFs.
+** Action for opening annotated PDFs
 Some users store two versions of each PDF, one vanilla version (as distributed by the journal) and one containing their annotations.  If the `file` field is used to link PDFs to entries (see section [[PDF files]]), the annotated version can simply be added to that field.  If the action “Open PDF file” is triggered, the annotated version is going to be opened along with the vanilla version.
 
 If the `file` field is not used but instead the naming scheme `bibtex-key + ".pdf"` (again see [[PDF files]]), we need to make a small modification to helm-bibtex.  First, name your annotated PDFs following the scheme `bibtex-key + "-annotated.pdf" (for example with the [[http://askubuntu.com/questions/58546/how-to-easily-rename-files-using-command-line][rename utility]]) and add the following code at the end of your Emacs configuration (more precisely, somewhere after loading helm-bibtex):
@@ -153,6 +153,8 @@ If the `file` field is not used but instead the naming scheme `bibtex-key + ".pd
 #+END_SRC
 
 Then you have an additional action for opening the annotated version.  A message will be displayed in the minibuffer if no such PDF was found for the entry.
+** Action for opening supplemental materials
+You can use the same approaches as described in the previous section ([[Action for opening annotated PDFs]]).
 
 ** Browser used for opening URLs and DOIs
 
