@@ -138,9 +138,9 @@ Here is another example for the Linux PDF viewer Evince:
 #+END_SRC
 
 ** Action for opening annotated PDFs
-Some users store two versions of each PDF, one vanilla version (as distributed by the journal) and one containing their annotations.  If the `file` field is used to link PDFs to entries (see section [[PDF files]]), the annotated version can simply be added to that field.  If the action “Open PDF file” is triggered, the annotated version is going to be opened along with the vanilla version.
+Some users store two versions of each PDF, one vanilla version (as distributed by the journal) and one containing their annotations.  If the `file` field is used to link PDFs to entries (see section [[https://github.com/tmalsburg/helm-bibtex#pdf-files][PDF files]]), the annotated version can simply be added to that field.  If the action “Open PDF file” is triggered, the annotated version is going to be opened along with the vanilla version.
 
-If the `file` field is not used but instead the naming scheme `bibtex-key + ".pdf"` (again see [[PDF files]]), we need to make a small modification to helm-bibtex.  First, name your annotated PDFs following the scheme `bibtex-key + "-annotated.pdf" (for example with the [[http://askubuntu.com/questions/58546/how-to-easily-rename-files-using-command-line][rename utility]]) and add the following code at the end of your Emacs configuration (more precisely, somewhere after loading helm-bibtex):
+If the ~file~ field is not used but instead the naming scheme ~bibtex-key + ".pdf"~ (again see [[https://github.com/tmalsburg/helm-bibtex#pdf-files][PDF files]]), we need to make a small modification to helm-bibtex.  First, name your annotated PDFs following the scheme ~bibtex-key + "-annotated.pdf"~ (for example with the [[http://askubuntu.com/questions/58546/how-to-easily-rename-files-using-command-line][rename utility]]) and add the following code at the end of your Emacs configuration (more precisely, somewhere after loading helm-bibtex):
 
 #+BEGIN_SRC elisp
 (defun helm-bibtex-open-annotated-pdf (key)
