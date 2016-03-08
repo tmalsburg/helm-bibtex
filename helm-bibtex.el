@@ -858,6 +858,44 @@ defined.  Surrounding curly braces are stripped."
       (-each it 'mml-attach-file)
     (message "No PDF(s) found.")))
 
+(define-minor-mode helm-bibtex-notes-mode
+  "Minor mode for managing helm-bibtex notes."
+  :keymap (let ((map (make-sparse-keymap)))
+            (define-key map (kbd "C-c C-c") 'helm-bibtex-exit-notes-buffer)
+	    (define-key map (kbd "C-c C-w") 'org-refile)
+	    (define-key map (kbd "C-c C-h") 'helm-bibtex-resume-session)
+            map)
+  (org-set-local
+   'header-line-format
+   (substitute-command-keys
+    " Finish \\[helm-bibtex-exit-notes-buffer], refile \\[org-refile], back \\[helm-bibtex-resume-session]")))
+
+;; Define global minor mode. This is needed to the toggle minor mode.
+(define-globalized-minor-mode helm-bibtex-notes-global-mode helm-bibtex-notes-mode helm-bibtex-notes-mode)
+
+(defun helm-bibtex-exit-notes-buffer ()
+  "Exit notes buffer and delete its window.
+This will also disable `helm-bibtex-notes-mode' and remove the header
+line."
+  (interactive)
+  (widen)
+  (helm-bibtex-notes-global-mode -1)
+  (org-set-local
+   'header-line-format nil)
+  (save-buffer)
+  (let ((window (get-buffer-window (file-name-nondirectory helm-bibtex-notes-path))))
+    (if (and window (not (one-window-p window)))
+	(delete-window window)
+      (switch-to-buffer (other-buffer)))))
+
+(defun helm-bibtex-resume-session ()
+  "Exit notes buffer (if active) and resume helm-bibtex session."
+  (interactive)
+  (let ((notes-buffer (get-file-buffer (file-name-nondirectory helm-bibtex-notes-path))))
+    (when (equal notes-buffer (current-buffer))
+      (helm-bibtex-exit-notes-buffer))
+    (helm-resume "*helm bibtex*")))
+
 (defun helm-bibtex-edit-notes (key)
   "Open the notes associated with the entry using `find-file'."
   (if (f-directory? helm-bibtex-notes-path)
@@ -881,7 +919,8 @@ defined.  Surrounding curly braces are stripped."
         (when (eq major-mode 'org-mode)
           (org-narrow-to-subtree)
           (re-search-backward "^\*+ " nil t)
-          (org-cycle-hide-drawers nil))
+          (org-cycle-hide-drawers nil)
+          (helm-bibtex-notes-mode 1))
                                         ; Create a new entry:
       (let ((entry (helm-bibtex-get-entry key)))
         (goto-char (point-max))
@@ -892,7 +931,8 @@ defined.  Surrounding curly braces are stripped."
         (org-narrow-to-subtree)
         (re-search-backward "^\*+ " nil t)
         (org-cycle-hide-drawers nil)
-        (goto-char (point-max))))))
+        (goto-char (point-max))
+        (helm-bibtex-notes-mode 1)))))
 
 (defun helm-bibtex-buffer-visiting (file)
   (or (get-file-buffer file)
@@ -942,7 +982,7 @@ entry for each BibTeX file that will open that file for editing."
   (let ((bib-files (-flatten (list helm-bibtex-bibliography))))
     (-concat
       (--map (cons (s-concat "Create new entry in " (f-filename it))
-                   `(lambda () (find-file ,it) (goto-char (point-max))))
+                   `(lambda () (find-file ,it) (goto-char (point-max)) (newline)))
              bib-files)
       helm-bibtex-fallback-options)))
 
