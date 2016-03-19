@@ -306,18 +306,6 @@ the directories listed in `bibtex-completion-library-path'."
   :group 'bibtex-completion
   :type 'string)
 
-(defcustom bibtex-completion-frontend 'default
-  "Choices are default, helm and ivy.")
-
-(defvar bibtex-completion-get-keys-function
-  (cl-case bibtex-completion-frontend
-    ((default ivy) 'list)
-    (helm (lambda (_)
-            (helm-marked-candidates :with-wildcard t))))
-  "Function to retrieve candidate or candidates inside action
-function. It should accept a single candidate and return a list
-of candidate(s).")
-
 (defvar bibtex-completion-bibliography-hash nil
   "The hash of the content of the configured bibliography
 files.  If this hash has not changed since the bibliography was
@@ -327,16 +315,6 @@ used.")
 (defvar bibtex-completion-cached-candidates nil
   "The a list of candidates obtained when the configured
 bibliography files were last parsed.")
-
-(defmacro bibtex-completion-with-current-buffer (&rest body)
-  "Use `with-helm-current-buffer' to evaluate BODY if
-`bibtex-completion-frontend' is helm. Otherwise, just wrap in
-`progn'."
-  `(if (eq bibtex-completion-frontend 'helm)
-       (with-helm-current-buffer
-         ,@body)
-     (progn
-       ,@body)))
 
 
 (defun bibtex-completion-init ()
@@ -596,7 +574,7 @@ values."
     nil))
 
 
-(defun bibtex-completion-open-pdf (candidate)
+(defun bibtex-completion-open-pdf (candidates)
   "Open the PDFs associated with the marked entries using the
 function specified in `bibtex-completion-pdf-open-function'.  All paths
 in `bibtex-completion-library-path' are searched.  If there are several
@@ -604,13 +582,13 @@ matching PDFs for an entry, the first is opened."
   (--if-let
       (-flatten
        (-map 'bibtex-completion-find-pdf
-             (funcall bibtex-completion-get-keys-function candidate)))
+             (if (listp candidates) candidates (list candidates))))
       (-each it bibtex-completion-pdf-open-function)
     (message "No PDF(s) found.")))
 
-(defun bibtex-completion-open-url-or-doi (candidate)
+(defun bibtex-completion-open-url-or-doi (candidates)
   "Open the associated URL or DOI in a browser."
-  (let ((keys (funcall bibtex-completion-get-keys-function candidate)))
+  (let ((keys (if (listp candidates) candidates (list candidates))))
     (dolist (key keys)
       (let* ((entry (bibtex-completion-get-entry key))
              (url (bibtex-completion-get-value "url" entry))
@@ -671,26 +649,24 @@ omitted."
                 for pdfs = (bibtex-completion-find-pdf key)
                 append (--map (format "[[%s][%s]]" it key) pdfs))))
 
-(defun bibtex-completion-insert-citation (candidate)
+(defun bibtex-completion-insert-citation (candidates)
   "Insert citation at point.  The format depends on
 `bibtex-completion-format-citation-functions'."
-  (let ((keys (funcall bibtex-completion-get-keys-function candidate))
+  (let ((keys (if (listp candidates) candidates (list candidates)))
         (format-function
          (cdr (or (assoc major-mode bibtex-completion-format-citation-functions)
                   (assoc 'default   bibtex-completion-format-citation-functions)))))
-    (bibtex-completion-with-current-buffer
-     (insert
-      (funcall format-function keys)))))
+    (insert
+     (funcall format-function keys))))
 
-(defun bibtex-completion-insert-reference (candidate)
+(defun bibtex-completion-insert-reference (candidates)
   "Insert a reference for each selected entry."
-  (let* ((keys (funcall bibtex-completion-get-keys-function candidate))
+  (let* ((keys (if (listp candidates) candidates (list candidates)))
          (refs (--map
                 (s-word-wrap fill-column
                              (concat "\n- " (bibtex-completion-apa-format-reference it)))
                 keys)))
-    (bibtex-completion-with-current-buffer
-      (insert "\n" (s-join "\n" refs) "\n"))))
+    (insert "\n" (s-join "\n" refs) "\n")))
 
 (defun bibtex-completion-apa-format-reference (key)
   "Returns a plain text reference in APA format for the
@@ -840,18 +816,16 @@ defined.  Surrounding curly braces are stripped."
           value))
       default)))
 
-(defun bibtex-completion-insert-key (candidate)
+(defun bibtex-completion-insert-key (candidates)
   "Insert BibTeX key at point."
-  (let ((keys (funcall bibtex-completion-get-keys-function candidate)))
-    (bibtex-completion-with-current-buffer
-      (insert
-        (funcall 'bibtex-completion-format-citation-default keys)))))
+  (let ((keys (if (listp candidates) candidates (list candidates))))
+    (insert
+     (funcall 'bibtex-completion-format-citation-default keys))))
 
-(defun bibtex-completion-insert-bibtex (candidate)
+(defun bibtex-completion-insert-bibtex (candidates)
   "Insert BibTeX key at point."
-  (let ((keys (funcall bibtex-completion-get-keys-function candidate)))
-    (bibtex-completion-with-current-buffer
-      (insert (s-join "\n" (--map (bibtex-completion-make-bibtex it) keys))))))
+  (let ((keys (if (listp candidates) candidates (list candidates))))
+    (insert (s-join "\n" (--map (bibtex-completion-make-bibtex it) keys)))))
 
 (defun bibtex-completion-make-bibtex (key)
   (let* ((entry (bibtex-completion-get-entry key))
@@ -869,12 +843,12 @@ defined.  Surrounding curly braces are stripped."
              concat
              (format "  %s = %s,\n" name value)))))
 
-(defun bibtex-completion-add-PDF-attachment (candidate)
+(defun bibtex-completion-add-PDF-attachment (candidates)
   "Attach the PDFs of the selected entries where available."
   (--if-let
       (-flatten
        (-map 'bibtex-completion-find-pdf
-             (funcall bibtex-completion-get-keys-function candidate)))
+             (if (listp candidates) candidates (list candidates))))
       (-each it 'mml-attach-file)
     (message "No PDF(s) found.")))
 
