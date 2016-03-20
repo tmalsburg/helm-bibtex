@@ -13,39 +13,6 @@ nil, the window will split below."
 
 (easy-menu-add-item nil '("Tools" "Helm" "Tools") ["BibTeX" helm-bibtex t])
 
-
-(defun helm-bibtex-open-pdf (_)
-  (let ((keys (helm-marked-candidates :with-wildcard t)))
-    (bibtex-completion-open-pdf keys)))
-
-(defun helm-bibtex-open-url-or-doi (_)
-  (let ((keys (helm-marked-candidates :with-wildcard t)))
-    (bibtex-completion-open-url-or-doi keys)))
-
-(defun helm-bibtex-insert-citation (_)
-  (let ((keys (helm-marked-candidates :with-wildcard t)))
-    (with-helm-current-buffer
-      (bibtex-completion-insert-citation keys))))
-
-(defun helm-bibtex-insert-reference (_)
-  (let ((keys (helm-marked-candidates :with-wildcard t)))
-    (with-helm-current-buffer
-      (bibtex-completion-insert-reference keys))))
-
-(defun helm-bibtex-insert-key (_)
-  (let ((keys (helm-marked-candidates :with-wildcard t)))
-    (with-helm-current-buffer
-      (bibtex-completion-insert-key keys))))
-
-(defun helm-bibtex-insert-bibtex (_)
-  (let ((keys (helm-marked-candidates :with-wildcard t)))
-    (with-helm-current-buffer
-      (bibtex-completion-insert-bibtex keys))))
-
-(defun helm-bibtex-add-PDF-attachment (_)
-  (let ((keys (helm-marked-candidates :with-wildcard t)))
-    (with-helm-current-buffer
-      (bibtex-completion-add-PDF-attachment keys))))
 ;; The function `window-width' does not necessarily report the correct
 ;; number of characters that fit on a line.  This is a
 ;; work-around.  See also this bug report:
@@ -62,6 +29,24 @@ nil, the window will split below."
 (defun helm-bibtex-candidates-formatter (candidates _)
   (let ((width (with-helm-window (helm-bibtex-window-width))))
     (bibtex-completion-candidates-formatter candidates width)))
+
+(defmacro helm-bibtex-helmify-action (action name)
+  "Wraps the function ACTION in another function named NAME which
+passes the candidates marked in helm to ACTION.  Also uses
+with-helm-current-buffer such that when ACTION inserts text and
+it comes out in the right buffer."
+  `(defun ,name (_)
+     (let ((keys (helm-marked-candidates :with-wildcard t)))
+       (with-helm-current-buffer
+         (,action keys)))))
+
+(helm-bibtex-helmify-action bibtex-completion-open-pdf helm-bibtex-open-pdf)
+(helm-bibtex-helmify-action bibtex-completion-open-url-or-doi helm-bibtex-open-url-or-doi)
+(helm-bibtex-helmify-action bibtex-completion-insert-citation helm-bibtex-insert-citation)
+(helm-bibtex-helmify-action bibtex-completion-insert-reference helm-bibtex-insert-reference)
+(helm-bibtex-helmify-action bibtex-completion-insert-key helm-bibtex-insert-key)
+(helm-bibtex-helmify-action bibtex-completion-insert-bibtex helm-bibtex-insert-bibtex)
+(helm-bibtex-helmify-action bibtex-completion-add-PDF-attachment helm-bibtex-add-PDF-attachment)
 
 (defvar helm-source-bibtex
   '((name                                      . "BibTeX entries")
