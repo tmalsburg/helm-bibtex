@@ -790,13 +790,12 @@ defined.  Surrounding curly braces are stripped."
   "Minor mode for managing helm-bibtex notes."
   :keymap (let ((map (make-sparse-keymap)))
             (define-key map (kbd "C-c C-c") 'bibtex-completion-exit-notes-buffer)
-	    (define-key map (kbd "C-c C-w") 'org-refile)
-	    (define-key map (kbd "C-c C-h") 'bibtex-completion-resume-session)
+            (define-key map (kbd "C-c C-w") 'org-refile)
             map)
   (setq-local
    header-line-format
    (substitute-command-keys
-    " Finish \\[bibtex-completion-exit-notes-buffer], refile \\[org-refile], back \\[bibtex-completion-resume-session]")))
+    " Finish \\[bibtex-completion-exit-notes-buffer], refile \\[org-refile]")))
 
 ;; Define global minor mode. This is needed to the toggle minor mode.
 (define-globalized-minor-mode bibtex-completion-notes-global-mode bibtex-completion-notes-mode bibtex-completion-notes-mode)
@@ -813,16 +812,8 @@ line."
   (save-buffer)
   (let ((window (get-buffer-window (file-name-nondirectory bibtex-completion-notes-path))))
     (if (and window (not (one-window-p window)))
-	(delete-window window)
+        (delete-window window)
       (switch-to-buffer (other-buffer)))))
-
-;; (defun bibtex-completion-resume-session ()
-;;   "Exit notes buffer (if active) and resume helm-bibtex session."
-;;   (interactive)
-;;   (let ((notes-buffer (get-file-buffer (file-name-nondirectory bibtex-completion-notes-path))))
-;;     (when (equal notes-buffer (current-buffer))
-;;       (bibtex-completion-exit-notes-buffer))
-;;     (helm-resume "*helm bibtex*")))
 
 (defun bibtex-completion-edit-notes (key)
   "Open the notes associated with the entry using `find-file'."
