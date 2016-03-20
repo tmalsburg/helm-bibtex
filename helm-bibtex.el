@@ -865,8 +865,8 @@ defined.  Surrounding curly braces are stripped."
 	    (define-key map (kbd "C-c C-w") 'org-refile)
 	    (define-key map (kbd "C-c C-h") 'helm-bibtex-resume-session)
             map)
-  (org-set-local
-   'header-line-format
+  (setq-local
+   header-line-format
    (substitute-command-keys
     " Finish \\[helm-bibtex-exit-notes-buffer], refile \\[org-refile], back \\[helm-bibtex-resume-session]")))
 
@@ -880,8 +880,8 @@ line."
   (interactive)
   (widen)
   (helm-bibtex-notes-global-mode -1)
-  (org-set-local
-   'header-line-format nil)
+  (setq-local
+   header-line-format nil)
   (save-buffer)
   (let ((window (get-buffer-window (file-name-nondirectory helm-bibtex-notes-path))))
     (if (and window (not (one-window-p window)))
