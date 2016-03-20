@@ -5,50 +5,25 @@
 (require 'helm-easymenu)
 (require 'bibtex-completion)
 
-;; The defvars and defvaraliases below allow people to continue using
-;; their old helm-bibtex configurations:
+;; The following allows people to continue using their old helm-bibtex
+;; configurations:
 
-(defvar helm-bibtex-bibliography)
-(defvar helm-bibtex-library-path)
-(defvar helm-bibtex-pdf-open-function)
-(defvar helm-bibtex-pdf-symbol)
-(defvar helm-bibtex-format-citation-functions)
-(defvar helm-bibtex-notes-path)
-(defvar helm-bibtex-notes-template-multiple-files)
-(defvar helm-bibtex-notes-template-one-file)
-(defvar helm-bibtex-notes-key-pattern)
-(defvar helm-bibtex-notes-extension)
-(defvar helm-bibtex-notes-symbol)
-(defvar helm-bibtex-fallback-options)
-(defvar helm-bibtex-browser-function)
-(defvar helm-bibtex-additional-search-fields)
-(defvar helm-bibtex-no-export-fields)
-(defvar helm-bibtex-cite-commands)
-(defvar helm-bibtex-cite-default-command)
-(defvar helm-bibtex-cite-prompt-for-optional-arguments)
-(defvar helm-bibtex-cite-default-as-initial-input)
-(defvar helm-bibtex-pdf-field)
-
-(defvaralias 'bibtex-completion-bibliography 'helm-bibtex-bibliography)
-(defvaralias 'bibtex-completion-library-path 'helm-bibtex-library-path)
-(defvaralias 'bibtex-completion-pdf-open-function 'helm-bibtex-pdf-open-function)
-(defvaralias 'bibtex-completion-pdf-symbol 'helm-bibtex-pdf-symbol)
-(defvaralias 'bibtex-completion-format-citation-functions 'helm-bibtex-format-citation-functions)
-(defvaralias 'bibtex-completion-notes-path 'helm-bibtex-notes-path)
-(defvaralias 'bibtex-completion-notes-template-multiple-files 'helm-bibtex-notes-template-multiple-files)
-(defvaralias 'bibtex-completion-notes-template-one-file 'helm-bibtex-notes-template-one-file)
-(defvaralias 'bibtex-completion-notes-key-pattern 'helm-bibtex-notes-key-pattern)
-(defvaralias 'bibtex-completion-notes-extension 'helm-bibtex-notes-extension)
-(defvaralias 'bibtex-completion-notes-symbol 'helm-bibtex-notes-symbol)
-(defvaralias 'bibtex-completion-fallback-options 'helm-bibtex-fallback-options)
-(defvaralias 'bibtex-completion-browser-function 'helm-bibtex-browser-function)
-(defvaralias 'bibtex-completion-additional-search-fields 'helm-bibtex-additional-search-fields)
-(defvaralias 'bibtex-completion-no-export-fields 'helm-bibtex-no-export-fields)
-(defvaralias 'bibtex-completion-cite-commands 'helm-bibtex-cite-commands)
-(defvaralias 'bibtex-completion-cite-default-command 'helm-bibtex-cite-default-command)
-(defvaralias 'bibtex-completion-cite-prompt-for-optional-arguments 'helm-bibtex-cite-prompt-for-optional-arguments)
-(defvaralias 'bibtex-completion-cite-default-as-initial-input 'helm-bibtex-cite-default-as-initial-input)
-(defvaralias 'bibtex-completion-pdf-field 'helm-bibtex-pdf-field)
+(cl-loop
+ for var in '("bibliography" "library-path" "pdf-open-function"
+              "pdf-symbol" "format-citation-functions" "notes-path"
+              "notes-template-multiple-files"
+              "notes-template-one-file" "notes-key-pattern"
+              "notes-extension" "notes-symbol" "fallback-options"
+              "browser-function" "additional-search-fields"
+              "no-export-fields" "cite-commands"
+              "cite-default-command"
+              "cite-prompt-for-optional-arguments"
+              "cite-default-as-initial-input" "pdf-field")
+ for oldvar = (intern (concat "helm-bibtex-" var))
+ for newvar = (intern (concat "bibtex-completion-" var))
+ do
+ (defvaralias newvar oldvar)
+ (make-obsolete-variable oldvar newvar "2016-03-20"))
 
 ;; Helm-specific configurations:
 
