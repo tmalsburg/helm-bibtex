@@ -84,26 +84,8 @@
 (require 'bibtex-completion)
 
 (defun ivy-bibtex-candidates-formatter (candidates)
-  "Formats BibTeX entries for display in results list."
-  (cl-loop
-   with width = (frame-width)
-   for entry in candidates
-   for entry = (cdr entry)
-   for entry-key = (bibtex-completion-get-value "=key=" entry)
-   if (assoc-string "author" entry 'case-fold)
-     for fields = '("author" "title" "year" "=has-pdf=" "=has-note=" "=type=")
-   else
-     for fields = '("editor" "title" "year" "=has-pdf=" "=has-note=" "=type=")
-   for fields = (-map (lambda (it)
-                        (bibtex-completion-clean-string
-                          (bibtex-completion-get-value it entry " ")))
-                      fields)
-   for fields = (-update-at 0 'bibtex-completion-shorten-authors fields)
-   collect
-   (cons (s-format "$0 $1 $2 $3$4 $5" 'elt
-                   (-zip-with (lambda (f w) (truncate-string-to-width f w 0 ?\s))
-                              fields (list 36 (- width 53) 4 1 1 7)))
-         entry-key)))
+  (let ((width (frame-width)))
+    (bibtex-completion-candidates-formatter candidates width)))
 
 ;;;###autoload
 (defun ivy-bibtex (&optional arg)

@@ -13,27 +13,6 @@ nil, the window will split below."
 
 (easy-menu-add-item nil '("Tools" "Helm" "Tools") ["BibTeX" helm-bibtex t])
 
-(defun helm-bibtex-candidates-formatter (candidates source)
-  "Formats BibTeX entries for display in results list."
-  (cl-loop
-   with width = (with-helm-window (bibtex-completion-window-width))
-   for entry in candidates
-   for entry = (cdr entry)
-   for entry-key = (bibtex-completion-get-value "=key=" entry)
-   if (assoc-string "author" entry 'case-fold)
-     for fields = '("author" "title" "year" "=has-pdf=" "=has-note=" "=type=")
-   else
-     for fields = '("editor" "title" "year" "=has-pdf=" "=has-note=" "=type=")
-   for fields = (-map (lambda (it)
-                        (bibtex-completion-clean-string
-                          (bibtex-completion-get-value it entry " ")))
-                      fields)
-   for fields = (-update-at 0 'bibtex-completion-shorten-authors fields)
-   collect
-   (cons (s-format "$0 $1 $2 $3$4 $5" 'elt
-                   (-zip-with (lambda (f w) (truncate-string-to-width f w 0 ?\s))
-                              fields (list 36 (- width 53) 4 1 1 7)))
-         entry-key)))
 
 (defun helm-bibtex-open-pdf (_)
   (let ((keys (helm-marked-candidates :with-wildcard t)))
@@ -67,6 +46,22 @@ nil, the window will split below."
   (let ((keys (helm-marked-candidates :with-wildcard t)))
     (with-helm-current-buffer
       (bibtex-completion-add-PDF-attachment keys))))
+;; The function `window-width' does not necessarily report the correct
+;; number of characters that fit on a line.  This is a
+;; work-around.  See also this bug report:
+;; http://debbugs.gnu.org/cgi/bugreport.cgi?bug=19395
+(defun heln-bibtex-window-width ()
+  (if (and (not (featurep 'xemacs))
+           (display-graphic-p)
+           overflow-newline-into-fringe
+           (/= (frame-parameter nil 'left-fringe) 0)
+           (/= (frame-parameter nil 'right-fringe) 0))
+      (window-body-width)
+    (1- (window-body-width))))
+
+(defun helm-bibtex-candidates-formatter (candidates _)
+  (let ((width (with-helm-window (helm-bibtex-window-width))))
+    (bibtex-completion-candidates-formatter candidates width)))
 
 (defvar helm-source-bibtex
   '((name                                      . "BibTeX entries")

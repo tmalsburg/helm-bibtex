@@ -517,40 +517,27 @@ find a PDF file."
                             :key 'car :from-end t))))
 
 
-;; The function `window-width' does not necessarily report the correct
-;; number of characters that fit on a line.  This is a
-;; work-around.  See also this bug report:
-;; http://debbugs.gnu.org/cgi/bugreport.cgi?bug=19395
-(defun bibtex-completion-window-width ()
-  (if (and (not (featurep 'xemacs))
-           (display-graphic-p)
-           overflow-newline-into-fringe
-           (/= (frame-parameter nil 'left-fringe) 0)
-           (/= (frame-parameter nil 'right-fringe) 0))
-      (window-body-width)
-    (1- (window-body-width))))
 
-;; (defun bibtex-completion-candidates-formatter (candidates source)
-;;   "Formats BibTeX entries for display in results list."
-;;   (cl-loop
-;;    with width = (with-helm-window (bibtex-completion-window-width))
-;;    for entry in candidates
-;;    for entry = (cdr entry)
-;;    for entry-key = (bibtex-completion-get-value "=key=" entry)
-;;    if (assoc-string "author" entry 'case-fold)
-;;      for fields = '("author" "title" "year" "=has-pdf=" "=has-note=" "=type=")
-;;    else
-;;      for fields = '("editor" "title" "year" "=has-pdf=" "=has-note=" "=type=")
-;;    for fields = (-map (lambda (it)
-;;                         (bibtex-completion-clean-string
-;;                           (bibtex-completion-get-value it entry " ")))
-;;                       fields)
-;;    for fields = (-update-at 0 'bibtex-completion-shorten-authors fields)
-;;    collect
-;;    (cons (s-format "$0 $1 $2 $3$4 $5" 'elt
-;;                    (-zip-with (lambda (f w) (truncate-string-to-width f w 0 ?\s))
-;;                               fields (list 36 (- width 53) 4 1 1 7)))
-;;          entry-key)))
+(defun bibtex-completion-candidates-formatter (candidates width)
+  "Formats BibTeX entries for display in results list."
+  (cl-loop
+   for entry in candidates
+   for entry = (cdr entry)
+   for entry-key = (bibtex-completion-get-value "=key=" entry)
+   if (assoc-string "author" entry 'case-fold)
+     for fields = '("author" "title" "year" "=has-pdf=" "=has-note=" "=type=")
+   else
+     for fields = '("editor" "title" "year" "=has-pdf=" "=has-note=" "=type=")
+   for fields = (-map (lambda (it)
+                        (bibtex-completion-clean-string
+                          (bibtex-completion-get-value it entry " ")))
+                      fields)
+   for fields = (-update-at 0 'bibtex-completion-shorten-authors fields)
+   collect
+   (cons (s-format "$0 $1 $2 $3$4 $5" 'elt
+                   (-zip-with (lambda (f w) (truncate-string-to-width f w 0 ?\s))
+                              fields (list 36 (- width 53) 4 1 1 7)))
+         entry-key)))
 
 
 (defun bibtex-completion-clean-string (s)
