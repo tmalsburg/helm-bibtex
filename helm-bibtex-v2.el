@@ -1,3 +1,88 @@
+;;; helm-bibtex.el --- A BibTeX bibliography manager based on Helm
+
+;; Author: Titus von der Malsburg <malsburg@posteo.de>
+;; Maintainer: Titus von der Malsburg <malsburg@posteo.de>
+;; Version: 2.0.0
+;; Package-Requires: ((helm "1.5.5") (parsebib "1.0") (s "1.9.0") (dash "2.6.0") (f "0.16.2") (cl-lib "0.5"))
+
+;; This program is free software; you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
+
+;; This program is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+
+;; You should have received a copy of the GNU General Public License
+;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+;;; Commentary:
+
+;; A BibTeX bibliography manager based on Helm and the
+;; bibtex-completion backend
+;;
+;; News:
+;; - 02/25/2016: Support for pre- and postnotes for pandoc-citeproc
+;;   citations.
+;; - 11/23/2015: Added support for keeping all notes in one
+;;   org-file.  See customization variable `bibtex-completion-notes-path'.
+;; - 11/10/2015: Added support for PDFs specified in a BibTeX
+;;   field.  See customization variable `bibtex-completion-pdf-field'.
+;; - 11/09/2015: Improved insertion of LaTeX cite commands.
+;;
+;; See NEWS.org for old news.
+;;
+;; Key features:
+;; - Quick access to your bibliography from within Emacs
+;; - Tightly integrated workflows
+;; - Provides instant search results as you type
+;; - Powerful search expressions
+;; - Open the PDFs, URLs, or DOIs associated with an entry
+;; - Insert LaTeX cite commands, Ebib links, or Pandoc citations,
+;;   BibTeX entries, or plain text references at point, attach PDFs to
+;;   emails
+;; - Attach notes to publications
+;; - Quick access to online bibliographic databases such as Pubmed,
+;;   arXiv, Google Scholar, Library of Congress, etc.
+;;
+;; See the github page for details:
+;;
+;;    https://github.com/tmalsburg/helm-bibtex
+
+;;; Install:
+
+;; Put this file in a directory included in your load path or install
+;; helm-bibtex from MELPA (preferred).  Then add the following in your
+;; Emacs startup file:
+;;
+;;     (require 'helm-bibtex)
+;;
+;; Alternatively, you can use autoload:
+;;
+;;     (autoload 'helm-bibtex "helm-bibtex" "" t)
+;;
+;; Requirements are parsebib, helm, s, dash, and f.  The easiest way
+;; to install these packages is through MELPA.  Make sure helm is
+;; properly configured (see
+;; https://github.com/emacs-helm/helm#install-from-emacs-packaging-system).
+;;
+;; Let helm-bibtex know where it can find your bibliography by setting
+;; the variable `bibtex-completion-bibliography'.  See the manual for
+;; more details:
+;;
+;;   https://github.com/tmalsburg/helm-bibtex#minimal-configuration
+
+;;; Usage:
+
+;; You can search entries using the command `helm-bibtex'.  Select an
+;; entry and press TAB to access all available actions.  At the end of
+;; the list of matches you find some dummy entries that can be used
+;; for searching in online databases.  Apart from that, familiarize
+;; yourself with Helm.  It's more powerful that you might think.
+
+;;; Code:
 
 (require 'helm)
 (require 'helm-net)
@@ -124,3 +209,5 @@ reread."
 ;; coding: utf-8
 ;; indent-tabs-mode: nil
 ;; End:
+
+;;; helm-bibtex.el ends here

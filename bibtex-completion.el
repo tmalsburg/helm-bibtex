@@ -1,8 +1,7 @@
-;;; bibtex-completion.el --- A BibTeX bibliography manager based on Helm
-
-;; Copyright 2014 Titus von der Malsburg <malsburg@posteo.de>
+;;; bibtex-completion.el --- A BibTeX backend for completion frameworks
 
 ;; Author: Titus von der Malsburg <malsburg@posteo.de>
+;;         Justin Burkett <justin@burkett.cc>
 ;; Maintainer: Titus von der Malsburg <malsburg@posteo.de>
 ;; Version: 1.0.0
 ;; Package-Requires: ((parsebib "1.0") (s "1.9.0") (dash "2.6.0") (f "0.16.2") (cl-lib "0.5"))
@@ -22,65 +21,13 @@
 
 ;;; Commentary:
 
-;; A BibTeX bibliography manager based on Helm.
-;;
-;; News:
-;; - 02/25/2016: Support for pre- and postnotes for pandoc-citeproc
-;;   citations.
-;; - 11/23/2015: Added support for keeping all notes in one
-;;   org-file.  See customization variable `bibtex-completion-notes-path'.
-;; - 11/10/2015: Added support for PDFs specified in a BibTeX
-;;   field.  See customization variable `bibtex-completion-pdf-field'.
-;; - 11/09/2015: Improved insertion of LaTeX cite commands.
-;;
-;; See NEWS.org for old news.
-;;
-;; Key features:
-;; - Quick access to your bibliography from within Emacs
-;; - Tightly integrated workflows
-;; - Provides instant search results as you type
-;; - Powerful search expressions
-;; - Open the PDFs, URLs, or DOIs associated with an entry
-;; - Insert LaTeX cite commands, Ebib links, or Pandoc citations,
-;;   BibTeX entries, or plain text references at point, attach PDFs to
-;;   emails
-;; - Attach notes to publications
-;; - Quick access to online bibliographic databases such as Pubmed,
-;;   arXiv, Google Scholar, Library of Congress, etc.
+;; A BibTeX backend for completion frameworks
+
+;; There are currently two fronends: helm-bibtex and ivy-bibtex.
 ;;
 ;; See the github page for details:
 ;;
 ;;    https://github.com/tmalsburg/helm-bibtex
-
-;;; Install:
-
-;; Put this file in a directory included in your load path or install
-;; bibtex-completion from MELPA (preferred).  Then add the following in your
-;; Emacs startup file:
-;;
-;;     (require 'bibtex-completion)
-;;
-;; Alternatively, you can use autoload:
-;;
-;;     (autoload 'bibtex-completion "bibtex-completion" "" t)
-;;
-;; Requirements are parsebib, helm, s, dash, and f.  The easiest way
-;; to install these packages is through MELPA.  Make sure helm is
-;; properly configured (see
-;; https://github.com/emacs-helm/helm#install-from-emacs-packaging-system).
-;;
-;; Let bibtex-completion know where it can find your bibliography by setting
-;; the variable `bibtex-completion-bibliography'.  See the manual for more details:
-;;
-;;   https://github.com/tmalsburg/helm-bibtex#minimal-configuration
-
-;;; Usage:
-
-;; You can search entries using the command `bibtex-completion'.  Select an
-;; entry and press TAB to access all available actions.  At the end of
-;; the list of matches you find some dummy entries that can be used
-;; for searching in online databases.  Apart from that, familiarize
-;; yourself with Helm.  It's more powerful that you might think.
 
 ;;; Code:
 

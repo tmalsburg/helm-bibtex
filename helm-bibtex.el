@@ -1,6 +1,6 @@
 ;;; helm-bibtex.el --- A BibTeX bibliography manager based on Helm
 
-;; Copyright 2014 Titus von der Malsburg <malsburg@posteo.de>
+;; Copyright 2016 Titus von der Malsburg <malsburg@posteo.de>
 
 ;; Author: Titus von der Malsburg <malsburg@posteo.de>
 ;; Maintainer: Titus von der Malsburg <malsburg@posteo.de>

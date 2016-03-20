@@ -1,11 +1,9 @@
-;;; ivy-bibtex.el --- A BibTeX bibliography manager based on Helm
+;;; ivy-bibtex.el --- A BibTeX bibliography manager based on Ivy
 
-;; Copyright 2014 Titus von der Malsburg <malsburg@posteo.de>
-
-;; Author: Titus von der Malsburg <malsburg@posteo.de>
+;; Author: Justin Burkett <justin@burkett.cc>
 ;; Maintainer: Titus von der Malsburg <malsburg@posteo.de>
 ;; Version: 1.0.0
-;; Package-Requires: ((ivy "0"))
+;; Package-Requires: ((swiper "0.7.0"))
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -22,7 +20,8 @@
 
 ;;; Commentary:
 
-;; A BibTeX bibliography manager based on Helm.
+;; A BibTeX bibliography manager based on Ivy and the
+;; bibtex-completion backend
 ;;
 ;; News:
 ;; - 02/25/2016: Support for pre- and postnotes for pandoc-citeproc
@@ -64,7 +63,7 @@
 ;;
 ;;     (autoload 'ivy-bibtex "ivy-bibtex" "" t)
 ;;
-;; Requirements are parsebib, helm, s, dash, and f.  The easiest way
+;; Requirements are parsebib, swiper, s, dash, and f.  The easiest way
 ;; to install these packages is through MELPA.  Make sure helm is
 ;; properly configured (see
 ;; https://github.com/emacs-helm/helm#install-from-emacs-packaging-system).
@@ -79,8 +78,6 @@
 ;;; Code:
 
 (require 'ivy)
-
-(defvar bibtex-completion-frontend 'ivy)
 (require 'bibtex-completion)
 
 (defun ivy-bibtex-candidates-formatter (candidates)
