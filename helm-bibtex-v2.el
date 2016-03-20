@@ -17,7 +17,7 @@ nil, the window will split below."
 ;; number of characters that fit on a line.  This is a
 ;; work-around.  See also this bug report:
 ;; http://debbugs.gnu.org/cgi/bugreport.cgi?bug=19395
-(defun heln-bibtex-window-width ()
+(defun helm-bibtex-window-width ()
   (if (and (not (featurep 'xemacs))
            (display-graphic-p)
            overflow-newline-into-fringe
