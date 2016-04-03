@@ -440,15 +440,15 @@ This usually happens when a BibTeX file isn’t well-formed.  Common problems ar
 
 One way to diagnose the problem is to call the function for reading BibTeX directly and to see what error message it produces:
 
-``` elisp
+#+BEGIN_SRC elisp
 (helm-bibtex-candidates)
-```
+#+END_SRC
 
 If you see
 
-```
+#+BEGIN_SRC
 forward-sexp: Scan error: "Unbalanced parentheses", 181009, 512282
-```
+#+END_SRC
 
-this means that there is an unmatched opening parenthesis at the position 181009.  To find this parenthesis, open the BibTeX file and do `M-: (goto-char 181009) RET`.  Fix it and try again.
+this means that there is an unmatched opening parenthesis at the position 181009.  To find this parenthesis, open the BibTeX file and do ~M-: (goto-char 181009) RET~.  Fix it and try again.
 
