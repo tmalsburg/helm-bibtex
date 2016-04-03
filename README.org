@@ -434,3 +434,21 @@ grep '\entry{' manuscript.bbl | sed 's/^.*\entry{\([^}]*\)}.*$/\1/'
 
 
 
+* Troubleshooting
+** Helm-bibtex doesn’t show any entries
+This usually happens when a BibTeX file isn’t well-formed.  Common problems are opening quotes or parentheses that don’t have matching counterparts.  Unfortunately, Helm swallows the error message that is generated in these cases and just shows an empty buffer.
+
+One way to diagnose the problem is to call the function for reading BibTeX directly and to see what error message it produces:
+
+``` elisp
+(helm-bibtex-candidates)
+```
+
+If you see
+
+```
+forward-sexp: Scan error: "Unbalanced parentheses", 181009, 512282
+```
+
+this means that there is an unmatched opening parenthesis at the position 181009.  To find this parenthesis, open the BibTeX file and do `M-: (goto-char 181009) RET`.  Fix it and try again.
+
