@@ -5,7 +5,7 @@
 ;; Author: Titus von der Malsburg <malsburg@posteo.de>
 ;; Maintainer: Titus von der Malsburg <malsburg@posteo.de>
 ;; Version: 1.0.0
-;; Package-Requires: ((helm "1.5.5") (parsebib "1.0") (s "1.9.0") (dash "2.6.0") (f "0.16.2") (cl-lib "0.5"))
+;; Package-Requires: ((helm "1.5.5") (parsebib "1.0") (s "1.9.0") (dash "2.6.0") (f "0.16.2") (cl-lib "0.5") (biblio "0.2"))
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -25,6 +25,10 @@
 ;; A BibTeX bibliography manager based on Helm.
 ;;
 ;; News:
+;; - 04/02/2016: Added support for biblio.el which is useful for
+;;   importing BibTeX from CrossRef and other sources.  See new
+;;   fallback options and the section "Importing BibTeX from CrossRef"
+;;   on the GitHub page.
 ;; - 02/25/2016: Support for pre- and postnotes for pandoc-citeproc
 ;;   citations.
 ;; - 11/23/2015: Added support for keeping all notes in one
@@ -93,6 +97,7 @@
 (require 'dash)
 (require 's)
 (require 'f)
+(require 'biblio)
 
 (defgroup helm-bibtex nil
   "Helm plugin for searching entries in a BibTeX bibliography."
@@ -189,15 +194,30 @@ should be a single character."
   :type 'string)
 
 (defcustom helm-bibtex-fallback-options
-  '(("Google Scholar" . "https://scholar.google.co.uk/scholar?q=%s")
-    ("Pubmed" . "https://www.ncbi.nlm.nih.gov/pubmed/?term=%s")
-    ("arXiv" . helm-bibtex-arxiv)
-    ("Bodleian Library" . "http://solo.bodleian.ox.ac.uk/primo_library/libweb/action/search.do?vl(freeText0)=%s&fn=search&tab=all")
-    ("Library of Congress" . "https://www.loc.gov/search/?q=%s&all=true&st=list")
-    ("Deutsche Nationalbibliothek" . "https://portal.dnb.de/opac.htm?query=%s")
-    ("British National Library" . "http://explore.bl.uk/primo_library/libweb/action/search.do?&vl(freeText0)=%s&fn=search")
-    ("Bibliothèque nationale de France" . "http://catalogue.bnf.fr/servlet/RechercheEquation?host=catalogue?historique1=Recherche+par+mots+de+la+notice&niveau1=1&url1=/jsp/recherchemots_simple.jsp?host=catalogue&maxNiveau=1&categorieRecherche=RechercheMotsSimple&NomPageJSP=/jsp/recherchemots_simple.jsp?host=catalogue&RechercheMotsSimpleAsauvegarder=0&ecranRechercheMot=/jsp/recherchemots_simple.jsp&resultatsParPage=20&x=40&y=22&nbElementsHDJ=6&nbElementsRDJ=7&nbElementsRCL=12&FondsNumerise=M&CollectionHautdejardin=TVXZROM&HDJ_DAV=R&HDJ_D2=V&HDJ_D1=T&HDJ_D3=X&HDJ_D4=Z&HDJ_SRB=O&CollectionRezdejardin=UWY1SPQM&RDJ_DAV=S&RDJ_D2=W&RDJ_D1=U&RDJ_D3=Y&RDJ_D4=1&RDJ_SRB=P&RDJ_RLR=Q&RICHELIEU_AUTRE=ABCDEEGIKLJ&RCL_D1=A&RCL_D2=K&RCL_D3=D&RCL_D4=E&RCL_D5=E&RCL_D6=C&RCL_D7=B&RCL_D8=J&RCL_D9=G&RCL_D10=I&RCL_D11=L&ARSENAL=H&LivrePeriodique=IP&partitions=C&images_fixes=F&son=S&images_animees=N&Disquette_cederoms=E&multimedia=M&cartes_plans=D&manuscrits=BT&monnaies_medailles_objets=JO&salle_spectacle=V&Monographie_TN=M&Periodique_TN=S&Recueil_TN=R&CollectionEditorial_TN=C&Ensemble_TN=E&Spectacle_TN=A&NoticeB=%s")
-    ("Gallica Bibliothèque Numérique" . "http://gallica.bnf.fr/Search?q=%s"))
+  '(("CrossRef                                  (biblio.el)"
+     . (lambda () (biblio-lookup #'biblio-crossref-backend helm-pattern)))
+    ("arXiv                                     (biblio.el)"
+     . (lambda () (biblio-lookup #'biblio-arxiv-backend helm-pattern)))
+    ("DBLP (computer science bibliography)      (biblio.el)"
+     . (lambda () (biblio--lookup-1 #'biblio-dblp-backend helm-pattern)))
+    ("HAL (French open archive)                 (biblio.el)"
+     . (lambda () (biblio--lookup-1 #'biblio-hal-backend helm-pattern)))
+    ("Google Scholar                            (web)"
+     . "https://scholar.google.co.uk/scholar?q=%s")
+    ("Pubmed                                    (web)"
+     . "https://www.ncbi.nlm.nih.gov/pubmed/?term=%s")
+    ("Bodleian Library                          (web)"
+     . "http://solo.bodleian.ox.ac.uk/primo_library/libweb/action/search.do?vl(freeText0)=%s&fn=search&tab=all")
+    ("Library of Congress                       (web)"
+     . "https://www.loc.gov/search/?q=%s&all=true&st=list")
+    ("Deutsche Nationalbibliothek               (web)"
+     . "https://portal.dnb.de/opac.htm?query=%s")
+    ("British National Library                  (web)"
+     . "http://explore.bl.uk/primo_library/libweb/action/search.do?&vl(freeText0)=%s&fn=search")
+    ("Bibliothèque nationale de France          (web)"
+     . "http://catalogue.bnf.fr/servlet/RechercheEquation?host=catalogue?historique1=Recherche+par+mots+de+la+notice&niveau1=1&url1=/jsp/recherchemots_simple.jsp?host=catalogue&maxNiveau=1&categorieRecherche=RechercheMotsSimple&NomPageJSP=/jsp/recherchemots_simple.jsp?host=catalogue&RechercheMotsSimpleAsauvegarder=0&ecranRechercheMot=/jsp/recherchemots_simple.jsp&resultatsParPage=20&x=40&y=22&nbElementsHDJ=6&nbElementsRDJ=7&nbElementsRCL=12&FondsNumerise=M&CollectionHautdejardin=TVXZROM&HDJ_DAV=R&HDJ_D2=V&HDJ_D1=T&HDJ_D3=X&HDJ_D4=Z&HDJ_SRB=O&CollectionRezdejardin=UWY1SPQM&RDJ_DAV=S&RDJ_D2=W&RDJ_D1=U&RDJ_D3=Y&RDJ_D4=1&RDJ_SRB=P&RDJ_RLR=Q&RICHELIEU_AUTRE=ABCDEEGIKLJ&RCL_D1=A&RCL_D2=K&RCL_D3=D&RCL_D4=E&RCL_D5=E&RCL_D6=C&RCL_D7=B&RCL_D8=J&RCL_D9=G&RCL_D10=I&RCL_D11=L&ARSENAL=H&LivrePeriodique=IP&partitions=C&images_fixes=F&son=S&images_animees=N&Disquette_cederoms=E&multimedia=M&cartes_plans=D&manuscrits=BT&monnaies_medailles_objets=JO&salle_spectacle=V&Monographie_TN=M&Periodique_TN=S&Recueil_TN=R&CollectionEditorial_TN=C&Ensemble_TN=E&Spectacle_TN=A&NoticeB=%s")
+    ("Gallica Bibliothèque Numérique            (web)"
+     . "http://gallica.bnf.fr/Search?q=%s"))
   "Alist of online sources that can be used to search for
 publications.  The key of each entry is the name of the online
 source.  The value is the URL used for retrieving results.  This
@@ -963,17 +983,6 @@ line."
       ((functionp url-or-function)
         (funcall url-or-function))
       (t (error "Don't know how to interpret this: %s" url-or-function)))))
-
-(defun helm-bibtex-arxiv ()
-  "Search for the current `helm-pattern' in arXiv."
-  (let* ((browse-url-browser-function
-          (or helm-bibtex-browser-function
-              browse-url-browser-function))
-         (terms (s-split "\s+" helm-pattern))
-         (terms (-map 'url-hexify-string terms))
-         (terms (if (> (length terms) 1) (cons "AND" terms) terms)))
-    (helm-browse-url (format "http://arxiv.org/find/all/1/all:+%s/0/1/0/all/0/1"
-                             (s-join "+" terms)))))
 
 (defun helm-bibtex-fallback-candidates ()
   "Compile list of fallback options.  These consist of the online

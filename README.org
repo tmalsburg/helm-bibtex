@@ -4,6 +4,7 @@
 [[http://melpa.org/#/helm-bibtex][http://melpa.org/packages/helm-bibtex-badge.svg]]
 
 * News
+- [2016-04-02 Sat] :: Added support for biblio.el which is useful for importing BibTeX entries from CrossRef and other sources.  See new fallback options and the section “Import BibTeX from CrossRef” below.
 - [2016-02-25 Thu] :: Support for pre- and postnotes for pandoc-citeproc citations.
 - [2015-11-23 Mon] :: Added support for keeping all notes in one org-file.  See customization variable ~helm-bibtex-notes-path~.
 - [2015-11-10 Tue] :: Added support for PDFs specified in a BibTeX field.  See customization variable ~helm-bibtex-pdf-field~.
@@ -227,7 +228,7 @@ For convenience, frequent searches can be captured in commands and bound to key 
 (global-set-key (kbd "C-x p") 'helm-bibtex-my-publications)
 #+END_SRC
 
-** Changing the default action
+** Change the default action
 
 Pressing enter on a publication triggers the “default action” which is opening the PDF associated with the publication.  Since the default action is simply the first entry in the list of actions, the default action can be changed by deleting an action and re-inserting it at the top of the list.  Below is an example showing how to make “Insert BibTeX key” the default action:
 
@@ -287,7 +288,7 @@ By default helm-bibtex assumes that note files are in org-mode format.  However,
 If the file type is set to something else than org-mode, the templates for new note files need to be adjusted as well.  See the section above for details.
 
 * Usage
-** Searching publications
+** Search publications
 
 The command ~M-x helm-bibtex~ starts a new search in your bibliography.  The default fields for searching are: author, title, year, BibTeX key, and entry type.  Regular expressions can be used.  Example searches:
 
@@ -365,7 +366,7 @@ Select one or more entries (see above) and press ~<return>~ to open the PDF (def
 
 Start an email to your colleague (~C-x m~) and ~M-x helm-bibtex~.  Select your new publications and select the action “Attach PDF to email.”  Then ~M-x helm-resume~ (the publications are still marked) and select “Insert BibTeX entry”.  Optionally insert more human readable references using ~M-x helm-resume~ and “Insert reference”.  Send email (~C-c C-c~).  Done.  This takes less than 10 seconds.  Of course, this assumes that you’re sending email from Emacs, e.g. via [[http://www.djcbsoftware.nl/code/mu/mu4e.html][Mu4e]].
 
-** Tagging publications
+** Tag publications
 
 Helm-bibtex has powerful search capabilities (inherited from Helm) but some common searches cannot be performed simply because the relevant information is typically not represented in BibTeX files.  For example, helm-bibtex doesn’t know whether a conference presentation was a talk or a poster because both are represented as ~inproceedings~.  So if you want to compile a list of your conference talks (e.g., for your CV), that’s not possible – not without some additional work.  One solution to this is to “tag” publications.  Tags are like keywords except that they don’t represent the content of a publications but meta data.  Example:
 
@@ -388,12 +389,14 @@ Since ~tags~ is not a standard BibTeX field, helm-bibtex by default doesn’t co
 
 There are many other ways in which tags can be used.  For example, they can be used to mark articles that you plan to read or important articles or manuscripts in progress, etc.  Be creative.
 
-** Insertion of LaTeX cite commands
+** Insert LaTeX cite commands
 
 The action for inserting a citation command into a LaTeX document prompts for the citation command and, if applicable, for the pre- and postnote arguments.  The prompt for the citation command has its own minibuffer history, which means that previous inputs can be accessed by pressing the ~<up>~ key.  By pressing ~<down>~ it is also possible to access the list of all citation commands defined in biblatex (except for multicite commands and volcite et al. which have different argument structures).  The prompt also supports auto-completion via the ~tab~ key.  If no command is entered, the default command is used.  The default command is defined in the customization variable ~helm-bibtex-cite-default-command~.  By default, helm-bibtex prompts for pre- and postnotes for the citation.  This can be switched off by setting the variable ~helm-bibtex-cite-prompt-for-optional-arguments~ to ~nil~.
 
-** Force rereading the bibliography
+** Force reloading of the bibliography
 Helm-bibtex caches the bibliography to prevent a costly reread when a new query is started.  However, helm-bibtex does not check whether new PDFs or notes were added since the last read and hence the symbols indicating the presence or absence of these items may be incorrect.  A reread can be forced using a prefix argument.  Either do ~C-u M-x helm-bibtex~ or ~C-u~ followed by whatever key binding you use to invoke helm-bibtex.
+** Import BibTeX from CrossRef
+Start ~helm-bibtex~ and enter search terms.  Then select “CrossRef” in the section titled “Fallback options”.  (You can use the left and right arrow keys to switch between sections.)  This will use [[https://github.com/cpitclaudel/biblio.el][biblio.el]] to search the CrossRef database.  In the results list, place the cursor on the entry of interest and hit ~c~ to copy the BibTeX for that entry or ~i~ to insert it at point.  Press ~q~ to close the buffer with the search results.  See the [[https://github.com/cpitclaudel/biblio.el/blob/master/README.md][documentation of biblio.el]] for details.
 * Advanced usage (a.k.a. hacks)
 Below I provide code that was useful for me.  Note that this code may make assumptions that do not hold in your setup.  Read the code carefully before executing it and make changes as needed.
 
@@ -431,8 +434,6 @@ If LaTeX is used to write the article, grep and sed can be used to extract the c
 #+BEGIN_SRC sh
 grep '\entry{' manuscript.bbl | sed 's/^.*\entry{\([^}]*\)}.*$/\1/'
 #+END_SRC
-
-
 
 * Troubleshooting
 ** Helm-bibtex doesn’t show any entries
