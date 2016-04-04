@@ -450,5 +450,5 @@ If you see
 forward-sexp: Scan error: "Unbalanced parentheses", 181009, 512282
 #+END_SRC
 
-this means that there is an unmatched opening parenthesis at the position 181009.  To find this parenthesis, open the BibTeX file and do ~M-: (goto-char 181009) RET~.  Fix it and try again.
+this means that there is an unmatched opening parenthesis at the position 181009.  To find this parenthesis, open the BibTeX file and do ~M-: (goto-char 181009) RET~.  You can also use the command ~M-x bibtex-validate RET~ to check for errors.  Fix any problems and try again.
 
