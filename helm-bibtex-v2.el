@@ -3,7 +3,7 @@
 ;; Author: Titus von der Malsburg <malsburg@posteo.de>
 ;; Maintainer: Titus von der Malsburg <malsburg@posteo.de>
 ;; Version: 2.0.0
-;; Package-Requires: ((helm "1.5.5") (parsebib "1.0") (s "1.9.0") (dash "2.6.0") (f "0.16.2") (cl-lib "0.5"))
+;; Package-Requires: ((helm "1.5.5") (parsebib "1.0") (s "1.9.0") (dash "2.6.0") (f "0.16.2") (cl-lib "0.5") (biblio "0.2"))
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -24,6 +24,10 @@
 ;; bibtex-completion backend
 ;;
 ;; News:
+;; - 04/02/2016: Added support for biblio.el which is useful for
+;;   importing BibTeX from CrossRef and other sources.  See new
+;;   fallback options and the section "Importing BibTeX from CrossRef"
+;;   on the GitHub page.
 ;; - 02/25/2016: Support for pre- and postnotes for pandoc-citeproc
 ;;   citations.
 ;; - 11/23/2015: Added support for keeping all notes in one
@@ -46,6 +50,7 @@
 ;; - Attach notes to publications
 ;; - Quick access to online bibliographic databases such as Pubmed,
 ;;   arXiv, Google Scholar, Library of Congress, etc.
+;; - Import BibTeX entries from CrossRef and other sources.
 ;;
 ;; See the github page for details:
 ;;
