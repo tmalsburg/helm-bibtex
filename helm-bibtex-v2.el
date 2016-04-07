@@ -24,6 +24,8 @@
 ;; bibtex-completion backend
 ;;
 ;; News:
+;; - 04/06/2016: Generic functions are factored out into a backend for
+;;   use with other completion frameworks like ivy.
 ;; - 04/02/2016: Added support for biblio.el which is useful for
 ;;   importing BibTeX from CrossRef and other sources.  See new
 ;;   fallback options and the section "Importing BibTeX from CrossRef"
