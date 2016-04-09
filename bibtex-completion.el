@@ -311,15 +311,31 @@ before being saved."
                (entries (bibtex-completion-prepare-entries entries))
                (entries (nreverse entries))
                (entries
-                (--map (cons (bibtex-completion-clean-string
-                                  (s-join " " (-map #'cdr it))) it)
-                           entries)))
+                (mapcar #'bibtex-completion-add-candidate-string
+                        entries)))
           (setq bibtex-completion-cached-candidates
                 (if (functionp formatter)
                     (funcall formatter entries)
                   entries)))
         (setq bibtex-completion-bibliography-hash bibliography-hash))
       bibtex-completion-cached-candidates)))
+
+(defun bibtex-completion-add-candidate-string (entry)
+  "Add string describing candidate to head of ENTRY. This string
+is specially formatted for `ivy-bibtex-display-transformer'."
+  (cons
+   (mapconcat
+    (lambda (field)
+      (let ((res (bibtex-completion-clean-string
+                  (bibtex-completion-get-value field entry " "))))
+        (if (member field '("author" "editor"))
+            (bibtex-completion-shorten-authors res)
+          res)))
+    (if (assoc-string "author" entry 'case-fold)
+        '("author" "title" "year" "=has-pdf=" "=has-note=" "=type=")
+      '("editor" "title" "year" "=has-pdf=" "=has-note=" "=type="))
+    "\t")
+   entry))
 
 (defun bibtex-completion-resolve-crossrefs (entries)
   "Expand all entries with fields from cross-references entries."

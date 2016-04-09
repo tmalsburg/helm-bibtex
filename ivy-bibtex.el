@@ -79,10 +79,62 @@
 
 (require 'ivy)
 (require 'bibtex-completion)
+(require 'dash)
 
 (defun ivy-bibtex-candidates-formatter (candidates)
   (let ((width (frame-width)))
     (bibtex-completion-candidates-formatter candidates width)))
+
+(defvar ivy-bibtex-author-pct-width 0.25
+  "Width of author (or editor) field used in
+`ivy-bibtex-display-transformer'. This is specified as a
+percentage of the window width. The title field is given the
+remainder of the width after subtracting `ivy-bibtex-year-width',
+`ivy-bibtex-has-pdf-width', `ivy-bibtex-has-note-width',
+`ivy-bibtex-type-width'.")
+
+(defvar ivy-bibtex-year-width 4
+  "Width of year field used in
+`ivy-bibtex-display-transformer'. See
+`ivy-bibtex-author-pct-width'.")
+
+(defvar ivy-bibtex-has-pdf-width 2
+  "Width of has-pdf field used in
+`ivy-bibtex-display-transformer'. See
+`ivy-bibtex-author-pct-width'."  )
+
+(defvar ivy-bibtex-has-note-width 2
+  "Width of has-note field used in
+`ivy-bibtex-display-transformer'. See
+`ivy-bibtex-author-pct-width'.")
+
+(defvar ivy-bibtex-type-width 10
+  "Width of type field used in
+`ivy-bibtex-display-transformer'. See
+`ivy-bibtex-author-pct-width'.")
+
+(defun ivy-bibtex-display-transformer (candidate)
+  "Format CANDIDATE for display in `ivy-bibtex' selection."
+  (let* ((cand-list (split-string candidate "\t"))
+         (width (window-width (active-minibuffer-window)))
+         (author-width (floor (* ivy-bibtex-author-pct-width width)))
+         (title-width
+          (- width 7 author-width ivy-bibtex-year-width
+             ivy-bibtex-has-pdf-width ivy-bibtex-has-note-width
+             ivy-bibtex-type-width))
+         (format-str
+          (format "%%-%ss  %%-%ss  %%%ss %%%ss %%%ss %%%ss"
+                  author-width title-width ivy-bibtex-year-width
+                  ivy-bibtex-has-pdf-width ivy-bibtex-has-note-width
+                  ivy-bibtex-type-width)))
+    (setq cand-list
+          (-zip-with
+           (lambda (x len) (substring x 0 (min (length x) len)))
+           cand-list
+           (list author-width title-width ivy-bibtex-year-width 
+                 ivy-bibtex-has-pdf-width ivy-bibtex-has-note-width
+                 ivy-bibtex-type-width)))
+    (apply #'format format-str cand-list)))
 
 ;;;###autoload
 (defun ivy-bibtex (&optional arg)
@@ -95,9 +147,11 @@ reread."
     (setq bibtex-completion-bibliography-hash ""))
   (bibtex-completion-init)
   (ivy-read "BibTeX Items: "
-            (bibtex-completion-candidates 'ivy-bibtex-candidates-formatter)
+            (bibtex-completion-candidates)
             :caller 'ivy-bibtex
             :action 'bibtex-completion-insert-key))
+
+(ivy-set-display-transformer 'ivy-bibtex 'ivy-bibtex-display-transformer)
 
 (ivy-set-actions
  'ivy-bibtex
