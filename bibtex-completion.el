@@ -408,8 +408,10 @@ file is specified, or if the specified file does not exist, or if
          for record = (s-split ":" record)
          for file-name = (nth 0 record)
          for path = (or (nth 1 record) "")
-         ; f-full prepends missing slashes, so we don't need a special
-         ; case for Mendeley which omits the beginning slash.
+         ; Special case for Mendeley which omits the beginning slash:
+         for path = (if (s-starts-with? (f-path-separator) path)
+                        path
+                      (s-concat (f-path-separator) path))
          if (f-file? (f-full path))
            collect (f-full path)
          else if (f-file? (f-full (f-join path file-name)))
