@@ -97,7 +97,7 @@ reread."
   (ivy-read "BibTeX Items: "
             (bibtex-completion-candidates 'ivy-bibtex-candidates-formatter)
             :caller 'ivy-bibtex
-            :action 'bibtex-completion-insert-key))
+            :action 'bibtex-completion-open-pdf))
 
 (ivy-set-actions
  'ivy-bibtex
