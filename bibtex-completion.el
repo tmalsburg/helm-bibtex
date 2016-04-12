@@ -400,22 +400,22 @@ file is specified, or if the specified file does not exist, or if
            (value (bibtex-completion-get-value bibtex-completion-pdf-field entry)))
       (cond
        ((not value) nil)         ; Field not defined.
-       ((f-file? value) value)   ; A bare path was found.
-       (t
-        ; Assuming Zotero/Mendeley/JabRef format:
+       ((f-file? value) value)   ; A bare full path was found.
+       (t                        ; Zotero/Mendeley/JabRef format:
         (cl-loop  ; Looping over the files:
          for record in (s-split ";" value)
+         ; Unescape underscores (Mendeley):
+         for record = (s-replace "{\\_}" "_" record)
          for record = (s-split ":" record)
          for file-name = (nth 0 record)
          for path = (or (nth 1 record) "")
-         ; Special case for Mendeley which omits the beginning slash:
-         for path = (if (f-relative? path)
-                        (s-concat (f-root) path)
-                      path)
-         if (f-file? (f-full path))
-           collect (f-full path)
-         else if (f-file? (f-full (f-join path file-name)))
-           collect (f-full (f-join path file-name))))))))
+         for paths = (list
+                      path
+                      (f-join (f-root) path)                                  ; Mendeley #105
+                      (f-join (f-root) path file-name)                        ; Mendeley #105
+                      (f-join bibtex-completion-library-path path)            ; Jabref #100
+                      (f-join bibtex-completion-library-path path file-name)) ; Jabref #100
+         collect (-first 'f-exists? paths)))))))
 
 (defun bibtex-completion-find-pdf-in-library (key-or-entry)
   "Searches the directories in `bibtex-completion-library-path' for a
