@@ -24,13 +24,7 @@
 ;; bibtex-completion backend
 ;;
 ;; News:
-;; - 02/25/2016: Support for pre- and postnotes for pandoc-citeproc
-;;   citations.
-;; - 11/23/2015: Added support for keeping all notes in one
-;;   org-file.  See customization variable `helm-bibtex-notes-path'.
-;; - 11/10/2015: Added support for PDFs specified in a BibTeX
-;;   field.  See customization variable `helm-bibtex-pdf-field'.
-;; - 11/09/2015: Improved insertion of LaTeX cite commands.
+;; - 04/12/2016: Published ivy version of helm-bibtex.
 ;;
 ;; See NEWS.org for old news.
 ;;
@@ -44,36 +38,31 @@
 ;;   BibTeX entries, or plain text references at point, attach PDFs to
 ;;   emails
 ;; - Attach notes to publications
-;; - Quick access to online bibliographic databases such as Pubmed,
-;;   arXiv, Google Scholar, Library of Congress, etc.
 ;;
-;; See the github page for details:
+;; Install:
 ;;
-;;    https://github.com/tmalsburg/helm-bibtex
-
-;;; Install:
-
-;; Put this file in a directory included in your load path or install
-;; ivy-bibtex from MELPA (preferred).  Then add the following in your
-;; Emacs startup file:
+;;   Put this file in a directory included in your load path or
+;;   install ivy-bibtex from MELPA (preferred).  Then add the
+;;   following in your Emacs startup file:
 ;;
 ;;     (require 'ivy-bibtex)
 ;;
-;; Alternatively, you can use autoload:
+;;   Alternatively, you can use autoload:
 ;;
 ;;     (autoload 'ivy-bibtex "ivy-bibtex" "" t)
 ;;
-;; Requirements are parsebib, swiper, s, dash, and f.  The easiest way
-;; to install these packages is through MELPA.  Make sure helm is
-;; properly configured (see
-;; https://github.com/emacs-helm/helm#install-from-emacs-packaging-system).
+;;   Requirements are parsebib, swiper, s, dash, and f.  The easiest way
+;;   to install these packages is through MELPA.
 ;;
-;; Let ivy-bibtex know where it can find your bibliography by setting
-;; the variable `bibtex-completion-bibliography'.  See the manual for more details:
+;;   Let ivy-bibtex know where it can find your bibliography by
+;;   setting the variable `bibtex-completion-bibliography'.  See the
+;;   manual for more details:
 ;;
-;;   https://github.com/tmalsburg/helm-bibtex#minimal-configuration
-
-;;; Usage:
+;;     https://github.com/tmalsburg/helm-bibtex/blob/master/README.ivy-bibtex.org
+;;
+;; Usage:
+;;
+;;    Do M-x ivy-bibtex and start typing a search query when prompted.
 
 ;;; Code:
 
@@ -86,7 +75,7 @@
 
 ;;;###autoload
 (defun ivy-bibtex (&optional arg)
-  "Search BibTeX entries.
+  "Search BibTeX entries using ivy.
 
 With a prefix ARG the cache is invalidated and the bibliography
 reread."
