@@ -409,9 +409,9 @@ file is specified, or if the specified file does not exist, or if
          for file-name = (nth 0 record)
          for path = (or (nth 1 record) "")
          ; Special case for Mendeley which omits the beginning slash:
-         for path = (if (s-starts-with? (f-path-separator) path)
-                        path
-                      (s-concat (f-path-separator) path))
+         for path = (if (f-relative? path)
+                        (s-concat (f-root) path)
+                      path)
          if (f-file? (f-full path))
            collect (f-full path)
          else if (f-file? (f-full (f-join path file-name)))
