@@ -402,32 +402,29 @@ file is specified, or if the specified file does not exist, or if
        ((not value) nil)         ; Field not defined.
        ((f-file? value) value)   ; A bare full path was found.
        (t                        ; Zotero/Mendeley/JabRef format:
-        (cl-loop  ; Looping over the files:
-         for record in (s-split ";" value)
-         ; Unescape underscores (Mendeley):
-         for record = (s-replace "{\\_}" "_" record)
-         ; Unescape backslashes (Windows, Zotero):
-         for record = (s-replace "\\\\" "\\" record)
-         ; Unescape colon (used in Windows drive specifier):
-         for record = (s-replace "\\:" ":" record)
-         ; Store windows root (C\:\\):
-         for win-prefix = (let ((m (s-match ":\\(C:\\)\\\\" record)))
-                            (if m (cadr m) ""))
-         ; Eliminate windows root:
-         for record = (s-replace ":C:\\" ":" record)
-         ; Now we can safely split:
-         for record = (s-split ":" record)
-         for file-name = (nth 0 record)
-         for path = (or (nth 1 record) "")
-         for paths = (list
-                      path
-                      (f-join (f-root) path)                                  ; Mendeley #105
-                      (f-join (f-root) path file-name)                        ; Mendeley #105
-                      (f-join bibtex-completion-library-path path)            ; Jabref #100
-                      (f-join bibtex-completion-library-path path file-name)  ; Jabref #100
-                      (f-join win-prefix path))                               ; Zotero, Windows #99
-         for result = (-first 'f-exists? paths)
-         if result collect result))))))
+        (let ((value (replace-regexp-in-string "\\([^\\]\\);" "\\1|||" value)))
+          (cl-loop  ; Looping over the files:
+           for record in (s-split "\|\|\|" value)
+           ; Replace unescaped colons by something that is unlikely to
+           ; appear otherwise (later used for splitting):
+           for record = (replace-regexp-in-string "\\([^\\]\\):" "\\1|||" record)
+           ; Unescape stuff:
+           for record = (replace-regexp-in-string "\\\\\\(.\\)" "\\1" record)
+           ; Now we can safely split:
+           for record = (s-split "\|\|\|" record)
+           for file-name = (nth 0 record)
+           for path = (or (nth 1 record) "")
+           for paths = (if (s-match "^[A-Z]:" path)
+                           (list path)                 ; Absolute Windows path
+                                                       ; Something else:
+                         (list
+                          path
+                          (f-join (f-root) path)                                   ; Mendeley #105
+                          (f-join (f-root) path file-name)                         ; Mendeley #105
+                          (f-join bibtex-completion-library-path path)             ; Jabref #100
+                          (f-join bibtex-completion-library-path path file-name))) ; Jabref #100
+           for result = (-first 'f-exists? paths)
+           if result collect result)))))))
 
 (defun bibtex-completion-find-pdf-in-library (key-or-entry)
   "Searches the directories in `bibtex-completion-library-path' for a
