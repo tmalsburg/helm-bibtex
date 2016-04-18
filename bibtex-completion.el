@@ -402,16 +402,16 @@ file is specified, or if the specified file does not exist, or if
        ((not value) nil)         ; Field not defined.
        ((f-file? value) value)   ; A bare full path was found.
        (t                        ; Zotero/Mendeley/JabRef format:
-        (let ((value (replace-regexp-in-string "\\([^\\]\\);" "\\1|||" value)))
+        (let ((value (replace-regexp-in-string "\\([^\\]\\);" "\\1\^^" value)))
           (cl-loop  ; Looping over the files:
-           for record in (s-split "\|\|\|" value)
+           for record in (s-split "\^^" value)
            ; Replace unescaped colons by something that is unlikely to
            ; appear otherwise (later used for splitting):
-           for record = (replace-regexp-in-string "\\([^\\]\\):" "\\1|||" record)
+           for record = (replace-regexp-in-string "\\([^\\]\\):" "\\1\^_" record)
            ; Unescape stuff:
            for record = (replace-regexp-in-string "\\\\\\(.\\)" "\\1" record)
            ; Now we can safely split:
-           for record = (s-split "\|\|\|" record)
+           for record = (s-split "\^_" record)
            for file-name = (nth 0 record)
            for path = (or (nth 1 record) "")
            for paths = (if (s-match "^[A-Z]:" path)
