@@ -417,12 +417,15 @@ file is specified, or if the specified file does not exist, or if
            for paths = (if (s-match "^[A-Z]:" path)
                            (list path)                 ; Absolute Windows path
                                                        ; Something else:
-                         (list
-                          path
-                          (f-join (f-root) path)                                   ; Mendeley #105
-                          (f-join (f-root) path file-name)                         ; Mendeley #105
-                          (f-join bibtex-completion-library-path path)             ; Jabref #100
-                          (f-join bibtex-completion-library-path path file-name))) ; Jabref #100
+                         (append
+                          (list
+                           path
+                           (f-join (f-root) path) ; Mendeley #105
+                           (f-join (f-root) path file-name)) ; Mendeley #105
+                          (--map (f-join it path)
+                                 (-flatten bibtex-completion-library-path)) ; Jabref #100
+                          (--map (f-join it path file-name)
+                                 (-flatten bibtex-completion-library-path)))) ; Jabref #100
            for result = (-first 'f-exists? paths)
            if result collect result)))))))
 
