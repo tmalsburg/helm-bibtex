@@ -24,6 +24,8 @@
 ;; bibtex-completion backend
 ;;
 ;; News:
+;; - 04/18/2016: Improved support for Mendely/Jabref/Zotero way of
+;;   referencing PDFs.
 ;; - 04/06/2016: Generic functions are factored out into a backend for
 ;;   use with other completion frameworks like ivy.
 ;; - 04/02/2016: Added support for biblio.el which is useful for

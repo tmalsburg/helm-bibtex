@@ -8,6 +8,7 @@ Helm-bibtex and ivy-bibtex allow you to search and manage your BibTeX bibliograp
 Ivy-bibtex is experimental at this time, lacks some features, and may be noticeably slower than helm-bibtex when used with larger bibliographies.
 
 * News
+- [2016-04-18 Moi] :: Improved support for Mendely/Jabref/Zotero way of referencing PDFs.
 - [2016-04-12 Wed] :: Added ivy front-end.
 - [2016-04-06 Wed] :: Generic functions are factored out into a backend for use with other completion frameworks like ivy.
 - [2016-04-02 Sat] :: Added support for biblio.el which is useful for importing BibTeX entries from CrossRef and other sources.  See new fallback options and the section “Import BibTeX from CrossRef” below.
