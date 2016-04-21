@@ -21,7 +21,8 @@
 ;;; Commentary:
 
 ;; A BibTeX bibliography manager based on Ivy and the
-;; bibtex-completion backend
+;; bibtex-completion backend.  If you are familiar with helm-bibtex,
+;; this is the ivy version.
 ;;
 ;; News:
 ;; - 04/18/2016: Improved support for Mendely/Jabref/Zotero way of

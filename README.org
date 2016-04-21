@@ -1,7 +1,8 @@
 #+TITLE: Bibtex-completion, helm-bibtex, ivy-bibtex
 #+Options: num:nil
 
-[[http://melpa.org/#/helm-bibtex][http://melpa.org/packages/helm-bibtex-badge.svg]]
+Helm-bibtex: [[http://melpa.org/#/helm-bibtex][http://melpa.org/packages/helm-bibtex-badge.svg]]
+Ivy-bibtex: [[http://melpa.org/#/ivy-bibtex][http://melpa.org/packages/ivy-bibtex-badge.svg]]
 
 Helm-bibtex and ivy-bibtex allow you to search and manage your BibTeX bibliography.  They both share the same generic backend, bibtex-completion, but one uses the Helm completion framework and the other Ivy as a front-end.
 
