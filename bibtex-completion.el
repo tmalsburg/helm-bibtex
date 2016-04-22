@@ -405,9 +405,8 @@ file is specified, or if the specified file does not exist, or if
         (let ((value (replace-regexp-in-string "\\([^\\]\\);" "\\1\^^" value)))
           (cl-loop  ; Looping over the files:
            for record in (s-split "\^^" value)
-           ; Replace unescaped colons by something that is unlikely to
-           ; appear otherwise (later used for splitting):
-           for record = (replace-regexp-in-string "\\([^\\]\\):" "\\1\^_" record)
+           ; Replace unescaped colons by field separator:
+           for record = (replace-regexp-in-string "\\([^\\]\\|^\\):" "\\1\^_" record)
            ; Unescape stuff:
            for record = (replace-regexp-in-string "\\\\\\(.\\)" "\\1" record)
            ; Now we can safely split:
