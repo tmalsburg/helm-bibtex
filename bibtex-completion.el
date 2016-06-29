@@ -930,6 +930,7 @@ This function searches the current file or its master file for a
 associated .bib file(s). If no files are found locally, return the
 files specified in the variable `bibtex-completion-bibliography'."
   (let ((texfile nil)
+	(dir (file-name-directory (buffer-file-name)))
 	(cb (current-buffer)))
     (when (and (boundp 'TeX-master)
 	       (stringp TeX-master))
@@ -947,15 +948,15 @@ files specified in the variable `bibtex-completion-bibliography'."
 	 ((re-search-forward "\\\\\\(?:no\\)*bibliography{\\(.*?\\)}" nil t)
 	  (mapcar (lambda (fname)
 		    (if (file-name-extension fname)
-			fname
-		      (concat fname ".bib")))
+			(format "%s%s" dir fname)
+		      (format "%s%s.bib" dir fname)))
 		  (split-string (match-string-no-properties 1) ",[ ]*")))
 	 ;; biblatex
 	 ((re-search-forward "\\\\addbibresource\\(\\[.*?\\]\\)?{\\(.*?\\)}" nil t)
 	  (mapcar (lambda (fname)
 		    (if (file-name-extension fname)
-			fname
-		      (concat fname ".bib")))
+			(format "%s%s" dir fname)
+		      (format "%s%s.bib" dir fname)))
 		  (let ((option (match-string 1))
 			(file (match-string-no-properties 2)))
 		    (unless (and option (string-match-p "location=remote" option))
