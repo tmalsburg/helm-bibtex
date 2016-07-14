@@ -451,7 +451,7 @@ Bibtex-completion caches the bibliography to prevent a costly reread when a new 
 
 * Advanced usage (a.k.a. hacks)
 
-Below I provide code that was useful for me.  Note that this code may make assumptions that do not hold in your setup.  Read the code carefully before executing it and make changes as needed.
+Below I provide code that was useful for me or other users.  Note that this code may make assumptions that do not hold in your setup.  Read the code carefully before executing it and make changes as needed.
 
 ** Convert multiple note files to one notes file
 
@@ -487,6 +487,15 @@ If LaTeX is used to write the article, grep and sed can be used to extract the c
 
 #+BEGIN_SRC sh
 grep '\entry{' manuscript.bbl | sed 's/^.*\entry{\([^}]*\)}.*$/\1/'
+#+END_SRC
+
+** Reverse order of entries
+
+Helm-bibtex and ivy-bibtex display entries in the order in which they appear in the BibTeX file reversed.  This way, entries that were added at the bottom of the BibTeX file show up at the top when searching.  There is currently no support for sorting but if you want to reverse the order of entries you can use the code below:
+
+#+BEGIN_SRC elisp
+(advice-add 'bibtex-completion-candidates
+            :filter-return 'reverse)
 #+END_SRC
 
 * Troubleshooting
