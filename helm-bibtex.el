@@ -95,7 +95,6 @@
 
 (require 'helm)
 (require 'helm-net)
-(require 'helm-plugin)
 (require 'helm-easymenu)
 (require 'bibtex-completion)
 
