@@ -816,7 +816,7 @@ defined.  Surrounding curly braces are stripped."
     (message "No PDF(s) found.")))
 
 (define-minor-mode bibtex-completion-notes-mode
-  "Minor mode for managing helm-bibtex notes."
+  "Minor mode for managing notes."
   :keymap (let ((map (make-sparse-keymap)))
             (define-key map (kbd "C-c C-c") 'bibtex-completion-exit-notes-buffer)
             (define-key map (kbd "C-c C-w") 'org-refile)
