@@ -169,22 +169,6 @@ it comes out in the right buffer."
 
 ;; Helm sources:
 
-(defvar helm-source-bibtex
-  '((name                                      . "BibTeX entries")
-    (init                                      . bibtex-completion-init)
-    (candidates                                . bibtex-completion-candidates)
-    (filtered-candidate-transformer            . helm-bibtex-candidates-formatter)
-    (action . (("Open PDF file (if present)"   . helm-bibtex-open-pdf)
-               ("Open URL or DOI in browser"   . helm-bibtex-open-url-or-doi)
-               ("Insert citation"              . helm-bibtex-insert-citation)
-               ("Insert reference"             . helm-bibtex-insert-reference)
-               ("Insert BibTeX key"            . helm-bibtex-insert-key)
-               ("Insert BibTeX entry"          . helm-bibtex-insert-bibtex)
-               ("Attach PDF to email"          . helm-bibtex-add-PDF-attachment)
-               ("Edit notes"                   . bibtex-completion-edit-notes)
-               ("Show entry"                   . bibtex-completion-show-entry))))
-  "Source for searching in BibTeX files.")
-
 (defvar helm-source-fallback-options
   '((name            . "Fallback options")
     (match             (lambda (_candidate) t))
@@ -205,7 +189,21 @@ reread."
   (interactive "P")
   (when arg
     (setq bibtex-completion-bibliography-hash ""))
-  (helm :sources '(helm-source-bibtex helm-source-fallback-options)
+  (helm :sources (list (helm-build-sync-source "BibTeX entries"
+                         :init 'bibtex-completion-init
+                         :candidates 'bibtex-completion-candidates
+                         :filtered-candidate-transformer 'helm-bibtex-candidates-formatter
+                         :action (helm-make-actions
+                                  "Open PDF file (if present)" 'helm-bibtex-open-pdf
+                                  "Open URL or DOI in browser" 'helm-bibtex-open-url-or-doi
+                                  "Insert citation"            'helm-bibtex-insert-citation
+                                  "Insert reference"           'helm-bibtex-insert-reference
+                                  "Insert BibTeX key"          'helm-bibtex-insert-key
+                                  "Insert BibTeX entry"        'helm-bibtex-insert-bibtex
+                                  "Attach PDF to email"        'helm-bibtex-add-PDF-attachment
+                                  "Edit notes"                 'bibtex-completion-edit-notes
+                                  "Show entry"                 'bibtex-completion-show-entry))
+                       helm-source-fallback-options)
         :full-frame helm-bibtex-full-frame
         :buffer "*helm bibtex*"
         :candidate-number-limit 500))
