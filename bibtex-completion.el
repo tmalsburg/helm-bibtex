@@ -536,6 +536,25 @@ values."
                concat (car p))
     nil))
 
+(defun bibtex-completion-normalize-candidate (candidate)
+  "Extract key from CANDIDATE."
+  (cond ((stringp candidate)
+         candidate)
+        ((stringp (cdr-safe candidate))
+         (cdr candidate))))
+
+(defun bibtex-completion-normalize-candidates (candidates)
+  "Normalize CANDIDATES to a list of candidates for each action
+function."
+  (cond
+   ;; single cons cell
+   ((stringp (cdr-safe candidates))
+    (list (cdr candidates)))
+   ((listp candidates)
+    (-map #'bibtex-completion-normalize-candidate candidates))
+   (t
+    (list candidates))))
+
 
 (defun bibtex-completion-open-pdf (candidates)
   "Open the PDFs associated with the marked entries using the
@@ -545,13 +564,13 @@ matching PDFs for an entry, the first is opened."
   (--if-let
       (-flatten
        (-map 'bibtex-completion-find-pdf
-             (if (listp candidates) candidates (list candidates))))
+             (bibtex-completion-normalize-candidates candidates)))
       (-each it bibtex-completion-pdf-open-function)
     (message "No PDF(s) found.")))
 
 (defun bibtex-completion-open-url-or-doi (candidates)
   "Open the associated URL or DOI in a browser."
-  (let ((keys (if (listp candidates) candidates (list candidates))))
+  (let ((keys (bibtex-completion-normalize-candidates candidates)))
     (dolist (key keys)
       (let* ((entry (bibtex-completion-get-entry key))
              (url (bibtex-completion-get-value "url" entry))
@@ -615,7 +634,7 @@ omitted."
 (defun bibtex-completion-insert-citation (candidates)
   "Insert citation at point.  The format depends on
 `bibtex-completion-format-citation-functions'."
-  (let ((keys (if (listp candidates) candidates (list candidates)))
+  (let ((keys (bibtex-completion-normalize-candidates candidates))
         (format-function
          (cdr (or (assoc major-mode bibtex-completion-format-citation-functions)
                   (assoc 'default   bibtex-completion-format-citation-functions)))))
@@ -624,7 +643,7 @@ omitted."
 
 (defun bibtex-completion-insert-reference (candidates)
   "Insert a reference for each selected entry."
-  (let* ((keys (if (listp candidates) candidates (list candidates)))
+  (let* ((keys (bibtex-completion-normalize-candidates candidates))
          (refs (--map
                 (s-word-wrap fill-column
                              (concat "\n- " (bibtex-completion-apa-format-reference it)))
@@ -635,7 +654,9 @@ omitted."
   "Returns a plain text reference in APA format for the
 publication specified by KEY."
   (let*
-   ((entry (bibtex-completion-get-entry key))
+   ((key (bibtex-completion-normalize-candidate key))
+    (entry (bibtex-completion-get-entry
+            (bibtex-completion-normalize-candidate key)))
     (ref (pcase (downcase (bibtex-completion-get-value "=type=" entry))
            ("article"
             (s-format
@@ -673,7 +694,7 @@ publication specified by KEY."
             (s-format
              "${author} (${year}). ${title}."
              'bibtex-completion-apa-get-value entry)))))
-    (replace-regexp-in-string "\\([.?!]\\)\\." "\\1" ref))) ; Avoid sequences of punctuation marks.
+   (replace-regexp-in-string "\\([.?!]\\)\\." "\\1" ref))) ; Avoid sequences of punctuation marks.
 
 (defun bibtex-completion-apa-get-value (field entry &optional default)
   "Return FIELD or ENTRY formatted following the APA
@@ -781,17 +802,18 @@ defined.  Surrounding curly braces are stripped."
 
 (defun bibtex-completion-insert-key (candidates)
   "Insert BibTeX key at point."
-  (let ((keys (if (listp candidates) candidates (list candidates))))
+  (let ((keys (bibtex-completion-normalize-candidates candidates)))
     (insert
      (funcall 'bibtex-completion-format-citation-default keys))))
 
 (defun bibtex-completion-insert-bibtex (candidates)
   "Insert BibTeX key at point."
-  (let ((keys (if (listp candidates) candidates (list candidates))))
+  (let ((keys (bibtex-completion-normalize-candidates candidates)))
     (insert (s-join "\n" (--map (bibtex-completion-make-bibtex it) keys)))))
 
 (defun bibtex-completion-make-bibtex (key)
-  (let* ((entry (bibtex-completion-get-entry key))
+  (let* ((entry (bibtex-completion-get-entry
+                 (bibtex-completion-normalize-candidate key)))
          (entry-type (bibtex-completion-get-value "=type=" entry)))
     (format "@%s{%s,\n%s}\n"
             entry-type key
@@ -811,7 +833,7 @@ defined.  Surrounding curly braces are stripped."
   (--if-let
       (-flatten
        (-map 'bibtex-completion-find-pdf
-             (if (listp candidates) candidates (list candidates))))
+             (bibtex-completion-normalize-candidates candidates)))
       (-each it 'mml-attach-file)
     (message "No PDF(s) found.")))
 
@@ -848,8 +870,9 @@ line."
   "Open the notes associated with the entry using `find-file'."
   (if (f-directory? bibtex-completion-notes-path)
                                         ; One notes file per publication:
-      (let ((path (f-join bibtex-completion-notes-path
-                          (s-concat key bibtex-completion-notes-extension))))
+      (let* ((key (bibtex-completion-normalize-candidate key))
+             (path (f-join bibtex-completion-notes-path
+                           (s-concat key bibtex-completion-notes-extension))))
         (find-file path)
         (unless (f-exists? path)
           (insert (s-format bibtex-completion-notes-template-multiple-files
@@ -890,7 +913,8 @@ line."
   "Show the entry in the BibTeX file."
   (catch 'break
     (dolist (bibtex-file (-flatten (list bibtex-completion-bibliography)))
-      (let ((buf (bibtex-completion-buffer-visiting bibtex-file)))
+      (let ((key (bibtex-completion-normalize-candidate key))
+            (buf (bibtex-completion-buffer-visiting bibtex-file)))
         (find-file bibtex-file)
         (goto-char (point-min))
         (if (re-search-forward
