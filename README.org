@@ -273,22 +273,10 @@ The second argument of ~helm-add-action-to-source~ is the function that executes
 
 The function ~helm-add-action-to-source~ can also be used to add new actions to helm-bibtex.
 
-*Ivy-bibtex*: To change the default action, the command ~ivy-bibtex~ needs to be redefined.  Specifically, we have to specify the default action in the :action slot of the function ivy-read.  For example, to change the default action to /insert BibTeX key/, use the following definition:
+*Ivy-bibtex*: The default action can be changed by customizing the variable ~ivy-bibtex-default-action~. For example, to change the default action to /insert BibTeX key/, use the following:
 
 #+BEGIN_SRC emacs-lisp
-(defun ivy-bibtex (&optional arg)
-  "Search BibTeX entries using ivy.
-
-With a prefix ARG the cache is invalidated and the bibliography
-reread."
-  (interactive "P")
-  (when arg
-    (setq bibtex-completion-bibliography-hash ""))
-  (bibtex-completion-init)
-  (ivy-read "BibTeX Items: "
-            (bibtex-completion-candidates 'ivy-bibtex-candidates-formatter)
-            :caller 'ivy-bibtex
-            :action 'bibtex-completion-insert-key))
+(setq ivy-bibtex-default-action 'bibtex-completion-insert-key)
 #+END_SRC
 
 ** Window size
