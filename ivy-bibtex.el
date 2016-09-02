@@ -76,6 +76,13 @@
   (let ((width (frame-width)))
     (bibtex-completion-candidates-formatter candidates width)))
 
+(defun ivy-bibtex-fallback (string)
+  "Select a fallback option for STRING. This is meant to be used as an action in `ivy-read`, with `ivy-text` as string."
+  (ivy-read "Fallback options: "
+            (bibtex-completion-fallback-candidates)
+            :caller 'ivy-bibtex-fallback
+            :action (lambda (candidate) (bibtex-completion-fallback-action (cdr candidate) string))))
+    
 ;;;###autoload
 (defun ivy-bibtex (&optional arg)
   "Search BibTeX entries using ivy.
@@ -101,7 +108,8 @@ reread."
    ("b" bibtex-completion-insert-bibtex "Insert BibTeX entry")
    ("a" bibtex-completion-add-PDF-attachment "Attach PDF to email")
    ("e" bibtex-completion-edit-notes "Edit notes")
-   ("s" bibtex-completion-show-entry "Show entry"))) 
+   ("s" bibtex-completion-show-entry "Show entry")
+   ("f" (lambda (_candidate) (ivy-bibtex-fallback ivy-text)) "Fallback options"))) 
 
 (provide 'ivy-bibtex)
 

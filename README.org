@@ -225,7 +225,7 @@ See also the section [[https://github.com/tmalsburg/helm-bibtex#insertion-of-lat
 
 ** Online databases
 
-Online databases can be configured using the customization variable ~bibtex-completion-fallback-options~.  This variable contains an alist where the first element of each entry is the name of the database and the second element is either a URL or a function.  The URL must contain a ~%s~ at the position where the current search expression should be inserted.  If a function is used, that function should not take any arguments.
+Online databases can be configured using the customization variable ~bibtex-completion-fallback-options~.  This variable contains an alist where the first element of each entry is the name of the database and the second element is either a URL or a function.  The URL must contain a ~%s~ at the position where the current search expression should be inserted.  If a function is used, that function should take this search expression as single argument.
 
 ** Key-bindings
 
