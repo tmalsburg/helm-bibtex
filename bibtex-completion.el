@@ -609,6 +609,43 @@ for arguments if the commands can take any."
             (format "\\%s{%s}" cite-command (s-join ", " keys))
           (format "\\%s[%s][%s]{%s}" cite-command prenote postnote (s-join ", " keys)))))))
 
+(defun bibtex-completion-format-citation-cite-dwim (keys)
+  "Context-dependent formatter for LaTeX citation commands.  If `reftex-mode' is on and if point is inside a citation macro, only adds keys to it, otherwise inserts a citation with `bibtex-completion-format-citation-cite'."
+  (let (macro)
+    (cond
+     ((and (bound-and-true-p reftex-mode)
+           (setq macro (reftex-what-macro 1))
+           (stringp (car macro))
+           (string-match "\\`\\\\cite\\|cite\\'" (car macro)))
+      ;; We are inside a cite macro. Insert key at point, with appropriate delimiters.
+      (delete-horizontal-space)
+      (concat (pcase (preceding-char)
+                (?\{ "")
+                (?, " ")
+                (_ ", "))
+              (s-join ", " keys)
+              (if (member (following-char) '(?\} ?,))
+		     ""
+                ", ")))
+     ((and (equal (preceding-char) ?\})
+           (bound-and-true-p reftex-mode)
+           (save-excursion
+             (forward-char -1)
+             (setq macro (reftex-what-macro 1)))
+           (stringp (car macro))
+           (string-match "\\`\\\\cite\\|cite\\'" (car macro)))
+      ;; We are right after a cite macro. Append key and leave point at the end.
+      (delete-char -1)
+      (delete-horizontal-space t)
+      (concat (pcase (preceding-char)
+                (?\{ "")
+                (?, " ")
+                (_ ", "))
+              (s-join ", " keys)
+              "}"))
+     (t
+      (bibtex-completion-format-citation-cite keys)))))
+
 (defun bibtex-completion-format-citation-pandoc-citeproc (keys)
   "Formatter for pandoc-citeproc citations."
   (let* ((prenote  (if bibtex-completion-cite-prompt-for-optional-arguments (read-from-minibuffer "Prenote: ") ""))
