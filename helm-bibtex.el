@@ -123,7 +123,7 @@
 (defcustom helm-bibtex-full-frame t
   "Non-nil means open `helm-bibtex' using the entire window. When
 nil, the window will split below."
-  :group 'helm-bibtex
+  :group 'bibtex-completion
   :type 'boolean)
 
 (easy-menu-add-item nil '("Tools" "Helm" "Tools") ["BibTeX" helm-bibtex t])

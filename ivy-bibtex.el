@@ -72,6 +72,11 @@
 (require 'ivy)
 (require 'bibtex-completion)
 
+(defcustom ivy-bibtex-default-action 'bibtex-completion-open-pdf
+  "The default action for the `ivy-bibtex` command."
+  :group 'bibtex-completion
+  :type 'function)
+  
 (defun ivy-bibtex-candidates-formatter (candidates)
   (let ((width (frame-width)))
     (bibtex-completion-candidates-formatter candidates width)))
@@ -89,7 +94,7 @@ reread."
   (ivy-read "BibTeX Items: "
             (bibtex-completion-candidates 'ivy-bibtex-candidates-formatter)
             :caller 'ivy-bibtex
-            :action 'bibtex-completion-open-pdf))
+            :action ivy-bibtex-default-action))
 
 (ivy-set-actions
  'ivy-bibtex
