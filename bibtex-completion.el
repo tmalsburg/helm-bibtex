@@ -949,6 +949,47 @@ entry for each BibTeX file that will open that file for editing."
              bib-files)
       bibtex-completion-fallback-options)))
 
+(defun bibtex-completion--get-local-databases ()
+  "Return a list of .bib files associated with the current file.
+This function searches the current file or its master file for a
+`\\bibliography' or `\\addbibresource' command and returns the
+associated .bib file(s). If no files are found locally, return the
+files specified in the variable `bibtex-completion-bibliography'."
+  (let ((texfile nil)
+	(dir (file-name-directory (buffer-file-name)))
+	(cb (current-buffer)))
+    (when (and (boundp 'TeX-master)
+	       (stringp TeX-master))
+      (setq texfile (if (file-name-extension TeX-master)
+			TeX-master
+		      (concat TeX-master ".tex"))))
+    (with-temp-buffer
+      (if (and texfile (file-readable-p texfile))
+	  (insert-file-contents texfile)
+	(insert-buffer-substring cb))
+      (save-match-data
+	(goto-char (point-min))
+	(cond
+	 ;; bibtex
+	 ((re-search-forward "\\\\\\(?:no\\)*bibliography{\\(.*?\\)}" nil t)
+	  (mapcar (lambda (fname)
+		    (if (file-name-extension fname)
+			(format "%s%s" dir fname)
+		      (format "%s%s.bib" dir fname)))
+		  (split-string (match-string-no-properties 1) ",[ ]*")))
+	 ;; biblatex
+	 ((re-search-forward "\\\\addbibresource\\(\\[.*?\\]\\)?{\\(.*?\\)}" nil t)
+	  (mapcar (lambda (fname)
+		    (if (file-name-extension fname)
+			(format "%s%s" dir fname)
+		      (format "%s%s.bib" dir fname)))
+		  (let ((option (match-string 1))
+			(file (match-string-no-properties 2)))
+		    (unless (and option (string-match-p "location=remote" option))
+		      (split-string file ",[ ]*")))))
+	 (t
+	  bibtex-completion-bibliography))))))
+
 (provide 'bibtex-completion)
 
 ;; Local Variables:

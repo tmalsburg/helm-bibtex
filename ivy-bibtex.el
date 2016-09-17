@@ -82,6 +82,22 @@
     (bibtex-completion-candidates-formatter candidates width)))
 
 ;;;###autoload
+(defun ivy-bibtex-with-local-bibliography (&optional arg)
+  "Search BibTeX entries with local bibliography.
+
+With a prefix ARG the cache is invalidated and the bibliography
+reread."
+  (interactive "P")
+  (when arg
+    (setq bibtex-completion-bibliography-hash ""))
+  (let ((bibtex-completion-bibliography
+	 (if (or (eq major-mode 'latex-mode)
+		 (eq major-mode 'org-mode))
+	     (bibtex-completion--get-local-databases)
+	   bibtex-completion-bibliography)))
+    (ivy-bibtex)))
+
+;;;###autoload
 (defun ivy-bibtex (&optional arg)
   "Search BibTeX entries using ivy.
 
@@ -106,7 +122,7 @@ reread."
    ("b" bibtex-completion-insert-bibtex "Insert BibTeX entry")
    ("a" bibtex-completion-add-PDF-attachment "Attach PDF to email")
    ("e" bibtex-completion-edit-notes "Edit notes")
-   ("s" bibtex-completion-show-entry "Show entry"))) 
+   ("s" bibtex-completion-show-entry "Show entry")))
 
 (provide 'ivy-bibtex)
 
