@@ -211,6 +211,15 @@ reread."
         :buffer "*helm bibtex*"
         :candidate-number-limit 500))
 
+;;;###autoload
+(defun helm-bibtex-with-local-bibliography (&optional arg)
+  "Search BibTeX entries with local bibliography.
+
+With a prefix ARG the cache is invalidated and the bibliography reread."
+  (interactive "P")
+  (let ((bibtex-completion-bibliography (bibtex-completion-find-local-bibliography)))
+    (helm-bibtex arg)))
+
 (provide 'helm-bibtex)
 
 ;; Local Variables:

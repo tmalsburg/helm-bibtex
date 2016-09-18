@@ -85,8 +85,7 @@
 (defun ivy-bibtex (&optional arg)
   "Search BibTeX entries using ivy.
 
-With a prefix ARG the cache is invalidated and the bibliography
-reread."
+With a prefix ARG the cache is invalidated and the bibliography reread."
   (interactive "P")
   (when arg
     (setq bibtex-completion-bibliography-hash ""))
@@ -95,6 +94,15 @@ reread."
             (bibtex-completion-candidates 'ivy-bibtex-candidates-formatter)
             :caller 'ivy-bibtex
             :action ivy-bibtex-default-action))
+
+;;;###autoload
+(defun ivy-bibtex-with-local-bibliography (&optional arg)
+  "Search BibTeX entries with local bibliography.
+
+With a prefix ARG the cache is invalidated and the bibliography reread."
+  (interactive "P")
+  (let ((bibtex-completion-bibliography (bibtex-completion-find-local-bibliography)))
+    (ivy-bibtex arg)))
 
 (ivy-set-actions
  'ivy-bibtex

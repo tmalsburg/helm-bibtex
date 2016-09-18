@@ -949,6 +949,19 @@ entry for each BibTeX file that will open that file for editing."
              bib-files)
       bibtex-completion-fallback-options)))
 
+(defun bibtex-completion-find-local-bibliography ()
+  "Return a list of BibTeX files associated with the current file. If the current file is a BibTeX file, return this file. Otherwise, try to use `reftex' to find the associated BibTeX files. If this fails, return `bibtex-completion-bibliography'."
+  (or (and (buffer-file-name)
+           (string= (or (f-ext (buffer-file-name)) "") "bib")
+           (list (buffer-file-name)))
+      (and (buffer-file-name)
+           (require 'reftex-parse nil t)
+           (reftex-locate-bibliography-files
+            (if (fboundp 'TeX-master-directory)
+                (TeX-master-directory)
+              (file-name-directory (buffer-file-name)))))
+      bibtex-completion-bibliography))
+
 (provide 'bibtex-completion)
 
 ;; Local Variables:
