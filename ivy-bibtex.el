@@ -88,7 +88,7 @@
 With a prefix ARG the cache is invalidated and the bibliography reread."
   (interactive "P")
   (when arg
-    (setq bibtex-completion-bibliography-hash ""))
+    (setf (cadr (assoc bibtex-completion-bibliography-type bibtex-completion-cache)) ""))
   (bibtex-completion-init)
   (ivy-read "BibTeX Items: "
             (bibtex-completion-candidates 'ivy-bibtex-candidates-formatter)
@@ -101,7 +101,8 @@ With a prefix ARG the cache is invalidated and the bibliography reread."
 
 With a prefix ARG the cache is invalidated and the bibliography reread."
   (interactive "P")
-  (let ((bibtex-completion-bibliography (bibtex-completion-find-local-bibliography)))
+  (let* ((bibtex-completion-bibliography-type 'local)
+         (bibtex-completion-bibliography (bibtex-completion-find-local-bibliography)))
     (ivy-bibtex arg)))
 
 (ivy-set-actions
