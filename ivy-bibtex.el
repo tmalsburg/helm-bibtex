@@ -76,12 +76,12 @@
   (let ((width (frame-width)))
     (bibtex-completion-candidates-formatter candidates width)))
 
-(defun ivy-bibtex-fallback (string)
-  "Select a fallback option for STRING. This is meant to be used as an action in `ivy-read`, with `ivy-text` as string."
+(defun ivy-bibtex-fallback (search-expression)
+  "Select a fallback option for SEARCH-EXPRESSION. This is meant to be used as an action in `ivy-read`, with `ivy-text` as search expression."
   (ivy-read "Fallback options: "
             (bibtex-completion-fallback-candidates)
             :caller 'ivy-bibtex-fallback
-            :action (lambda (candidate) (bibtex-completion-fallback-action (cdr candidate) string))))
+            :action (lambda (candidate) (bibtex-completion-fallback-action (cdr candidate) search-expression))))
     
 ;;;###autoload
 (defun ivy-bibtex (&optional arg)
