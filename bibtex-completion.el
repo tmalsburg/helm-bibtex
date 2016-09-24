@@ -135,13 +135,13 @@ should be a single character."
 
 (defcustom bibtex-completion-fallback-options
   '(("CrossRef                                  (biblio.el)"
-     . (lambda () (biblio-lookup #'biblio-crossref-backend helm-pattern)))
+     . (lambda (search-expression) (biblio-lookup #'biblio-crossref-backend search-expression)))
     ("arXiv                                     (biblio.el)"
-     . (lambda () (biblio-lookup #'biblio-arxiv-backend helm-pattern)))
+     . (lambda (search-expression) (biblio-lookup #'biblio-arxiv-backend search-expression)))
     ("DBLP (computer science bibliography)      (biblio.el)"
-     . (lambda () (biblio--lookup-1 #'biblio-dblp-backend helm-pattern)))
+     . (lambda (search-expression) (biblio--lookup-1 #'biblio-dblp-backend search-expression)))
     ("HAL (French open archive)                 (biblio.el)"
-     . (lambda () (biblio--lookup-1 #'biblio-hal-backend helm-pattern)))
+     . (lambda (search-expression) (biblio--lookup-1 #'biblio-hal-backend search-expression)))
     ("Google Scholar                            (web)"
      . "https://scholar.google.co.uk/scholar?q=%s")
     ("Pubmed                                    (web)"
@@ -927,15 +927,15 @@ line."
           (unless buf
             (kill-buffer)))))))
 
-(defun bibtex-completion-fallback-action (url-or-function)
+(defun bibtex-completion-fallback-action (url-or-function search-expression)
   (let ((browse-url-browser-function
           (or bibtex-completion-browser-function
               browse-url-browser-function)))
     (cond
       ((stringp url-or-function)
-        (browse-url (format url-or-function (url-hexify-string helm-pattern))))
+        (browse-url (format url-or-function (url-hexify-string search-expression))))
       ((functionp url-or-function)
-        (funcall url-or-function))
+        (funcall url-or-function search-expression))
       (t (error "Don't know how to interpret this: %s" url-or-function)))))
 
 (defun bibtex-completion-fallback-candidates ()
@@ -945,7 +945,7 @@ entry for each BibTeX file that will open that file for editing."
   (let ((bib-files (-flatten (list bibtex-completion-bibliography))))
     (-concat
       (--map (cons (s-concat "Create new entry in " (f-filename it))
-                   `(lambda () (find-file ,it) (goto-char (point-max)) (newline)))
+                   `(lambda (_search-expression) (find-file ,it) (goto-char (point-max)) (newline)))
              bib-files)
       bibtex-completion-fallback-options)))
 

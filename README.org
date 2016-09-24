@@ -9,6 +9,7 @@ Helm-bibtex and ivy-bibtex allow you to search and manage your BibTeX bibliograp
 Ivy-bibtex is experimental at this time, lacks some features, and may be noticeably slower than helm-bibtex when used with larger bibliographies.
 
 * News
+- [2016-09-20 Tue] :: Added fallback options to ivy frontend.
 - [2016-04-18 Moi] :: Improved support for Mendely/Jabref/Zotero way of referencing PDFs.
 - [2016-04-12 Wed] :: Added ivy front-end.
 - [2016-04-06 Wed] :: Generic functions are factored out into a backend for use with other completion frameworks like ivy.
@@ -225,7 +226,7 @@ See also the section [[https://github.com/tmalsburg/helm-bibtex#insertion-of-lat
 
 ** Online databases
 
-Online databases can be configured using the customization variable ~bibtex-completion-fallback-options~.  This variable contains an alist where the first element of each entry is the name of the database and the second element is either a URL or a function.  The URL must contain a ~%s~ at the position where the current search expression should be inserted.  If a function is used, that function should not take any arguments.
+Online databases can be configured using the customization variable ~bibtex-completion-fallback-options~.  This variable contains an alist where the first element of each entry is the name of the database and the second element is either a URL or a function.  The URL must contain a ~%s~ at the position where the current search expression should be inserted.  If a function is used, that function should take this search expression as single argument.
 
 ** Key-bindings
 

@@ -192,7 +192,7 @@ it comes out in the right buffer."
     (candidates      . bibtex-completion-fallback-candidates)
     (no-matchplugin)
     (nohighlight)
-    (action          . bibtex-completion-fallback-action))
+    (action          . (lambda (candidate) (bibtex-completion-fallback-action candidate helm-pattern))))
   "Source for online look-up.")
 
 ;; Helm-bibtex command:
