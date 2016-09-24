@@ -9,15 +9,15 @@ Helm-bibtex and ivy-bibtex allow you to search and manage your BibTeX bibliograp
 Ivy-bibtex is experimental at this time, lacks some features, and may be noticeably slower than helm-bibtex when used with larger bibliographies.
 
 * News
-- [2016-09-20 Tue] :: Added fallback options to ivy frontend.
-- [2016-04-18 Moi] :: Improved support for Mendely/Jabref/Zotero way of referencing PDFs.
-- [2016-04-12 Wed] :: Added ivy front-end.
-- [2016-04-06 Wed] :: Generic functions are factored out into a backend for use with other completion frameworks like ivy.
-- [2016-04-02 Sat] :: Added support for biblio.el which is useful for importing BibTeX entries from CrossRef and other sources.  See new fallback options and the section “Import BibTeX from CrossRef” below.
-- [2016-02-25 Thu] :: Support for pre- and postnotes for pandoc-citeproc citations.
-- [2015-11-23 Mon] :: Added support for keeping all notes in one org-file.  See customization variable ~bibtex-completion-notes-path~.
-- [2015-11-10 Tue] :: Added support for PDFs specified in a BibTeX field.  See customization variable ~bibtex-completion-pdf-field~.
-- [2015-11-09 Mon] :: Improved insertion of LaTeX cite commands.
+- 2016-09-20: Added fallback options to ivy frontend.
+- 2016-04-18: Improved support for Mendely/Jabref/Zotero way of referencing PDFs.
+- 2016-04-12: Added ivy front-end.
+- 2016-04-06: Generic functions are factored out into a backend for use with other completion frameworks like ivy.
+- 2016-04-02: Added support for biblio.el which is useful for importing BibTeX entries from CrossRef and other sources.  See new fallback options and the section “Import BibTeX from CrossRef” below.
+- 2016-02-25: Support for pre- and postnotes for pandoc-citeproc citations.
+- 2015-11-23: Added support for keeping all notes in one org-file.  See customization variable ~bibtex-completion-notes-path~.
+- 2015-11-10: Added support for PDFs specified in a BibTeX field.  See customization variable ~bibtex-completion-pdf-field~.
+- 2015-11-09: Improved insertion of LaTeX cite commands.
 See [[file:NEWS.org]] for old news.
 
 * Key features:
