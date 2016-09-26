@@ -205,11 +205,21 @@ With a prefix ARG, the cache is invalidated and the bibliography
 reread."
   (interactive "P")
   (when arg
-    (setq bibtex-completion-bibliography-hash ""))
+    (setf (cadr (assoc bibtex-completion-bibliography-type bibtex-completion-cache)) ""))
   (helm :sources (list helm-source-bibtex helm-source-fallback-options)
         :full-frame helm-bibtex-full-frame
         :buffer "*helm bibtex*"
         :candidate-number-limit 500))
+
+;;;###autoload
+(defun helm-bibtex-with-local-bibliography (&optional arg)
+  "Search BibTeX entries with local bibliography.
+
+With a prefix ARG the cache is invalidated and the bibliography reread."
+  (interactive "P")
+  (let* ((bibtex-completion-bibliography-type 'local)
+         (bibtex-completion-bibliography (bibtex-completion-find-local-bibliography)))
+    (helm-bibtex arg)))
 
 (provide 'helm-bibtex)
 

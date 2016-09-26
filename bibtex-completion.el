@@ -269,15 +269,11 @@ the directories listed in `bibtex-completion-library-path'."
   :group 'bibtex-completion
   :type 'string)
 
-(defvar bibtex-completion-bibliography-hash nil
-  "The hash of the content of the configured bibliography
-files.  If this hash has not changed since the bibliography was
-last parsed, a cached version of the parsed bibliography will be
-used.")
+(defvar bibtex-completion-cache '((global "") (local ""))
+  "A cache storing the hash of the bibliography content and the corresponding list of candidates, obtained when the bibliography was last parsed. When the current bibliography hash is identical to the cached hash, the cached list of candidates is reused, otherwise the bibliography is reparsed. The global and local bibliographies are cached separately.")
 
-(defvar bibtex-completion-cached-candidates nil
-  "The a list of candidates obtained when the configured
-bibliography files were last parsed.")
+(defvar bibtex-completion-bibliography-type 'global
+  "Whether to use the global or local bibliography.")
 
 
 (defun bibtex-completion-init ()
@@ -303,8 +299,9 @@ before being saved."
           (-flatten (list bibtex-completion-bibliography)))
     ;; Check hash of bibliography and reparse if necessary:
     (let ((bibliography-hash (secure-hash 'sha256 (current-buffer))))
-      (unless (and bibtex-completion-cached-candidates
-                   (string= bibtex-completion-bibliography-hash bibliography-hash))
+      (unless (and (cddr (assoc bibtex-completion-bibliography-type bibtex-completion-cache))
+                   (string= (cadr (assoc bibtex-completion-bibliography-type bibtex-completion-cache))
+                            bibliography-hash))
         (message "Loading bibliography ...")
         (let* ((entries (bibtex-completion-parse-bibliography))
                (entries (bibtex-completion-resolve-crossrefs entries))
@@ -312,14 +309,15 @@ before being saved."
                (entries (nreverse entries))
                (entries
                 (--map (cons (bibtex-completion-clean-string
-                                  (s-join " " (-map #'cdr it))) it)
-                           entries)))
-          (setq bibtex-completion-cached-candidates
+                              (s-join " " (-map #'cdr it))) it)
+                       entries)))
+          (setf (cddr (assoc bibtex-completion-bibliography-type bibtex-completion-cache))
                 (if (functionp formatter)
                     (funcall formatter entries)
                   entries)))
-        (setq bibtex-completion-bibliography-hash bibliography-hash))
-      bibtex-completion-cached-candidates)))
+        (setf (cadr (assoc bibtex-completion-bibliography-type bibtex-completion-cache))
+              bibliography-hash))
+      (cddr (assoc bibtex-completion-bibliography-type bibtex-completion-cache)))))
 
 (defun bibtex-completion-resolve-crossrefs (entries)
   "Expand all entries with fields from cross-references entries."
@@ -988,6 +986,20 @@ entry for each BibTeX file that will open that file for editing."
                    `(lambda (_search-expression) (find-file ,it) (goto-char (point-max)) (newline)))
              bib-files)
       bibtex-completion-fallback-options)))
+
+(defun bibtex-completion-find-local-bibliography ()
+  "Return a list of BibTeX files associated with the current file. If the current file is a BibTeX file, return this file. Otherwise, try to use `reftex' to find the associated BibTeX files. If this fails, return `bibtex-completion-bibliography'."
+  (or (and (buffer-file-name)
+           (string= (or (f-ext (buffer-file-name)) "") "bib")
+           (list (buffer-file-name)))
+      (and (buffer-file-name)
+           (require 'reftex-parse nil t)
+           (reftex-locate-bibliography-files
+            (if (fboundp 'TeX-master-directory)
+                (TeX-master-directory)
+              (file-name-directory (buffer-file-name)))))
+      (and (setq bibtex-completion-bibliography-type 'global)
+           bibtex-completion-bibliography)))
 
 (provide 'bibtex-completion)
 
