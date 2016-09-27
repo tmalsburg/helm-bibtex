@@ -144,8 +144,12 @@ nil, the window will split below."
     (1- (window-body-width))))
 
 (defun helm-bibtex-candidates-formatter (candidates _)
-  (let ((width (with-helm-window (helm-bibtex-window-width))))
-    (bibtex-completion-candidates-formatter candidates width)))
+  (cl-loop
+   with width = (with-helm-window (helm-bibtex-window-width))
+   for entry in candidates
+   for entry = (cdr entry)
+   for entry-key = (bibtex-completion-get-value "=key=" entry)
+   collect (cons (bibtex-completion-format-entry entry width) entry-key)))
 
 ;; Warp bibtex-completion actions with some helm-specific code:
 

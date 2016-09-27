@@ -493,14 +493,6 @@ find a PDF file."
 
 
 
-(defun bibtex-completion-candidates-formatter (candidates width)
-  "Formats BibTeX entries for display in results list."
-  (cl-loop
-   for entry in candidates
-   for entry = (cdr entry)
-   for entry-key = (bibtex-completion-get-value "=key=" entry)
-   collect (cons (bibtex-completion-format-entry entry width) entry-key)))
-
 (defun bibtex-completion-format-entry (entry width)
   "Formats a BibTeX entry for display in results list."
   (let* ((fields (list (if (assoc-string "author" entry 'case-fold) "author" "editor")
