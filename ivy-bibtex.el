@@ -73,7 +73,7 @@
 (require 'ivy)
 (require 'bibtex-completion)
 
-(defcustom ivy-bibtex-default-action 'bibtex-completion-open-pdf
+(defcustom ivy-bibtex-default-action 'ivy-bibtex-open-pdf
   "The default action for the `ivy-bibtex` command."
   :group 'bibtex-completion
   :type 'function)
@@ -84,13 +84,28 @@
          (entry (cdr (nth idx (ivy-state-collection ivy-last)))))
     (bibtex-completion-format-entry entry width)))
 
+(defmacro ivy-bibtex-ivify-action (action name)
+  "Wraps the function ACTION in another function named NAME which
+extracts the key from the candidate selected in ivy and passes it to ACTION."
+  `(defun ,name (candidate)
+     (let ((key (cdr (assoc "=key=" (cdr candidate)))))
+       (,action (list key)))))
+
+(ivy-bibtex-ivify-action bibtex-completion-open-pdf ivy-bibtex-open-pdf)
+(ivy-bibtex-ivify-action bibtex-completion-open-url-or-doi ivy-bibtex-open-url-or-doi)
+(ivy-bibtex-ivify-action bibtex-completion-insert-citation ivy-bibtex-insert-citation)
+(ivy-bibtex-ivify-action bibtex-completion-insert-reference ivy-bibtex-insert-reference)
+(ivy-bibtex-ivify-action bibtex-completion-insert-key ivy-bibtex-insert-key)
+(ivy-bibtex-ivify-action bibtex-completion-insert-bibtex ivy-bibtex-insert-bibtex)
+(ivy-bibtex-ivify-action bibtex-completion-add-PDF-attachment ivy-bibtex-add-PDF-attachment)
+
 (defun ivy-bibtex-fallback (search-expression)
   "Select a fallback option for SEARCH-EXPRESSION. This is meant to be used as an action in `ivy-read`, with `ivy-text` as search expression."
   (ivy-read "Fallback options: "
             (bibtex-completion-fallback-candidates)
             :caller 'ivy-bibtex-fallback
             :action (lambda (candidate) (bibtex-completion-fallback-action (cdr candidate) search-expression))))
-    
+
 ;;;###autoload
 (defun ivy-bibtex (&optional arg)
   "Search BibTeX entries using ivy.
@@ -121,15 +136,15 @@ With a prefix ARG the cache is invalidated and the bibliography reread."
 
 (ivy-set-actions
  'ivy-bibtex
- '(("p" bibtex-completion-open-pdf "Open PDF file (if present)")
-   ("u" bibtex-completion-open-url-or-doi "Open URL or DOI in browser")
-   ("c" bibtex-completion-insert-citation "Insert citation")
-   ("r" bibtex-completion-insert-reference "Insert reference")
-   ("k" bibtex-completion-insert-key "Insert BibTeX key")
-   ("b" bibtex-completion-insert-bibtex "Insert BibTeX entry")
-   ("a" bibtex-completion-add-PDF-attachment "Attach PDF to email")
-   ("e" bibtex-completion-edit-notes "Edit notes")
-   ("s" bibtex-completion-show-entry "Show entry")
+ '(("p" ivy-bibtex-open-pdf "Open PDF file (if present)")
+   ("u" ivy-bibtex-open-url-or-doi "Open URL or DOI in browser")
+   ("c" ivy-bibtex-insert-citation "Insert citation")
+   ("r" ivy-bibtex-insert-reference "Insert reference")
+   ("k" ivy-bibtex-insert-key "Insert BibTeX key")
+   ("b" ivy-bibtex-insert-bibtex "Insert BibTeX entry")
+   ("a" ivy-bibtex-add-PDF-attachment "Attach PDF to email")
+   ("e" ivy-bibtex-edit-notes "Edit notes")
+   ("s" ivy-bibtex-show-entry "Show entry")
    ("f" (lambda (_candidate) (ivy-bibtex-fallback ivy-text)) "Fallback options"))) 
 
 (provide 'ivy-bibtex)
