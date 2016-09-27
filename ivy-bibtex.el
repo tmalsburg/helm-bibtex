@@ -98,6 +98,8 @@ extracts the key from the candidate selected in ivy and passes it to ACTION."
 (ivy-bibtex-ivify-action bibtex-completion-insert-key ivy-bibtex-insert-key)
 (ivy-bibtex-ivify-action bibtex-completion-insert-bibtex ivy-bibtex-insert-bibtex)
 (ivy-bibtex-ivify-action bibtex-completion-add-PDF-attachment ivy-bibtex-add-PDF-attachment)
+(ivy-bibtex-ivify-action bibtex-completion-edit-notes ivy-bibtex-edit-notes)
+(ivy-bibtex-ivify-action bibtex-completion-show-entry ivy-bibtex-show-entry)
 
 (defun ivy-bibtex-fallback (search-expression)
   "Select a fallback option for SEARCH-EXPRESSION. This is meant to be used as an action in `ivy-read`, with `ivy-text` as search expression."
