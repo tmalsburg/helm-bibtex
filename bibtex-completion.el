@@ -284,15 +284,12 @@ actually exist."
                   (user-error "BibTeX file %s could not be found." file)))
         (-flatten (list bibtex-completion-bibliography))))
 
-(defun bibtex-completion-candidates (&optional formatter)
+(defun bibtex-completion-candidates ()
   "Reads the BibTeX files and returns a list of conses, one for
 each entry.  The first element of these conses is a string
 containing authors, editors, title, year, type, and key of the
 entry.  This is string is used for matching.  The second element
-is the entry (only the fields listed above) as an alist.
-
-If non-nil, the entries are passed to the function FORMATTER
-before being saved."
+is the entry (only the fields listed above) as an alist."
   ;; Open configured bibliographies in temporary buffer:
   (with-temp-buffer
     (mapc #'insert-file-contents
@@ -312,9 +309,7 @@ before being saved."
                               (s-join " " (-map #'cdr it))) it)
                        entries)))
           (setf (cddr (assoc bibtex-completion-bibliography-type bibtex-completion-cache))
-                (if (functionp formatter)
-                    (funcall formatter entries)
-                  entries)))
+                entries))
         (setf (cadr (assoc bibtex-completion-bibliography-type bibtex-completion-cache))
               bibliography-hash))
       (cddr (assoc bibtex-completion-bibliography-type bibtex-completion-cache)))))
