@@ -499,20 +499,20 @@ find a PDF file."
    for entry in candidates
    for entry = (cdr entry)
    for entry-key = (bibtex-completion-get-value "=key=" entry)
-   if (assoc-string "author" entry 'case-fold)
-     for fields = '("author" "title" "year" "=has-pdf=" "=has-note=" "=type=")
-   else
-     for fields = '("editor" "title" "year" "=has-pdf=" "=has-note=" "=type=")
-   for fields = (-map (lambda (it)
-                        (bibtex-completion-clean-string
+   collect (cons (bibtex-completion-format-entry entry width) entry-key)))
+
+(defun bibtex-completion-format-entry (entry width)
+  "Formats a BibTeX entry for display in results list."
+  (let* ((fields (list (if (assoc-string "author" entry 'case-fold) "author" "editor")
+                       "title" "year" "=has-pdf=" "=has-note=" "=type="))
+         (fields (-map (lambda (it)
+                         (bibtex-completion-clean-string
                           (bibtex-completion-get-value it entry " ")))
-                      fields)
-   for fields = (-update-at 0 'bibtex-completion-shorten-authors fields)
-   collect
-   (cons (s-format "$0 $1 $2 $3$4 $5" 'elt
-                   (-zip-with (lambda (f w) (truncate-string-to-width f w 0 ?\s))
-                              fields (list 36 (- width 53) 4 1 1 7)))
-         entry-key)))
+                       fields))
+         (fields (-update-at 0 'bibtex-completion-shorten-authors fields)))
+    (s-format "$0 $1 $2 $3$4 $5" 'elt
+              (-zip-with (lambda (f w) (truncate-string-to-width f w 0 ?\s))
+                         fields (list 36 (- width 53) 4 1 1 7)))))
 
 
 (defun bibtex-completion-clean-string (s)

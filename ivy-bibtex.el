@@ -78,9 +78,11 @@
   :group 'bibtex-completion
   :type 'function)
   
-(defun ivy-bibtex-candidates-formatter (candidates)
-  (let ((width (frame-width)))
-    (bibtex-completion-candidates-formatter candidates width)))
+(defun ivy-bibtex-display-transformer (candidate)
+  (let* ((width (frame-width))
+         (idx (get-text-property 0 'idx candidate))
+         (entry (cdr (nth idx (ivy-state-collection ivy-last)))))
+    (bibtex-completion-format-entry entry width)))
 
 (defun ivy-bibtex-fallback (search-expression)
   "Select a fallback option for SEARCH-EXPRESSION. This is meant to be used as an action in `ivy-read`, with `ivy-text` as search expression."
@@ -99,7 +101,7 @@ With a prefix ARG the cache is invalidated and the bibliography reread."
     (setf (cadr (assoc bibtex-completion-bibliography-type bibtex-completion-cache)) ""))
   (bibtex-completion-init)
   (ivy-read "BibTeX Items: "
-            (bibtex-completion-candidates 'ivy-bibtex-candidates-formatter)
+            (bibtex-completion-candidates)
             :caller 'ivy-bibtex
             :action ivy-bibtex-default-action))
 
@@ -112,6 +114,10 @@ With a prefix ARG the cache is invalidated and the bibliography reread."
   (let* ((bibtex-completion-bibliography-type 'local)
          (bibtex-completion-bibliography (bibtex-completion-find-local-bibliography)))
     (ivy-bibtex arg)))
+
+(ivy-set-display-transformer
+ 'ivy-bibtex
+ 'ivy-bibtex-display-transformer)
 
 (ivy-set-actions
  'ivy-bibtex
