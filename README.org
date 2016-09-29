@@ -9,6 +9,7 @@ Helm-bibtex and ivy-bibtex allow you to search and manage your BibTeX bibliograp
 Ivy-bibtex is experimental at this time, lacks some features, and may be noticeably slower than helm-bibtex when used with larger bibliographies.
 
 * News
+- 2016-09-29: Performance improvements in ivy-bibtex.  *Note:* If you changed your default action in ivy-bibtex, you have to rename the action, e.g. from `bibtex-completion-insert-key` to `ivy-bibtex-insert-key`.  See [[#change-the-default-action][here]] for details.
 - 2016-09-20: Added fallback options to ivy frontend.
 - 2016-04-18: Improved support for Mendely/Jabref/Zotero way of referencing PDFs.
 - 2016-04-12: Added ivy front-end.
@@ -277,7 +278,7 @@ The function ~helm-add-action-to-source~ can also be used to add new actions to 
 *Ivy-bibtex*: The default action can be changed by customizing the variable ~ivy-bibtex-default-action~. For example, to change the default action to /insert BibTeX key/, use the following:
 
 #+BEGIN_SRC emacs-lisp
-(setq ivy-bibtex-default-action 'bibtex-completion-insert-key)
+(setq ivy-bibtex-default-action ivy-bibtex-insert-key)
 #+END_SRC
 
 ** Window size
