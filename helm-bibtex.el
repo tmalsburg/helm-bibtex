@@ -144,8 +144,12 @@ nil, the window will split below."
     (1- (window-body-width))))
 
 (defun helm-bibtex-candidates-formatter (candidates _)
-  (let ((width (with-helm-window (helm-bibtex-window-width))))
-    (bibtex-completion-candidates-formatter candidates width)))
+  (cl-loop
+   with width = (with-helm-window (helm-bibtex-window-width))
+   for entry in candidates
+   for entry = (cdr entry)
+   for entry-key = (bibtex-completion-get-value "=key=" entry)
+   collect (cons (bibtex-completion-format-entry entry width) entry-key)))
 
 ;; Warp bibtex-completion actions with some helm-specific code:
 
@@ -166,6 +170,8 @@ it comes out in the right buffer."
 (helm-bibtex-helmify-action bibtex-completion-insert-key helm-bibtex-insert-key)
 (helm-bibtex-helmify-action bibtex-completion-insert-bibtex helm-bibtex-insert-bibtex)
 (helm-bibtex-helmify-action bibtex-completion-add-PDF-attachment helm-bibtex-add-PDF-attachment)
+(helm-bibtex-helmify-action bibtex-completion-edit-notes helm-bibtex-edit-notes)
+(helm-bibtex-helmify-action bibtex-completion-show-entry helm-bibtex-show-entry)
 
 ;; Helm sources:
 
@@ -182,8 +188,8 @@ it comes out in the right buffer."
              "Insert BibTeX key"          'helm-bibtex-insert-key
              "Insert BibTeX entry"        'helm-bibtex-insert-bibtex
              "Attach PDF to email"        'helm-bibtex-add-PDF-attachment
-             "Edit notes"                 'bibtex-completion-edit-notes
-             "Show entry"                 'bibtex-completion-show-entry))
+             "Edit notes"                 'helm-bibtex-edit-notes
+             "Show entry"                 'helm-bibtex-show-entry))
   "Source for searching in BibTeX files.")
 
 (defvar helm-source-fallback-options
