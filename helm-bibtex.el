@@ -211,7 +211,7 @@ With a prefix ARG, the cache is invalidated and the bibliography
 reread."
   (interactive "P")
   (when arg
-    (setf (cadr (assoc bibtex-completion-bibliography-type bibtex-completion-cache)) ""))
+    (bibtex-completion-clear-cache))
   (helm :sources (list helm-source-bibtex helm-source-fallback-options)
         :full-frame helm-bibtex-full-frame
         :buffer "*helm bibtex*"
@@ -223,8 +223,7 @@ reread."
 
 With a prefix ARG the cache is invalidated and the bibliography reread."
   (interactive "P")
-  (let* ((bibtex-completion-bibliography-type 'local)
-         (bibtex-completion-bibliography (bibtex-completion-find-local-bibliography)))
+  (let ((bibtex-completion-bibliography (bibtex-completion-find-local-bibliography)))
     (helm-bibtex arg)))
 
 (provide 'helm-bibtex)
