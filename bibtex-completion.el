@@ -552,7 +552,7 @@ matching PDFs for an entry, the first is opened."
 (defun bibtex-completion-open-any (keys)
   "Open the PDFs associated with the marked entries using the
 function specified in `bibtex-completion-pdf-open-function'.  If no PDF is
-found, try to open a URL or DOI instead."
+found, try to open a URL or DOI in the browser instead."
   (dolist (key keys)
     (let ((pdf (bibtex-completion-find-pdf key)))
       (if pdf (funcall bibtex-completion-pdf-open-function (car pdf))
@@ -565,7 +565,7 @@ found, try to open a URL or DOI instead."
           (if url (browse-url url)
             (if doi (browse-url
                      (s-concat "http://dx.doi.org/" doi)))
-            (message "No URL or DOI found for this entry: %s"
+            (message "No PDF and no URL or DOI found for this entry: %s"
                      key)))))))
 
 (defun bibtex-completion-format-citation-default (keys)

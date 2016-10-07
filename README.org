@@ -9,6 +9,7 @@ Helm-bibtex and ivy-bibtex allow you to search and manage your BibTeX bibliograp
 Ivy-bibtex is experimental at this time, lacks some features, and may be noticeably slower than helm-bibtex when used with larger bibliographies.
 
 * News
+- 2016-10-07: Added bibtex-completion-open-any, made it the default action for helm-bibtex and ivy-bibtex
 - 2016-09-29: Performance improvements in ivy-bibtex.  *Note:* If you changed your default action in ivy-bibtex, you have to rename the action, e.g. from ~bibtex-completion-insert-key~ to ~ivy-bibtex-insert-key~.  See [[#change-the-default-action][here]] for details.
 - 2016-09-20: Added fallback options to ivy frontend.
 - 2016-04-18: Improved support for Mendely/Jabref/Zotero way of referencing PDFs.
@@ -380,9 +381,9 @@ article caplan !waters
 
 ** Actions for selected publications
 
-*Helm-bibtex*: Select one or more entries (see above) and press ~<return>~ to open the PDF (default action).  Alternatively, press ~TAB~ (tabulator) to see a list of all actions.  There are: 
+*Helm-bibtex*: Select one or more entries (see above) and press ~<return>~ to open the PDF if present, or open a URL or DOI in the browser if not (default action).  Alternatively, press ~TAB~ (tabulator) to see a list of all actions.  There are: 
 
-- Open the PDF file (if present)
+- Open a PDF, or a URL or DOI
 - Open the URL or DOI in browser
 - Insert citation
 - Insert reference
@@ -392,7 +393,7 @@ article caplan !waters
 - Edit notes
 - Show entry
 
-*Ivy-bibtex*: Select an entry and press enter to open the PDF (default action).  Alternatively, press ~M-o~ to see a list of available actions.
+*Ivy-bibtex*: Select an entry and press enter to open the PDF if present, or open a URL or DOI in the browser if not (default action).  Alternatively, press ~M-o~ to see a list of available actions.
 
 ** A colleague asks for copies of your new papers
 

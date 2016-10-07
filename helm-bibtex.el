@@ -183,7 +183,6 @@ it comes out in the right buffer."
     :filtered-candidate-transformer 'helm-bibtex-candidates-formatter
     :action (helm-make-actions
              "Open PDF, URL or DOI"       'helm-bibtex-open-any             
-             "Open PDF file (if present)" 'helm-bibtex-open-pdf
              "Open URL or DOI in browser" 'helm-bibtex-open-url-or-doi
              "Insert citation"            'helm-bibtex-insert-citation
              "Insert reference"           'helm-bibtex-insert-reference
