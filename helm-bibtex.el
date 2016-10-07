@@ -1,4 +1,4 @@
-;;; helm-bibtex.el --- A BibTeX bibliography manager based on Helm
+;;; helm-bibtex.el --- A bibliography manager based on Helm
 
 ;; Author: Titus von der Malsburg <malsburg@posteo.de>
 ;; Maintainer: Titus von der Malsburg <malsburg@posteo.de>

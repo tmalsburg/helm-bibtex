@@ -1,4 +1,4 @@
-;;; ivy-bibtex.el --- A BibTeX bibliography manager based on Ivy
+;;; ivy-bibtex.el --- A bibliography manager based on Ivy
 
 ;; Author: Justin Burkett <justin@burkett.cc>
 ;; Maintainer: Titus von der Malsburg <malsburg@posteo.de>
