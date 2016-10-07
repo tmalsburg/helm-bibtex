@@ -158,6 +158,7 @@ it comes out in the right buffer."
 
 (helm-bibtex-helmify-action bibtex-completion-open-pdf helm-bibtex-open-pdf)
 (helm-bibtex-helmify-action bibtex-completion-open-url-or-doi helm-bibtex-open-url-or-doi)
+(helm-bibtex-helmify-action bibtex-completion-open-any helm-bibtex-open-any)
 (helm-bibtex-helmify-action bibtex-completion-insert-citation helm-bibtex-insert-citation)
 (helm-bibtex-helmify-action bibtex-completion-insert-reference helm-bibtex-insert-reference)
 (helm-bibtex-helmify-action bibtex-completion-insert-key helm-bibtex-insert-key)
@@ -174,7 +175,7 @@ it comes out in the right buffer."
     :candidates 'bibtex-completion-candidates
     :filtered-candidate-transformer 'helm-bibtex-candidates-formatter
     :action (helm-make-actions
-             "Open PDF file (if present)" 'helm-bibtex-open-pdf
+             "Open PDF, URL or DOI"       'helm-bibtex-open-any             
              "Open URL or DOI in browser" 'helm-bibtex-open-url-or-doi
              "Insert citation"            'helm-bibtex-insert-citation
              "Insert reference"           'helm-bibtex-insert-reference

@@ -96,6 +96,7 @@ extracts the key from the candidate selected in ivy and passes it to ACTION."
      (let ((key (cdr (assoc "=key=" (cdr candidate)))))
        (,action (list key)))))
 
+(ivy-bibtex-ivify-action bibtex-completion-open-any ivy-bibtex-open-any)
 (ivy-bibtex-ivify-action bibtex-completion-open-pdf ivy-bibtex-open-pdf)
 (ivy-bibtex-ivify-action bibtex-completion-open-url-or-doi ivy-bibtex-open-url-or-doi)
 (ivy-bibtex-ivify-action bibtex-completion-insert-citation ivy-bibtex-insert-citation)
@@ -143,7 +144,8 @@ With a prefix ARG the cache is invalidated and the bibliography reread."
 
 (ivy-set-actions
  'ivy-bibtex
- '(("p" ivy-bibtex-open-pdf "Open PDF file (if present)")
+ '(("o" ivy-bibtex-open-any "Open PDF if present, or try URL or DOI")
+   ;("p" ivy-bibtex-open-pdf "Open PDF file (if present)")
    ("u" ivy-bibtex-open-url-or-doi "Open URL or DOI in browser")
    ("c" ivy-bibtex-insert-citation "Insert citation")
    ("r" ivy-bibtex-insert-reference "Insert reference")
