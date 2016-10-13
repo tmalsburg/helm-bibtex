@@ -297,7 +297,7 @@ each entry.  The first element of these conses is a string
 containing authors, editors, title, year, type, and key of the
 entry.  This is string is used for matching.  The second element
 is the entry (only the fields listed above) as an alist."
-  (let ((files (-flatten (list (nreverse bibtex-completion-bibliography))))
+  (let ((files (nreverse (-flatten (list bibtex-completion-bibliography))))
         reparsed-files)
     ;; Open each bibliography file in a temporary buffer,
     ;; check hash of bibliography and reparse if necessary:
