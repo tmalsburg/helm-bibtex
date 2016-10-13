@@ -1,4 +1,4 @@
-;;; ivy-bibtex.el --- A BibTeX bibliography manager based on Ivy
+;;; ivy-bibtex.el --- A bibliography manager based on Ivy
 
 ;; Author: Justin Burkett <justin@burkett.cc>
 ;; Maintainer: Titus von der Malsburg <malsburg@posteo.de>
@@ -121,7 +121,7 @@ extracts the key from the candidate selected in ivy and passes it to ACTION."
 With a prefix ARG the cache is invalidated and the bibliography reread."
   (interactive "P")
   (when arg
-    (setf (cadr (assoc bibtex-completion-bibliography-type bibtex-completion-cache)) ""))
+    (bibtex-completion-clear-cache))
   (bibtex-completion-init)
   (ivy-read "BibTeX Items: "
             (bibtex-completion-candidates)
@@ -134,8 +134,7 @@ With a prefix ARG the cache is invalidated and the bibliography reread."
 
 With a prefix ARG the cache is invalidated and the bibliography reread."
   (interactive "P")
-  (let* ((bibtex-completion-bibliography-type 'local)
-         (bibtex-completion-bibliography (bibtex-completion-find-local-bibliography)))
+  (let ((bibtex-completion-bibliography (bibtex-completion-find-local-bibliography)))
     (ivy-bibtex arg)))
 
 (ivy-set-display-transformer

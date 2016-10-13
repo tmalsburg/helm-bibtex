@@ -269,11 +269,8 @@ the directories listed in `bibtex-completion-library-path'."
   :group 'bibtex-completion
   :type 'string)
 
-(defvar bibtex-completion-cache '((global "") (local ""))
-  "A cache storing the hash of the bibliography content and the corresponding list of candidates, obtained when the bibliography was last parsed. When the current bibliography hash is identical to the cached hash, the cached list of candidates is reused, otherwise the bibliography is reparsed. The global and local bibliographies are cached separately.")
-
-(defvar bibtex-completion-bibliography-type 'global
-  "Whether to use the global or local bibliography.")
+(defvar bibtex-completion-cache nil
+  "A cache storing the hash of the bibliography content and the corresponding list of entries, for each bibliography file, obtained when the bibliography was last parsed. When the current bibliography hash is identical to the cached hash, the cached list of candidates is reused, otherwise the bibliography file is reparsed.")
 
 
 (defun bibtex-completion-init ()
@@ -284,69 +281,143 @@ actually exist."
                   (user-error "BibTeX file %s could not be found." file)))
         (-flatten (list bibtex-completion-bibliography))))
 
+(defun bibtex-completion-clear-cache (&optional files)
+  "Clears FILES from cache. If FILES is omitted, all files in `bibtex-completion-biblography' are cleared."
+  (setq bibtex-completion-cache
+        (cl-remove-if
+         (lambda (x)
+           (member (car x)
+                   (or files
+                       (-flatten (list bibtex-completion-bibliography)))))
+         bibtex-completion-cache)))
+    
 (defun bibtex-completion-candidates ()
   "Reads the BibTeX files and returns a list of conses, one for
 each entry.  The first element of these conses is a string
 containing authors, editors, title, year, type, and key of the
 entry.  This is string is used for matching.  The second element
 is the entry (only the fields listed above) as an alist."
-  ;; Open configured bibliographies in temporary buffer:
-  (with-temp-buffer
-    (mapc #'insert-file-contents
-          (-flatten (list bibtex-completion-bibliography)))
-    ;; Check hash of bibliography and reparse if necessary:
-    (let ((bibliography-hash (secure-hash 'sha256 (current-buffer))))
-      (unless (and (cddr (assoc bibtex-completion-bibliography-type bibtex-completion-cache))
-                   (string= (cadr (assoc bibtex-completion-bibliography-type bibtex-completion-cache))
-                            bibliography-hash))
-        (message "Loading bibliography ...")
-        (let* ((entries (bibtex-completion-parse-bibliography))
-               (entries (bibtex-completion-resolve-crossrefs entries))
-               (entries (bibtex-completion-prepare-entries entries))
-               (entries (nreverse entries))
-               (entries
-                (--map (cons (bibtex-completion-clean-string
-                              (s-join " " (-map #'cdr it))) it)
-                       entries)))
-          (setf (cddr (assoc bibtex-completion-bibliography-type bibtex-completion-cache))
-                entries))
-        (setf (cadr (assoc bibtex-completion-bibliography-type bibtex-completion-cache))
-              bibliography-hash))
-      (cddr (assoc bibtex-completion-bibliography-type bibtex-completion-cache)))))
+  (let ((files (-flatten (list (nreverse bibtex-completion-bibliography))))
+        reparsed-files)
+    ;; Open each bibliography file in a temporary buffer,
+    ;; check hash of bibliography and reparse if necessary:
+    (cl-loop
+     for file in files
+     do
+     (with-temp-buffer
+       (insert-file-contents file)
+       (let ((bibliography-hash (secure-hash 'sha256 (current-buffer))))
+         (unless (string= (cadr (assoc file bibtex-completion-cache))
+                          bibliography-hash)
+           (bibtex-completion-clear-cache (list file))
+           (message "Parsing bibliography file %s ..." file)
+           (push (-cons* file
+                         bibliography-hash
+                         (bibtex-completion-parse-bibliography))
+                 bibtex-completion-cache)
+           ;; Mark file as reparsed.
+           ;; This will be useful to resolve cross-references:
+           (push file reparsed-files)))))
+    ;; If some files were reparsed, resolve cross-references:
+    (when reparsed-files
+      (message "Resolving cross-references ...")
+      (bibtex-completion-resolve-crossrefs files reparsed-files))
+    ;; Finally return the list of candidates:
+    (nreverse
+     (cl-loop
+      for file in files
+      append (cddr (assoc file bibtex-completion-cache))))))
 
-(defun bibtex-completion-resolve-crossrefs (entries)
-  "Expand all entries with fields from cross-references entries."
-   (cl-loop
-    with entry-hash =
-      (cl-loop
-       with ht = (make-hash-table :test #'equal :size (length entries))
-       for entry in entries
-       for key = (bibtex-completion-get-value "=key=" entry)
-       ;; Other types than proceedings and books can be
-       ;; cross-referenced, but I suppose that isn't really used:
-       if (member (downcase (bibtex-completion-get-value "=type=" entry))
-                  '("proceedings" "book"))
-       do (puthash (downcase key) entry ht)
-       finally return ht)
-    for entry in entries
-    for crossref = (bibtex-completion-get-value "crossref" entry)
-    if crossref
-      collect (append entry (gethash (downcase crossref) entry-hash))
-    else
-      collect entry))
+(defun bibtex-completion-resolve-crossrefs (files reparsed-files)
+  "Expand all entries with fields from cross-referenced entries in FILES, assuming that only those files in REPARSED-FILES were reparsed whereas the other files in FILES were up-to-date."
+  (cl-loop
+   with entry-hash = (bibtex-completion-make-entry-hash files reparsed-files)
+   for file in files
+   for entries = (cddr (assoc file bibtex-completion-cache))
+   if (member file reparsed-files)
+   ;; The file was reparsed.
+   ;; Resolve crossrefs then make candidates for all entries:
+   do (setf
+       (cddr (assoc file bibtex-completion-cache))
+       (cl-loop
+        for entry in entries
+        ;; Entries are alists of \(FIELD . VALUE\) pairs.
+        for crossref = (bibtex-completion-get-value "crossref" entry)
+        collect (bibtex-completion-make-candidate
+                 (if crossref
+                     (bibtex-completion-remove-duplicated-fields
+                      ;; Insert an empty field so we can discard the crossref info if needed:
+                      (append entry
+                              (acons "" ""
+                                     (gethash (downcase crossref) entry-hash))))
+                   entry))))
+   else
+   ;; The file was not reparsed.
+   ;; Resolve crossrefs then make candidates for the entries with a crossref field:
+   do (setf
+       (cddr (assoc file bibtex-completion-cache)) 
+       (cl-loop
+        for entry in entries
+        ;; Entries are \(STRING . ALIST\) conses.
+        for entry-alist = (cdr entry)
+        for crossref = (bibtex-completion-get-value "crossref" entry-alist)
+        collect (if crossref
+                    (bibtex-completion-make-candidate
+                     (bibtex-completion-remove-duplicated-fields
+                      ;; Discard crossref info and resolve crossref again:
+                      (append (--take-while (> (length (car it)) 0) entry-alist)
+                              (acons "" ""
+                                     (gethash (downcase crossref) entry-hash)))))
+                  entry)))))
+
+(defun bibtex-completion-make-entry-hash (files reparsed-files)
+  "Return a hash table of all bibliography entries in FILES, assuming that only those files in REPARSED-FILES were reparsed whereas the other files in FILES were up-to-date."
+  (cl-loop
+   with entries =
+     (cl-loop
+      for file in files
+      for entries = (cddr (assoc file bibtex-completion-cache))
+      if (member file reparsed-files)
+      ;; Entries are alists of \(FIELD . VALUE\) pairs.
+      append entries
+      ;; Entries are \(STRING . ALIST\) conses.
+      else
+      append (mapcar 'cdr entries))
+   with ht = (make-hash-table :test #'equal :size (length entries))
+   for entry in entries
+   for key = (bibtex-completion-get-value "=key=" entry)
+   ;; Other types than proceedings and books can be
+   ;; cross-referenced, but I suppose that isn't really used:
+   if (member (downcase (bibtex-completion-get-value "=type=" entry))
+              '("proceedings" "book"))
+   do (puthash (downcase key) entry ht)
+   finally return ht))
+
+(defun bibtex-completion-make-candidate (entry)
+  "Return a candidate for ENTRY."
+  (cons (bibtex-completion-clean-string
+         (s-join " " (-map #'cdr entry)))
+        entry))
 
 (defun bibtex-completion-parse-bibliography ()
   "Parse the BibTeX entries listed in the current buffer and
-return a list of entry keys in the order in which the entries
-appeared in the BibTeX files."
+return a list of entries in the order in which they appeared in the BibTeX file. Also do some preprocessing of the entries."
   (goto-char (point-min))
   (cl-loop
+   with fields = (append '("title" "year" "crossref")
+                         (-map (lambda (it) (if (symbolp it) (symbol-name it) it))
+                               bibtex-completion-additional-search-fields))
    for entry-type = (parsebib-find-next-item)
    while entry-type
    unless (member-ignore-case entry-type '("preamble" "string" "comment"))
-   collect (-map (lambda (it)
-                   (cons (downcase (car it)) (cdr it)))
-                 (parsebib-read-entry entry-type))))
+   collect (let* ((entry (parsebib-read-entry entry-type))
+                  (fields (cons (if (assoc-string "author" entry 'case-fold)
+                                    "author"
+                                  "editor")
+                                fields)))
+             (-map (lambda (it)
+                     (cons (downcase (car it)) (cdr it)))
+                   (bibtex-completion-prepare-entry entry fields)))))
 
 (defun bibtex-completion-get-entry (entry-key)
   "Given a BibTeX key this function scans all bibliographies
@@ -356,9 +427,7 @@ appended to the requested entry."
   (let* ((entry (bibtex-completion-get-entry1 entry-key))
          (crossref (bibtex-completion-get-value "crossref" entry))
          (crossref (when crossref (bibtex-completion-get-entry1 crossref))))
-    (cl-remove-duplicates (append entry crossref)
-                          :test (lambda (x y) (string= (s-downcase x) (s-downcase y)))
-                          :key 'car :from-end t)))
+    (bibtex-completion-remove-duplicated-fields (append entry crossref))))
 
 (defun bibtex-completion-get-entry1 (entry-key &optional do-not-find-pdf)
   (with-temp-buffer
@@ -370,16 +439,6 @@ appended to the requested entry."
                                (regexp-quote entry-key) "[[:space:]]*,"))
     (let ((entry-type (match-string 1)))
       (reverse (bibtex-completion-prepare-entry (parsebib-read-entry entry-type) nil do-not-find-pdf)))))
-
-(defun bibtex-completion-prepare-entries (entries)
-  "Do some preprocessing of the entries."
-  (cl-loop
-   with fields = (append '("title" "year" "crossref")
-                         (-map (lambda (it) (if (symbolp it) (symbol-name it) it))
-                               bibtex-completion-additional-search-fields))
-   for entry in entries
-   collect (bibtex-completion-prepare-entry entry
-            (cons (if (assoc-string "author" entry 'case-fold) "author" "editor") fields))))
 
 (defun bibtex-completion-find-pdf-in-field (key-or-entry)
   "Returns the path of the PDF specified in the field
@@ -482,9 +541,13 @@ find a PDF file."
       ;; Normalize case of entry type:
       (setcdr (assoc "=type=" entry) (downcase (cdr (assoc "=type=" entry))))
       ;; Remove duplicated fields:
-      (cl-remove-duplicates entry
-                            :test (lambda (x y) (string= (s-downcase x) (s-downcase y)))
-                            :key 'car :from-end t))))
+      (bibtex-completion-remove-duplicated-fields entry))))
+
+(defun bibtex-completion-remove-duplicated-fields (entry)
+  "Remove duplicated fields from ENTRY."
+  (cl-remove-duplicates entry
+                        :test (lambda (x y) (string= (s-downcase x) (s-downcase y)))
+                        :key 'car :from-end t))
 
 
 
@@ -967,8 +1030,7 @@ entry for each BibTeX file that will open that file for editing."
             (if (fboundp 'TeX-master-directory)
                 (TeX-master-directory)
               (file-name-directory (buffer-file-name)))))
-      (and (setq bibtex-completion-bibliography-type 'global)
-           bibtex-completion-bibliography)))
+      bibtex-completion-bibliography))
 
 (provide 'bibtex-completion)
 

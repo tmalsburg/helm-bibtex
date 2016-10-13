@@ -1,4 +1,4 @@
-;;; helm-bibtex.el --- A BibTeX bibliography manager based on Helm
+;;; helm-bibtex.el --- A bibliography manager based on Helm
 
 ;; Author: Titus von der Malsburg <malsburg@posteo.de>
 ;; Maintainer: Titus von der Malsburg <malsburg@posteo.de>
@@ -20,8 +20,8 @@
 
 ;;; Commentary:
 
-;; A BibTeX bibliography manager based on Helm and the
-;; bibtex-completion backend
+;; A bibliography manager for Emacs, based on Helm and the
+;; bibtex-completion backend.
 ;;
 ;; News:
 ;; - 04/18/2016: Improved support for Mendely/Jabref/Zotero way of
@@ -32,29 +32,22 @@
 ;;   importing BibTeX from CrossRef and other sources.  See new
 ;;   fallback options and the section "Importing BibTeX from CrossRef"
 ;;   on the GitHub page.
-;; - 02/25/2016: Support for pre- and postnotes for pandoc-citeproc
-;;   citations.
-;; - 11/23/2015: Added support for keeping all notes in one
-;;   org-file.  See customization variable `bibtex-completion-notes-path'.
-;; - 11/10/2015: Added support for PDFs specified in a BibTeX
-;;   field.  See customization variable `bibtex-completion-pdf-field'.
-;; - 11/09/2015: Improved insertion of LaTeX cite commands.
 ;;
 ;; See NEWS.org for old news.
 ;;
 ;; Key features:
 ;; - Quick access to your bibliography from within Emacs
-;; - Tightly integrated workflows
+;; - Powerful search capabilities
 ;; - Provides instant search results as you type
-;; - Powerful search expressions
+;; - Tightly integrated with LaTeX authoring, emails, Org mode, etc.
 ;; - Open the PDFs, URLs, or DOIs associated with an entry
 ;; - Insert LaTeX cite commands, Ebib links, or Pandoc citations,
 ;;   BibTeX entries, or plain text references at point, attach PDFs to
 ;;   emails
-;; - Attach notes to publications
+;; - Support for note taking
 ;; - Quick access to online bibliographic databases such as Pubmed,
 ;;   arXiv, Google Scholar, Library of Congress, etc.
-;; - Import BibTeX entries from CrossRef and other sources.
+;; - Imports BibTeX entries from CrossRef and other sources.
 ;;
 ;; See the github page for details:
 ;;
@@ -156,7 +149,7 @@ nil, the window will split below."
 (defmacro helm-bibtex-helmify-action (action name)
   "Wraps the function ACTION in another function named NAME which
 passes the candidates marked in helm to ACTION.  Also uses
-with-helm-current-buffer such that when ACTION inserts text and
+with-helm-current-buffer such that when ACTION inserts text
 it comes out in the right buffer."
   `(defun ,name (_)
      (let ((keys (helm-marked-candidates :with-wildcard t)))
@@ -212,7 +205,7 @@ With a prefix ARG, the cache is invalidated and the bibliography
 reread."
   (interactive "P")
   (when arg
-    (setf (cadr (assoc bibtex-completion-bibliography-type bibtex-completion-cache)) ""))
+    (bibtex-completion-clear-cache))
   (helm :sources (list helm-source-bibtex helm-source-fallback-options)
         :full-frame helm-bibtex-full-frame
         :buffer "*helm bibtex*"
@@ -224,8 +217,7 @@ reread."
 
 With a prefix ARG the cache is invalidated and the bibliography reread."
   (interactive "P")
-  (let* ((bibtex-completion-bibliography-type 'local)
-         (bibtex-completion-bibliography (bibtex-completion-find-local-bibliography)))
+  (let ((bibtex-completion-bibliography (bibtex-completion-find-local-bibliography)))
     (helm-bibtex arg)))
 
 (provide 'helm-bibtex)

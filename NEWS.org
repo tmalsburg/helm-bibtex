@@ -3,6 +3,33 @@
 This file lists changes that are visible to users (such as feature
 additions) but no bug fixes and code clean-ups.
 
+** [2016-09-29 Thu]
+- Performance improvements in ivy-bibtex.  *Note:* If you changed your
+  default action in ivy-bibtex, you have to rename the action,
+  e.g. from ~bibtex-completion-insert-key~ to
+  ~ivy-bibtex-insert-key~.  See [[#change-the-default-action][here]] for details.
+
+** [2016-09-20 Tue]
+- Added fallback options to ivy frontend.
+
+** [2016-04-18 Mon]
+- Improved support for Mendely/Jabref/Zotero way of referencing PDFs.
+
+** [2016-04-12 Tue]
+- Added ivy front-end.
+
+** [2016-04-06 Wed]
+- Generic functions are factored out into a backend for use with other
+  completion frameworks like ivy.
+
+** [2016-04-02 Sat]
+- Added support for biblio.el which is useful for importing BibTeX
+  entries from CrossRef and other sources.  See new fallback options
+  and the section “Import BibTeX from CrossRef” below.
+
+** [2016-02-25 Thu]
+- Support for pre- and postnotes for pandoc-citeproc citations.
+
 ** [2015-11-23 Mon]
 - Added support for keeping all notes in one org-file.  See
   customization variable ~helm-bibtex-notes-path~.
