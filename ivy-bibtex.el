@@ -78,7 +78,7 @@
 (require 'ivy)
 (require 'bibtex-completion)
 
-(defcustom ivy-bibtex-default-action 'ivy-bibtex-open-pdf
+(defcustom ivy-bibtex-default-action 'ivy-bibtex-open-any
   "The default action for the `ivy-bibtex` command."
   :group 'bibtex-completion
   :type 'function)
@@ -143,8 +143,7 @@ With a prefix ARG the cache is invalidated and the bibliography reread."
 
 (ivy-set-actions
  'ivy-bibtex
- '(("o" ivy-bibtex-open-any "Open PDF if present, or try URL or DOI")
-   ;("p" ivy-bibtex-open-pdf "Open PDF file (if present)")
+ '(("p" ivy-bibtex-open-pdf "Open PDF file (if present)")
    ("u" ivy-bibtex-open-url-or-doi "Open URL or DOI in browser")
    ("c" ivy-bibtex-insert-citation "Insert citation")
    ("r" ivy-bibtex-insert-reference "Insert reference")
