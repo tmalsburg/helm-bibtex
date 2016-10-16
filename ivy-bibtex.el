@@ -106,6 +106,7 @@ extracts the key from the candidate selected in ivy and passes it to ACTION."
 (ivy-bibtex-ivify-action bibtex-completion-add-PDF-attachment ivy-bibtex-add-PDF-attachment)
 (ivy-bibtex-ivify-action bibtex-completion-edit-notes ivy-bibtex-edit-notes)
 (ivy-bibtex-ivify-action bibtex-completion-show-entry ivy-bibtex-show-entry)
+(ivy-bibtex-ivify-action bibtex-completion-add-pdf-to-library ivy-bibtex-add-pdf-to-library)
 
 (defun ivy-bibtex-fallback (search-expression)
   "Select a fallback option for SEARCH-EXPRESSION. This is meant to be used as an action in `ivy-read`, with `ivy-text` as search expression."
@@ -152,6 +153,7 @@ With a prefix ARG the cache is invalidated and the bibliography reread."
    ("a" ivy-bibtex-add-PDF-attachment "Attach PDF to email")
    ("e" ivy-bibtex-edit-notes "Edit notes")
    ("s" ivy-bibtex-show-entry "Show entry")
+   ("l" ivy-bibtex-add-pdf-to-library "Add PDF to library")
    ("f" (lambda (_candidate) (ivy-bibtex-fallback ivy-text)) "Fallback options"))) 
 
 (provide 'ivy-bibtex)
