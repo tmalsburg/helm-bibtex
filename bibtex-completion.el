@@ -452,7 +452,7 @@ file is specified, or if the specified file does not exist, or if
            (value (bibtex-completion-get-value bibtex-completion-pdf-field entry)))
       (cond
        ((not value) nil)         ; Field not defined.
-       ((f-file? value) value)   ; A bare full path was found.
+       ((f-file? value) (list value))   ; A bare full path was found.
        (t                        ; Zotero/Mendeley/JabRef format:
         (let ((value (replace-regexp-in-string "\\([^\\]\\);" "\\1\^^" value)))
           (cl-loop  ; Looping over the files:
