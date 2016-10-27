@@ -180,7 +180,7 @@ If the ~file~ field is not used but instead the naming scheme ~bibtex-key + .pdf
 *Ivy-bibtex*:  Add the following after the above code:
 
 #+BEGIN_SRC elisp
-  (ivy-bibtex-ivify-action 'bibtex-completion-open-annotated-pdf 'ivy-bibtex-open-annotated-pdf)
+  (ivy-bibtex-ivify-action bibtex-completion-open-annotated-pdf ivy-bibtex-open-annotated-pdf)
   (ivy-add-actions
    'ivy-bibtex
    '(("P" ivy-bibtex-open-annotated-pdf "Open annotated PDF (if present)")))
@@ -374,7 +374,7 @@ The second step is to tailor the generic action function for helm-bibtex or ivy-
 *Ivy-bibtex*:  This is simply done with:
 
 #+BEGIN_SRC emacs-lisp
-(ivy-bibtex-ivify-action 'bibtex-completion-<action> 'ivy-bibtex-<action>)
+(ivy-bibtex-ivify-action bibtex-completion-<action> ivy-bibtex-<action>)
 #+END_SRC
 
 The third and final step is to make the tailored action function ~helm-bibtex-<action>~ or ~ivy-bibtex-<action>~ available in helm-bibtex or ivy-bibtex by adding it to the action menu. See [[#change-actions][Change the available actions]].
