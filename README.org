@@ -171,7 +171,7 @@ If the ~file~ field is not used but instead the naming scheme ~bibtex-key + .pdf
 *Helm-bibtex*:  Add the following after the above code:
 
 #+BEGIN_SRC elisp
-  (helm-bibtex-helmify-action 'bibtex-completion-open-annotated-pdf 'helm-bibtex-open-annotated-pdf)
+  (helm-bibtex-helmify-action bibtex-completion-open-annotated-pdf helm-bibtex-open-annotated-pdf)
   (helm-add-action-to-source
    "Open annotated PDF (if present)" 'helm-bibtex-open-annotated-pdf
    helm-source-bibtex 1)
@@ -368,7 +368,7 @@ The second step is to tailor the generic action function for helm-bibtex or ivy-
 *Helm-bibtex*:  This is simply done with:
 
 #+BEGIN_SRC emacs-lisp
-(helm-bibtex-helmify-action 'bibtex-completion-<action> 'helm-bibtex-<action>)
+(helm-bibtex-helmify-action bibtex-completion-<action> helm-bibtex-<action>)
 #+END_SRC
 
 *Ivy-bibtex*:  This is simply done with:
