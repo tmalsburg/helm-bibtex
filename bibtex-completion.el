@@ -430,15 +430,16 @@ appended to the requested entry."
     (bibtex-completion-remove-duplicated-fields (append entry crossref))))
 
 (defun bibtex-completion-get-entry1 (entry-key &optional do-not-find-pdf)
-  (with-temp-buffer
-    (mapc #'insert-file-contents
-          (-flatten (list bibtex-completion-bibliography)))
-    (goto-char (point-min))
-    (re-search-forward (concat "^@\\(" parsebib--bibtex-identifier
-                               "\\)[[:space:]]*[\(\{][[:space:]]*"
-                               (regexp-quote entry-key) "[[:space:]]*,"))
-    (let ((entry-type (match-string 1)))
-      (reverse (bibtex-completion-prepare-entry (parsebib-read-entry entry-type) nil do-not-find-pdf)))))
+  (save-excursion
+    (with-temp-buffer
+      (mapc #'insert-file-contents
+            (-flatten (list bibtex-completion-bibliography)))
+      (goto-char (point-min))
+      (re-search-forward (concat "^@\\(" parsebib--bibtex-identifier
+                                "\\)[[:space:]]*[\(\{][[:space:]]*"
+                                (regexp-quote entry-key) "[[:space:]]*,"))
+      (let ((entry-type (match-string 1)))
+        (reverse (bibtex-completion-prepare-entry (parsebib-read-entry entry-type) nil do-not-find-pdf))))))
 
 (defun bibtex-completion-find-pdf-in-field (key-or-entry)
   "Returns the path of the PDF specified in the field
