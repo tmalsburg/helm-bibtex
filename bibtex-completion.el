@@ -529,9 +529,10 @@ find a PDF file."
                        (and bibtex-completion-notes-path
                             (f-file? bibtex-completion-notes-path)
                             (with-current-buffer (find-file-noselect bibtex-completion-notes-path)
-                              (widen)
-                              (goto-char (point-min))
-                              (re-search-forward (format bibtex-completion-notes-key-pattern entry-key) nil t))))
+                              (save-excursion
+                                (widen)
+                                (goto-char (point-min))
+                                (re-search-forward (format bibtex-completion-notes-key-pattern entry-key) nil t)))))
                       (cons (cons "=has-note=" bibtex-completion-notes-symbol) entry)
                     entry))
            ; Remove unwanted fields:
