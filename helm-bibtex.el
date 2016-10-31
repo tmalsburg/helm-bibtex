@@ -166,6 +166,7 @@ it comes out in the right buffer."
 (helm-bibtex-helmify-action bibtex-completion-add-PDF-attachment helm-bibtex-add-PDF-attachment)
 (helm-bibtex-helmify-action bibtex-completion-edit-notes helm-bibtex-edit-notes)
 (helm-bibtex-helmify-action bibtex-completion-show-entry helm-bibtex-show-entry)
+(helm-bibtex-helmify-action bibtex-completion-add-pdf-to-library helm-bibtex-add-pdf-to-library)
 
 ;; Helm sources:
 
@@ -183,7 +184,8 @@ it comes out in the right buffer."
              "Insert BibTeX entry"        'helm-bibtex-insert-bibtex
              "Attach PDF to email"        'helm-bibtex-add-PDF-attachment
              "Edit notes"                 'helm-bibtex-edit-notes
-             "Show entry"                 'helm-bibtex-show-entry))
+             "Show entry"                 'helm-bibtex-show-entry
+             "Add PDF to library"         'helm-bibtex-add-pdf-to-library))
   "Source for searching in BibTeX files.")
 
 (defvar helm-source-fallback-options

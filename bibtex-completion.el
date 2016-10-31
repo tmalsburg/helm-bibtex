@@ -297,7 +297,7 @@ each entry.  The first element of these conses is a string
 containing authors, editors, title, year, type, and key of the
 entry.  This is string is used for matching.  The second element
 is the entry (only the fields listed above) as an alist."
-  (let ((files (-flatten (list (nreverse bibtex-completion-bibliography))))
+  (let ((files (nreverse (-flatten (list bibtex-completion-bibliography))))
         reparsed-files)
     ;; Open each bibliography file in a temporary buffer,
     ;; check hash of bibliography and reparse if necessary:
@@ -452,7 +452,7 @@ file is specified, or if the specified file does not exist, or if
            (value (bibtex-completion-get-value bibtex-completion-pdf-field entry)))
       (cond
        ((not value) nil)         ; Field not defined.
-       ((f-file? value) value)   ; A bare full path was found.
+       ((f-file? value) (list value))   ; A bare full path was found.
        (t                        ; Zotero/Mendeley/JabRef format:
         (let ((value (replace-regexp-in-string "\\([^\\]\\);" "\\1\^^" value)))
           (cl-loop  ; Looping over the files:
@@ -607,11 +607,12 @@ matching PDFs for an entry, the first is opened."
            (browse-url-browser-function
             (or bibtex-completion-browser-function
                 browse-url-browser-function)))
-      (if url (browse-url url)
+      (if url
+          (browse-url url)
         (if doi (browse-url
-                 (s-concat "http://dx.doi.org/" doi)))
-        (message "No URL or DOI found for this entry: %s"
-                 key)))))
+                 (s-concat "http://dx.doi.org/" doi))
+          (message "No URL or DOI found for this entry: %s"
+                   key))))))
 
 (defun bibtex-completion-open-any (keys)
   "Open the PDFs associated with the marked entries using the
@@ -619,18 +620,9 @@ function specified in `bibtex-completion-pdf-open-function'.  If no PDF is
 found, try to open a URL or DOI in the browser instead."
   (dolist (key keys)
     (let ((pdf (bibtex-completion-find-pdf key)))
-      (if pdf (funcall bibtex-completion-pdf-open-function (car pdf))
-        (let* ((entry (bibtex-completion-get-entry key))
-               (url (bibtex-completion-get-value "url" entry))
-               (doi (bibtex-completion-get-value "doi" entry))
-               (browse-url-browser-function
-                (or bibtex-completion-browser-function
-                    browse-url-browser-function)))
-          (if url (browse-url url)
-            (if doi (browse-url
-                     (s-concat "http://dx.doi.org/" doi)))
-            (message "No PDF and no URL or DOI found for this entry: %s"
-                     key)))))))
+      (if pdf
+          (funcall bibtex-completion-pdf-open-function (car pdf))
+        (bibtex-completion-open-url-or-doi (list key))))))
 
 (defun bibtex-completion-format-citation-default (keys)
   "Default formatter for keys, separates multiple keys with commas."
@@ -1005,6 +997,27 @@ line."
             (throw 'break t)
           (unless buf
             (kill-buffer)))))))
+
+(defun bibtex-completion-add-pdf-to-library (keys)
+  "Add a PDF to the library for the first selected entry. The PDF can be added either from an open buffer or a file."
+  (let* ((key (car keys))
+         (source (char-to-string
+                  (read-char-choice "Add pdf from [b]uffer or [f]ile? " '(?b ?f))))
+         (buffer (when (string= source "b")
+                   (read-buffer-to-switch "Add pdf buffer: ")))
+         (file (when (string= source "f")
+                 (expand-file-name (read-file-name "Add pdf file: " nil nil t))))
+         (path (-flatten (list bibtex-completion-library-path)))
+         (path (if (cdr path)
+                   (completing-read "Add pdf to: " path nil t)
+                 (car path)))
+         (pdf (expand-file-name (concat key ".pdf") path)))
+    (cond
+     (buffer
+      (with-current-buffer buffer
+        (write-file pdf)))
+     (file
+      (copy-file file pdf)))))
 
 (defun bibtex-completion-fallback-action (url-or-function search-expression)
   (let ((browse-url-browser-function
