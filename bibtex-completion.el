@@ -478,7 +478,7 @@ file is specified, or if the specified file does not exist, or if
                           (--map (f-join it path file-name)
                                  (-flatten bibtex-completion-library-path)))) ; Jabref #100
            for result = (-first 'f-exists? paths)
-           if result collect result)))))))
+           if (not (s-blank-str? result)) collect result)))))))
 
 (defun bibtex-completion-find-pdf-in-library (key-or-entry)
   "Searches the directories in `bibtex-completion-library-path' for a
