@@ -270,10 +270,10 @@ the directories listed in `bibtex-completion-library-path'."
   :type 'string)
 
 (defcustom bibtex-completion-display-formats
-  '((t . "${author:36} ${title:-53} ${year:4} ${=has-pdf=:1}${=has-note=:1} ${=type=:7}"))
+  '((t . "${author:36} ${title:*} ${year:4} ${=has-pdf=:1}${=has-note=:1} ${=type=:7}"))
   "Alist of format strings for displaying entries in the results list. The key of each element of this list is either a BibTeX entry type (in which case the format string applies to entries of this type only) or t (in which case the format string applies to all other entry types). The value is the format string.
 
-In the format string, expressions like \"${author}\", \"${title}\", etc, are expanded to the value of the corresponding field. An expression like \"${author:N}\" is further truncated to a width of N characters, whereas an expression like \"${title:-N}\" is truncated to a width equal to the results window's width minus N characters. Three special fields are available: \"=type=\" holds the BibTeX entry type, \"=has-pdf=\" holds `bibtex-completion-pdf-symbol' if the entry has a pdf file, and \"=has-notes=\" holds `bibtex-completion-notes-symbol' if the entry has a notes file. The \"author\" field is expanded to either the author names or, if the entry has no author field, the editor names."
+In the format string, expressions like \"${author}\", \"${title}\", etc, are expanded to the value of the corresponding field. An expression like \"${author:N}\" is further truncated to a width of N characters, whereas an expression like \"${title:*}\" is truncated to the remaining width in the results window. Three special fields are available: \"=type=\" holds the BibTeX entry type, \"=has-pdf=\" holds `bibtex-completion-pdf-symbol' if the entry has a pdf file, and \"=has-notes=\" holds `bibtex-completion-notes-symbol' if the entry has a notes file. The \"author\" field is expanded to either the author names or, if the entry has no author field, the editor names."
   :group 'bibtex-completion
   :type '(alist :key-type symbol :value-type string))
 
@@ -558,35 +558,47 @@ find a PDF file."
   (cl-remove-duplicates entry
                         :test (lambda (x y) (string= (s-downcase x) (s-downcase y)))
                         :key 'car :from-end t))
-
 
 
 (defun bibtex-completion-format-entry (entry width)
   "Formats a BibTeX ENTRY for display in results list. WIDTH is the width of the results list. The display format is governed by the variable `bibtex-completion-display-formats'."
-  (s-format
-   (cdr (or (assoc-string (bibtex-completion-get-value "=type=" entry)
-                          bibtex-completion-display-formats
-                          'case-fold)
-            (assoc t bibtex-completion-display-formats)))
-   (lambda (field)
-     (let* ((field (split-string field ":"))
-            (field-name (car field))
-            (field-width (cadr field))
-            (field-value (bibtex-completion-get-value field-name entry)))
-       (when (and (string= field-name "author")
-                  (not field-value))
-         (setq field-value (bibtex-completion-get-value "editor" entry)))
-       (setq field-value (bibtex-completion-clean-string (or field-value " ")))
-       (when (member field-name '("author" "editor"))
-         (setq field-value (bibtex-completion-shorten-authors field-value)))
-       (if (not field-width)
-           field-value
-         (setq field-width (string-to-number field-width))
-         (truncate-string-to-width field-value
-                                   (if (> field-width 0)
-                                       field-width
-                                     (+ width field-width))
-                                   0 ?\s))))))
+  (let ((format-string
+         (cdr (or (assoc-string (bibtex-completion-get-value "=type=" entry)
+                                bibtex-completion-display-formats
+                                'case-fold)
+                  (assoc t bibtex-completion-display-formats)))))
+    (s-format
+     format-string
+     (lambda (field)
+       (let* ((field (split-string field ":"))
+              (field-name (car field))
+              (field-width (cadr field))
+              (field-value (bibtex-completion-get-value field-name entry)))
+         (when (and (string= field-name "author")
+                    (not field-value))
+           (setq field-value (bibtex-completion-get-value "editor" entry)))
+         (setq field-value (bibtex-completion-clean-string (or field-value " ")))
+         (when (member field-name '("author" "editor"))
+           (setq field-value (bibtex-completion-shorten-authors field-value)))
+         (if (not field-width)
+             field-value
+           (setq field-width (string-to-number field-width))
+           (truncate-string-to-width
+            field-value
+            (if (> field-width 0)
+                field-width
+              (let* ((remaining-width width)
+                     (used-width
+                      (length
+                       (s-format format-string
+                                 (lambda (field)
+                                   (let ((field-width (cadr (split-string field ":"))))
+                                     (when field-width
+                                       (setq remaining-width
+                                             (- remaining-width (string-to-number field-width))))
+                                     ""))))))
+                (- remaining-width used-width)))
+            0 ?\s)))))))
 
 
 (defun bibtex-completion-clean-string (s)
