@@ -277,17 +277,36 @@ In the format string, expressions like \"${author}\", \"${title}\", etc, are exp
   :group 'bibtex-completion
   :type '(alist :key-type symbol :value-type string))
 
+(defvar bibtex-completion-display-formats-internal nil
+  "Stores `bibtex-completion-display-formats' together with the \"used width\" of each format string. This is set internally.")
+
 (defvar bibtex-completion-cache nil
   "A cache storing the hash of the bibliography content and the corresponding list of entries, for each bibliography file, obtained when the bibliography was last parsed. When the current bibliography hash is identical to the cached hash, the cached list of candidates is reused, otherwise the bibliography file is reparsed.")
 
 
 (defun bibtex-completion-init ()
   "Checks that the files and directories specified by the user
-actually exist."
+actually exist. Also sets `bibtex-completion-display-formats-internal'."
   (mapc (lambda (file)
           (unless (f-file? file)
                   (user-error "BibTeX file %s could not be found." file)))
-        (-flatten (list bibtex-completion-bibliography))))
+        (-flatten (list bibtex-completion-bibliography)))
+  (setq bibtex-completion-display-formats-internal
+        (mapcar (lambda (format)
+                  (let* ((format-string (cdr format))
+                         (fields-width 0)
+                         (string-width
+                          (length
+                           (s-format format-string
+                                     (lambda (field)
+                                       (setq fields-width
+                                             (+ fields-width
+                                                (string-to-number
+                                                 (or (cadr (split-string field ":"))
+                                                     ""))))
+                                       "")))))
+                    (-cons* (car format) format-string (+ fields-width string-width))))
+                bibtex-completion-display-formats)))
 
 (defun bibtex-completion-clear-cache (&optional files)
   "Clears FILES from cache. If FILES is omitted, all files in `bibtex-completion-biblography' are cleared."
@@ -562,11 +581,12 @@ find a PDF file."
 
 (defun bibtex-completion-format-entry (entry width)
   "Formats a BibTeX ENTRY for display in results list. WIDTH is the width of the results list. The display format is governed by the variable `bibtex-completion-display-formats'."
-  (let ((format-string
-         (cdr (or (assoc-string (bibtex-completion-get-value "=type=" entry)
-                                bibtex-completion-display-formats
-                                'case-fold)
-                  (assoc t bibtex-completion-display-formats)))))
+  (let* ((format
+          (or (assoc-string (bibtex-completion-get-value "=type=" entry)
+                            bibtex-completion-display-formats-internal
+                            'case-fold)
+              (assoc t bibtex-completion-display-formats-internal)))
+         (format-string (cadr format)))
     (s-format
      format-string
      (lambda (field)
@@ -587,17 +607,7 @@ find a PDF file."
             field-value
             (if (> field-width 0)
                 field-width
-              (let* ((remaining-width width)
-                     (used-width
-                      (length
-                       (s-format format-string
-                                 (lambda (field)
-                                   (let ((field-width (cadr (split-string field ":"))))
-                                     (when field-width
-                                       (setq remaining-width
-                                             (- remaining-width (string-to-number field-width))))
-                                     ""))))))
-                (- remaining-width used-width)))
+              (- width (cddr format)))
             0 ?\s)))))))
 
 
