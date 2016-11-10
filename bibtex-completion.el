@@ -269,17 +269,44 @@ the directories listed in `bibtex-completion-library-path'."
   :group 'bibtex-completion
   :type 'string)
 
+(defcustom bibtex-completion-display-formats
+  '((t . "${author:36} ${title:*} ${year:4} ${=has-pdf=:1}${=has-note=:1} ${=type=:7}"))
+  "Alist of format strings for displaying entries in the results list. The key of each element of this list is either a BibTeX entry type (in which case the format string applies to entries of this type only) or t (in which case the format string applies to all other entry types). The value is the format string.
+
+In the format string, expressions like \"${author}\", \"${title}\", etc, are expanded to the value of the corresponding field. An expression like \"${author:N}\" is further truncated to a width of N characters, whereas an expression like \"${title:*}\" is truncated to the remaining width in the results window. Three special fields are available: \"=type=\" holds the BibTeX entry type, \"=has-pdf=\" holds `bibtex-completion-pdf-symbol' if the entry has a pdf file, and \"=has-notes=\" holds `bibtex-completion-notes-symbol' if the entry has a notes file. The \"author\" field is expanded to either the author names or, if the entry has no author field, the editor names."
+  :group 'bibtex-completion
+  :type '(alist :key-type symbol :value-type string))
+
+(defvar bibtex-completion-display-formats-internal nil
+  "Stores `bibtex-completion-display-formats' together with the \"used width\" of each format string. This is set internally.")
+
 (defvar bibtex-completion-cache nil
   "A cache storing the hash of the bibliography content and the corresponding list of entries, for each bibliography file, obtained when the bibliography was last parsed. When the current bibliography hash is identical to the cached hash, the cached list of candidates is reused, otherwise the bibliography file is reparsed.")
 
 
 (defun bibtex-completion-init ()
   "Checks that the files and directories specified by the user
-actually exist."
+actually exist. Also sets `bibtex-completion-display-formats-internal'."
   (mapc (lambda (file)
           (unless (f-file? file)
                   (user-error "BibTeX file %s could not be found." file)))
-        (-flatten (list bibtex-completion-bibliography))))
+        (-flatten (list bibtex-completion-bibliography)))
+  (setq bibtex-completion-display-formats-internal
+        (mapcar (lambda (format)
+                  (let* ((format-string (cdr format))
+                         (fields-width 0)
+                         (string-width
+                          (length
+                           (s-format format-string
+                                     (lambda (field)
+                                       (setq fields-width
+                                             (+ fields-width
+                                                (string-to-number
+                                                 (or (cadr (split-string field ":"))
+                                                     ""))))
+                                       "")))))
+                    (-cons* (car format) format-string (+ fields-width string-width))))
+                bibtex-completion-display-formats)))
 
 (defun bibtex-completion-clear-cache (&optional files)
   "Clears FILES from cache. If FILES is omitted, all files in `bibtex-completion-biblography' are cleared."
@@ -550,21 +577,38 @@ find a PDF file."
   (cl-remove-duplicates entry
                         :test (lambda (x y) (string= (s-downcase x) (s-downcase y)))
                         :key 'car :from-end t))
-
 
 
 (defun bibtex-completion-format-entry (entry width)
-  "Formats a BibTeX entry for display in results list."
-  (let* ((fields (list (if (assoc-string "author" entry 'case-fold) "author" "editor")
-                       "title" "year" "=has-pdf=" "=has-note=" "=type="))
-         (fields (-map (lambda (it)
-                         (bibtex-completion-clean-string
-                          (bibtex-completion-get-value it entry " ")))
-                       fields))
-         (fields (-update-at 0 'bibtex-completion-shorten-authors fields)))
-    (s-format "$0 $1 $2 $3$4 $5" 'elt
-              (-zip-with (lambda (f w) (truncate-string-to-width f w 0 ?\s))
-                         fields (list 36 (- width 53) 4 1 1 7)))))
+  "Formats a BibTeX ENTRY for display in results list. WIDTH is the width of the results list. The display format is governed by the variable `bibtex-completion-display-formats'."
+  (let* ((format
+          (or (assoc-string (bibtex-completion-get-value "=type=" entry)
+                            bibtex-completion-display-formats-internal
+                            'case-fold)
+              (assoc t bibtex-completion-display-formats-internal)))
+         (format-string (cadr format)))
+    (s-format
+     format-string
+     (lambda (field)
+       (let* ((field (split-string field ":"))
+              (field-name (car field))
+              (field-width (cadr field))
+              (field-value (bibtex-completion-get-value field-name entry)))
+         (when (and (string= field-name "author")
+                    (not field-value))
+           (setq field-value (bibtex-completion-get-value "editor" entry)))
+         (setq field-value (bibtex-completion-clean-string (or field-value " ")))
+         (when (member field-name '("author" "editor"))
+           (setq field-value (bibtex-completion-shorten-authors field-value)))
+         (if (not field-width)
+             field-value
+           (setq field-width (string-to-number field-width))
+           (truncate-string-to-width
+            field-value
+            (if (> field-width 0)
+                field-width
+              (- width (cddr format)))
+            0 ?\s)))))))
 
 
 (defun bibtex-completion-clean-string (s)
