@@ -24,6 +24,7 @@
 ;; bibtex-completion backend.
 ;;
 ;; News:
+;; - 10-11-2016: Layout of search results can now be customized.
 ;; - 04/18/2016: Improved support for Mendely/Jabref/Zotero way of
 ;;   referencing PDFs.
 ;; - 04/06/2016: Generic functions are factored out into a backend for

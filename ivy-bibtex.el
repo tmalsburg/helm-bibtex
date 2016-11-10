@@ -25,6 +25,7 @@
 ;; this is the ivy version.
 ;;
 ;; News:
+;; - 10-11-2016: Layout of search results can now be customized.
 ;; - 09/29/2016: Performance improvements in ivy-bibtex.  Note: If
 ;;   you changed your default action in ivy-bibtex, you have to rename
 ;;   the action, e.g. from `bibtex-completion-insert-key` to

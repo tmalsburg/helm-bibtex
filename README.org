@@ -7,6 +7,7 @@ Ivy-bibtex: [[http://melpa.org/#/ivy-bibtex][http://melpa.org/packages/ivy-bibte
 Helm-bibtex and ivy-bibtex allow you to search and manage your BibTeX bibliography.  They both share the same generic backend, bibtex-completion, but one uses the Helm completion framework and the other Ivy as a front-end.
 
 * News
+- 2016-11-10: Layout of search results can now be customized.  See here [[#customize-layout-of-search-results][here]] for details.
 - 2016-10-07: Added bibtex-completion-open-any, made it the default action for helm-bibtex and ivy-bibtex
 - 2016-09-29: Performance improvements in ivy-bibtex.  *Note:* If you changed your default action in ivy-bibtex, you have to rename the action, e.g. from ~bibtex-completion-insert-key~ to ~ivy-bibtex-insert-key~.  See [[#change-the-default-action][here]] for details.
 - 2016-09-20: Added fallback options to ivy frontend.
@@ -108,6 +109,24 @@ The names of these files consist of the BibTeX key plus a user-defined suffix (~
 At this point most people will be ready to go.  Skip to [[#usage][Usage]] below to see how to use helm-bibtex and ivy-bibtex.
 
 * Advanced configuration
+** Customize layout of search results
+
+The variable ~bibtex-completion-display-formats~ can be used to customize how search results are presented on a per-entry-type basis.  The default is
+
+#+BEGIN_SRC elisp
+'((t . "${author:36} ${title:*} ${year:4} ${=has-pdf=:1}${=has-note=:1} ${=type=:7}"))
+#+END_SRC
+
+which means that all entry types are presented in the same way: authors, title, year, …  In this format string, the numbers indicate how much space is reserved for the respective field.  If there is a ~*~ instead of a number that means that this field gets whatever space remains.  Here is a setup that uses a different layout for different entry types:
+
+#+BEGIN_SRC elisp
+(setq bibtex-completion-display-formats
+    '((article       . "${=has-pdf=:1}${=has-note=:1} ${=type=:3} ${year:4} ${author:36} ${title:*} ${journal:40}")
+      (inbook        . "${=has-pdf=:1}${=has-note=:1} ${=type=:3} ${year:4} ${author:36} ${title:*} Chapter ${chapter:32}")
+      (incollection  . "${=has-pdf=:1}${=has-note=:1} ${=type=:3} ${year:4} ${author:36} ${title:*} ${booktitle:40}")
+      (inproceedings . "${=has-pdf=:1}${=has-note=:1} ${=type=:3} ${year:4} ${author:36} ${title:*} ${booktitle:40}")
+      (t             . "${=has-pdf=:1}${=has-note=:1} ${=type=:3} ${year:4} ${author:36} ${title:*}")))
+#+END_SRC
 
 ** Fields used for searching
 
