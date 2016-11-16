@@ -283,6 +283,12 @@ In the format string, expressions like \"${author:36}\", \"${title:*}\", etc, ar
 (defvar bibtex-completion-cache nil
   "A cache storing the hash of the bibliography content and the corresponding list of entries, for each bibliography file, obtained when the bibliography was last parsed. When the current bibliography hash is identical to the cached hash, the cached list of candidates is reused, otherwise the bibliography file is reparsed.")
 
+(defvar bibtex-completion-string-cache nil
+  "A cache storing bibtex strings, for each bibliography file, obtained when the bibliography was last parsed.")
+
+(defvar bibtex-completion-string-hash-table nil
+  "A hash table used for string replacements.")
+
 
 (defun bibtex-completion-init ()
   "Checks that the files and directories specified by the user
@@ -317,7 +323,42 @@ actually exist. Also sets `bibtex-completion-display-formats-internal'."
                    (or files
                        (-flatten (list bibtex-completion-bibliography)))))
          bibtex-completion-cache)))
-    
+
+(defun bibtex-completion-clear-string-cache (&optional files)
+  "Clears FILES from cache. If FILES is omitted, all files in `bibtex-completion-bibliography' are cleared."
+  (setq bibtex-completion-string-cache
+        (cl-remove-if
+         (lambda (x)
+           (member (car x)
+                   (or files
+                       (-flatten (list bibtex-completion-bibliography)))))
+         bibtex-completion-string-cache)))
+
+(defun bibtex-completion-parse-strings ()
+  "Parse the BibTeX strings listed in the current buffer and
+return a list of entries in the order in which they appeared in
+the BibTeX file."
+  (goto-char (point-min))
+  (let  ((strings (cl-loop
+                   for entry-type = (parsebib-find-next-item)
+                   while entry-type
+                   if (string= (downcase entry-type) "string")
+                   collect (parsebib-read-string))))
+    (-filter (lambda (x) x) strings)))
+
+(defun bibtex-completion--string-hash-table (files)
+  "Construct a hash table for string replacements found in FILES"
+  (cl-loop
+   with entries =
+   (cl-loop
+    for file in files
+    for entries = (cddr (assoc file bibtex-completion-string-cache))
+    append entries)
+   with ht = (make-hash-table :test #'equal :size (length entries))
+   for entry in entries
+   do (puthash (car entry) (gethash (cdr entry) ht (bibtex-completion-clean-string (cdr entry))) ht)
+   finally return ht))
+
 (defun bibtex-completion-candidates ()
   "Reads the BibTeX files and returns a list of conses, one for
 each entry.  The first element of these conses is a string
@@ -342,11 +383,22 @@ is the entry (only the fields listed above) as an alist."
                          bibliography-hash
                          (bibtex-completion-parse-bibliography))
                  bibtex-completion-cache)
+
+           (bibtex-completion-clear-string-cache (list file))
+           (push (-cons* file
+                         bibliography-hash
+                         (bibtex-completion-parse-strings))
+                 bibtex-completion-string-cache)
+
            ;; Mark file as reparsed.
            ;; This will be useful to resolve cross-references:
            (push file reparsed-files)))))
+
     ;; If some files were reparsed, resolve cross-references:
     (when reparsed-files
+      (setf bibtex-completion-string-hash-table (bibtex-completion--string-hash-table files))
+      (message "Replacing strings ...")
+      (bibtex-completion-replace-strings files reparsed-files)
       (message "Resolving cross-references ...")
       (bibtex-completion-resolve-crossrefs files reparsed-files))
     ;; Finally return the list of candidates:
@@ -354,6 +406,34 @@ is the entry (only the fields listed above) as an alist."
      (cl-loop
       for file in files
       append (cddr (assoc file bibtex-completion-cache))))))
+
+(defun bibtex-completion-replace-strings-in-entry (entry ht is-candidate)
+  "Replace strings in ENTRY by looking up replacements in HT.
+
+If IS-CANDIDATE is t then ENTRY is assumed to be the output of
+bibtex-completion-make-candidate"
+  (let ((entry (-map (lambda (x)
+                       (cons (car x)
+                             (gethash (cdr x) ht (cdr x))))
+                     (if is-candidate (cdr entry) entry))))
+    (if is-candidate
+        (bibtex-completion-make-candidate entry)
+      entry)))
+
+(defun bibtex-completion-replace-strings (files reparsed-files)
+  "Replace strings in all entries for all FILES.
+
+REPARSED-FILES is a sublist of FILES which was just reparsed."
+  (cl-loop
+   for file in files
+   for entries = (cddr (assoc file bibtex-completion-cache))
+   do (setf
+       (cddr (assoc file bibtex-completion-cache))
+       (cl-loop
+        for entry in entries
+        collect (bibtex-completion-replace-strings-in-entry entry
+                                                            bibtex-completion-string-hash-table
+                                                            (not (member file reparsed-files)))))))
 
 (defun bibtex-completion-resolve-crossrefs (files reparsed-files)
   "Expand all entries with fields from cross-referenced entries in FILES, assuming that only those files in REPARSED-FILES were reparsed whereas the other files in FILES were up-to-date."
@@ -453,8 +533,10 @@ record with that key.  Fields from crossreferenced entries are
 appended to the requested entry."
   (let* ((entry (bibtex-completion-get-entry1 entry-key))
          (crossref (bibtex-completion-get-value "crossref" entry))
+         (crossref (gethash crossref bibtex-completion-string-hash-table crossref))
          (crossref (when crossref (bibtex-completion-get-entry1 crossref))))
-    (bibtex-completion-remove-duplicated-fields (append entry crossref))))
+    (bibtex-completion-replace-strings-in-entry
+     (bibtex-completion-remove-duplicated-fields (append entry crossref)) bibtex-completion-string-hash-table nil)))
 
 (defun bibtex-completion-get-entry1 (entry-key &optional do-not-find-pdf)
   (with-temp-buffer
