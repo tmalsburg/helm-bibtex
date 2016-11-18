@@ -1050,18 +1050,24 @@ line."
       (let ((key (car keys))
             (buf (bibtex-completion-buffer-visiting bib-file)))
         (find-file bib-file)
+        (widen)
         (if (eq major-mode 'org-mode)
-            (when (ignore-errors (org-link-search (concat "#" key)))
-              (org-show-entry)
-              (throw 'break t))
+            (let* ((prop (if (boundp 'org-bibtex-key-property)
+                             org-bibtex-key-property
+                           "CUSTOM_ID"))
+                   (match (org-find-property prop key)))
+              (when match
+                (goto-char match)
+                (org-show-entry)
+                (throw 'break t)))
           (goto-char (point-min))
           (when (re-search-forward
                  (concat "^@\\(" parsebib--bibtex-identifier
                          "\\)[[:space:]]*[\(\{][[:space:]]*"
                          (regexp-quote key) "[[:space:]]*,") nil t)
-            (throw 'break t))
-          (unless buf
-            (kill-buffer)))))))
+            (throw 'break t)))
+        (unless buf
+          (kill-buffer))))))
 
 (defun bibtex-completion-add-pdf-to-library (keys)
   "Add a PDF to the library for the first selected entry. The PDF can be added either from an open buffer or a file."
