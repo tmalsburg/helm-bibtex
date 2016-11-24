@@ -512,11 +512,16 @@ appended to the requested entry."
     (mapc #'insert-file-contents
           (bibtex-completion-normalize-bibliography 'bibtex))
     (goto-char (point-min))
-    (re-search-forward (concat "^@\\(" parsebib--bibtex-identifier
-                               "\\)[[:space:]]*[\(\{][[:space:]]*"
-                               (regexp-quote entry-key) "[[:space:]]*,"))
-    (let ((entry-type (match-string 1)))
-      (reverse (bibtex-completion-prepare-entry (parsebib-read-entry entry-type) nil do-not-find-pdf)))))
+    (if (re-search-forward (concat "^@\\(" parsebib--bibtex-identifier
+                                   "\\)[[:space:]]*[\(\{][[:space:]]*"
+                                   (regexp-quote entry-key) "[[:space:]]*,")
+                           nil t)
+        (let ((entry-type (match-string 1)))
+          (reverse (bibtex-completion-prepare-entry
+                    (parsebib-read-entry entry-type) nil do-not-find-pdf)))
+      (progn
+        (display-warning :warning (concat "Bibtex-completion couldn't find entry with key \"" entry-key "\"."))
+        nil))))
 
 (defun bibtex-completion-find-pdf-in-field (key-or-entry)
   "Returns the path of the PDF specified in the field
