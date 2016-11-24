@@ -756,6 +756,22 @@ omitted."
                 for pdfs = (bibtex-completion-find-pdf key)
                 append (--map (format "[[%s][%s]]" it key) pdfs))))
 
+(defun bibtex-completion-format-citation-org-apa-link-to-PDF (keys)
+  "Formatter for org-links to PDF.  Link text loosely follows APA
+format.  Uses first matching PDF if several are available."
+  (s-join ", " (cl-loop
+                for key in keys
+                for entry = (bibtex-completion-get-entry key)
+                for author = (bibtex-completion-shorten-authors
+                              (or (bibtex-completion-get-value "author" entry)
+                                  (bibtex-completion-get-value "editor" entry)))
+                for year = (bibtex-completion-get-value "year" entry)
+                for pdf = (car (bibtex-completion-find-pdf key))
+                if pdf
+                  collect (format "[[file:%s][%s (%s)]]" pdf author year)
+                else
+                  collect (format "%s (%s)" author year))))
+
 (defun bibtex-completion-insert-citation (keys)
   "Insert citation at point.  The format depends on
 `bibtex-completion-format-citation-functions'."
