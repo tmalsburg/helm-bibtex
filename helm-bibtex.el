@@ -150,8 +150,8 @@ nil, the window will split below."
 (defmacro helm-bibtex-helmify-action (action name)
   "Wraps the function ACTION in another function named NAME which
 passes the candidates marked in helm to ACTION.  Also uses
-with-helm-current-buffer such that when ACTION inserts text
-it comes out in the right buffer."
+with-helm-current-buffer such that when ACTION inserts text it
+comes out in the right buffer."
   `(defun ,name (_)
      (let ((keys (helm-marked-candidates :with-wildcard t)))
        (with-helm-current-buffer
@@ -218,7 +218,8 @@ reread."
 (defun helm-bibtex-with-local-bibliography (&optional arg)
   "Search BibTeX entries with local bibliography.
 
-With a prefix ARG the cache is invalidated and the bibliography reread."
+With a prefix ARG the cache is invalidated and the bibliography
+reread."
   (interactive "P")
   (let ((bibtex-completion-bibliography (bibtex-completion-find-local-bibliography)))
     (helm-bibtex arg)))
