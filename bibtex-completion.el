@@ -48,7 +48,7 @@
 also specify org-mode bibliography files, in which case it will
 be assumed that a BibTeX file exists with the same name and
 extension bib instead of org. If the bib file has a different
-name, use a cons cell \"(orgfile.org . bibfile.bib)\" instead."
+name, use a cons cell (\"orgfile.org\" . \"bibfile.bib\") instead."
   :group 'bibtex-completion
   :type '(choice file (repeat file)))
 
