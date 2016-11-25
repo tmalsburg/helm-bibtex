@@ -24,7 +24,14 @@
 ;; bibtex-completion backend.
 ;;
 ;; News:
-;; - 10-11-2016: Layout of search results can now be customized.
+;; - 11/24/2016: Added support for bare relative paths to PDF
+;;   files.  Concatenates the path in the `file' field to all paths
+;;   in `bibtex-completion-library-path'.
+;; - 11/24/2016: Added citation function APA-style citation for org
+;;   files.  See `bibtex-completion-format-citation-org-apa-link-to-PDF'.
+;; - 11/18/2016: Added support for bibliographies in org-bibtex
+;;   format.  See docstring of `bibtex-completion-bibliography'.
+;; - 11/10/2016: Layout of search results can now be customized.
 ;; - 04/18/2016: Improved support for Mendely/Jabref/Zotero way of
 ;;   referencing PDFs.
 ;; - 04/06/2016: Generic functions are factored out into a backend for
