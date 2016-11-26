@@ -8,7 +8,7 @@ Helm-bibtex and ivy-bibtex allow you to search and manage your BibTeX bibliograp
 
 * News
 - 2016-11-24: Added support for bare relative paths to PDF files.  Concatenates the path in the ~file~ field to all paths in ~bibtex-completion-library-path~.
-- 2016-11-24: Added citation function APA-style citation for org files.  See ~bibtex-completion-format-citation-org-apa-link-to-PDF~.
+- 2016-11-24: Added citation function for APA-style citations in org files.  See ~bibtex-completion-format-citation-org-apa-link-to-PDF~.
 - 2016-11-18: Added support for bibliographies in org-bibtex format.  See [[#minimal-configuration][here]] for details.  Thanks to @ericdanan for this contribution.
 - 2016-11-10: Layout of search results can now be customized.  See here [[#customize-layout-of-search-results][here]] for details.
 - 2016-10-07: Added bibtex-completion-open-any, made it the default action for helm-bibtex and ivy-bibtex

@@ -27,7 +27,7 @@
 ;; - 11/24/2016: Added support for bare relative paths to PDF
 ;;   files.  Concatenates the path in the `file' field to all paths
 ;;   in `bibtex-completion-library-path'.
-;; - 11/24/2016: Added citation function APA-style citation for org
+;; - 11/24/2016: Added citation function for APA-style citations in org
 ;;   files.  See `bibtex-completion-format-citation-org-apa-link-to-PDF'.
 ;; - 11/18/2016: Added support for bibliographies in org-bibtex
 ;;   format.  See docstring of `bibtex-completion-bibliography'.
