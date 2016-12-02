@@ -994,7 +994,7 @@ defined.  Surrounding curly braces are stripped."
          (replace-regexp-in-string
           "\\(^[[:space:]]*[\"{][[:space:]]*\\)\\|\\([[:space:]]*[\"}][[:space:]]*$\\)"
           ""
-          value))
+          (s-collapse-whitespace value)))
       default)))
 
 (defun bibtex-completion-insert-key (keys)
