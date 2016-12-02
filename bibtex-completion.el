@@ -990,11 +990,10 @@ guidelines.  Return DEFAULT if FIELD is not present in ENTRY."
 defined.  Surrounding curly braces are stripped."
   (let ((value (cdr (assoc-string field entry 'case-fold))))
     (if value
-        (s-collapse-whitespace
-         (replace-regexp-in-string
-          "\\(^[[:space:]]*[\"{][[:space:]]*\\)\\|\\([[:space:]]*[\"}][[:space:]]*$\\)"
-          ""
-          (s-collapse-whitespace value)))
+        (replace-regexp-in-string
+         "\\(^[[:space:]]*[\"{][[:space:]]*\\)\\|\\([[:space:]]*[\"}][[:space:]]*$\\)"
+         ""
+         (s-collapse-whitespace value))
       default)))
 
 (defun bibtex-completion-insert-key (keys)
