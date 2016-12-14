@@ -141,7 +141,7 @@ nil, the window will split below."
            overflow-newline-into-fringe
            (/= (frame-parameter nil 'left-fringe) 0)
            (/= (frame-parameter nil 'right-fringe) 0))
-      (window-body-width)
+      (1- (window-body-width))
     (1- (window-body-width))))
 
 (defun helm-bibtex-candidates-formatter (candidates _)
