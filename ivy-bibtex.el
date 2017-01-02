@@ -92,7 +92,7 @@
   :type 'function)
   
 (defun ivy-bibtex-display-transformer (candidate)
-  (let* ((width (-1 (frame-width)))
+  (let* ((width (1- (frame-width)))
          (idx (get-text-property 0 'idx candidate))
          (entry (cdr (nth idx (ivy-state-collection ivy-last)))))
     (bibtex-completion-format-entry entry width)))
