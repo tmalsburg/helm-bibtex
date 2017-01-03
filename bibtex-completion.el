@@ -396,10 +396,9 @@ is the entry (only the fields listed above) as an alist."
       (message "Resolving cross-references ...")
       (bibtex-completion-resolve-crossrefs files reparsed-files))
     ;; Finally return the list of candidates:
-    (nreverse
-     (cl-loop
+    (cl-loop
       for file in files
-      append (cddr (assoc file bibtex-completion-cache))))))
+      append (cddr (assoc file bibtex-completion-cache)))))
 
 (defun bibtex-completion-resolve-crossrefs (files reparsed-files)
   "Expand all entries with fields from cross-referenced entries
