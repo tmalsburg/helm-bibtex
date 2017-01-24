@@ -720,13 +720,21 @@ matching PDFs for an entry, the first is opened."
 
 (defun bibtex-completion-open-any (keys)
   "Open the PDFs associated with the marked entries using the
-function specified in `bibtex-completion-pdf-open-function'.  If no PDF is
-found, try to open a URL or DOI in the browser instead."
+function specified in `bibtex-completion-pdf-open-function'.
+If multiple PDFs are found for an entry, ask for the one to
+open using `completion-read'.  If no PDF is found, try to open a URL
+or DOI in the browser instead."
   (dolist (key keys)
-    (let ((pdf (bibtex-completion-find-pdf key)))
-      (if pdf
-          (funcall bibtex-completion-pdf-open-function (car pdf))
-        (bibtex-completion-open-url-or-doi (list key))))))
+    (let* ((pdf (bibtex-completion-find-pdf key)))
+      (if (not pdf)
+          (bibtex-completion-open-url-or-doi (list key))
+        (cond ((> (length pdf) 1)
+               (let* ((pdf (f-uniquify-alist pdf))
+                      (choice (completing-read "File to open: " (mapcar 'cdr pdf)))
+                      (file (car (rassoc choice pdf))))
+                 (funcall bibtex-completion-pdf-open-function file)))
+              (t
+               (funcall bibtex-completion-pdf-open-function (car pdf))))))))
 
 (defun bibtex-completion-format-citation-default (keys)
   "Default formatter for keys, separates multiple keys with commas."
