@@ -512,7 +512,7 @@ appended to the requested entry."
     (mapc #'insert-file-contents
           (bibtex-completion-normalize-bibliography 'bibtex))
     (goto-char (point-min))
-    (if (re-search-forward (concat "^@\\(" parsebib--bibtex-identifier
+    (if (re-search-forward (concat "^[ \t]*@\\(" parsebib--bibtex-identifier
                                    "\\)[[:space:]]*[\(\{][[:space:]]*"
                                    (regexp-quote entry-key) "[[:space:]]*,")
                            nil t)
