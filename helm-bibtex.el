@@ -24,7 +24,14 @@
 ;; bibtex-completion backend.
 ;;
 ;; News:
-;; - 10-11-2016: Layout of search results can now be customized.
+;; - 11/24/2016: Added support for bare relative paths to PDF
+;;   files.  Concatenates the path in the `file' field to all paths
+;;   in `bibtex-completion-library-path'.
+;; - 11/24/2016: Added citation function for APA-style citations in org
+;;   files.  See `bibtex-completion-format-citation-org-apa-link-to-PDF'.
+;; - 11/18/2016: Added support for bibliographies in org-bibtex
+;;   format.  See docstring of `bibtex-completion-bibliography'.
+;; - 11/10/2016: Layout of search results can now be customized.
 ;; - 04/18/2016: Improved support for Mendely/Jabref/Zotero way of
 ;;   referencing PDFs.
 ;; - 04/06/2016: Generic functions are factored out into a backend for
@@ -134,7 +141,7 @@ nil, the window will split below."
            overflow-newline-into-fringe
            (/= (frame-parameter nil 'left-fringe) 0)
            (/= (frame-parameter nil 'right-fringe) 0))
-      (window-body-width)
+      (1- (window-body-width))
     (1- (window-body-width))))
 
 (defun helm-bibtex-candidates-formatter (candidates _)
@@ -150,8 +157,8 @@ nil, the window will split below."
 (defmacro helm-bibtex-helmify-action (action name)
   "Wraps the function ACTION in another function named NAME which
 passes the candidates marked in helm to ACTION.  Also uses
-with-helm-current-buffer such that when ACTION inserts text
-it comes out in the right buffer."
+with-helm-current-buffer such that when ACTION inserts text it
+comes out in the right buffer."
   `(defun ,name (_)
      (let ((keys (helm-marked-candidates :with-wildcard t)))
        (with-helm-current-buffer
@@ -218,7 +225,8 @@ reread."
 (defun helm-bibtex-with-local-bibliography (&optional arg)
   "Search BibTeX entries with local bibliography.
 
-With a prefix ARG the cache is invalidated and the bibliography reread."
+With a prefix ARG the cache is invalidated and the bibliography
+reread."
   (interactive "P")
   (let ((bibtex-completion-bibliography (bibtex-completion-find-local-bibliography)))
     (helm-bibtex arg)))

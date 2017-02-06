@@ -7,6 +7,9 @@ Ivy-bibtex: [[http://melpa.org/#/ivy-bibtex][http://melpa.org/packages/ivy-bibte
 Helm-bibtex and ivy-bibtex allow you to search and manage your BibTeX bibliography.  They both share the same generic backend, bibtex-completion, but one uses the Helm completion framework and the other Ivy as a front-end.
 
 * News
+- 2016-11-24: Added support for bare relative paths to PDF files.  Concatenates the path in the ~file~ field to all paths in ~bibtex-completion-library-path~.
+- 2016-11-24: Added citation function for APA-style citations in org files.  See ~bibtex-completion-format-citation-org-apa-link-to-PDF~.
+- 2016-11-18: Added support for bibliographies in org-bibtex format.  See [[#minimal-configuration][here]] for details.  Thanks to @ericdanan for this contribution.
 - 2016-11-10: Layout of search results can now be customized.  See here [[#customize-layout-of-search-results][here]] for details.
 - 2016-10-07: Added bibtex-completion-open-any, made it the default action for helm-bibtex and ivy-bibtex
 - 2016-09-29: Performance improvements in ivy-bibtex.  *Note:* If you changed your default action in ivy-bibtex, you have to rename the action, e.g. from ~bibtex-completion-insert-key~ to ~ivy-bibtex-insert-key~.  See [[#change-the-default-action][here]] for details.
@@ -63,7 +66,18 @@ When using helm-bibtex or ivy-bibtex, make sure that helm or ivy is correctly co
 A minimal configuration involves telling bibtex-completion where your bibliographies can be found:
 
 #+BEGIN_SRC emacs-lisp
-(setq bibtex-completion-bibliography '("/path/to/bibtex-file-1.bib" "/path/to/bibtex-file-2.bib"))
+(setq bibtex-completion-bibliography
+      '("/path/to/bibtex-file-1.bib"
+        "/path/to/bibtex-file-2.bib"))
+#+END_SRC
+
+Org-bibtex users can also specify org-mode bibliography files, in which case it will be assumed that a BibTeX file exists with the same name and extension bib instead of org.  If the bib file has a different name, use a cons cell ~("orgfile.org" . “bibfile.bib")~ instead:
+
+#+BEGIN_SRC emacs-lisp
+(setq bibtex-completion-bibliography
+      '("/path/to/bibtex-file-1.bib"
+        "/path/to/org-bibtex-file.org"
+        ("/path/to/org-bibtex-file2.org" . "/path/to/bibtex-file.bib")))
 #+END_SRC
 
 * Basic configuration (recommended)
