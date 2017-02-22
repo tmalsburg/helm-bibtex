@@ -99,7 +99,7 @@ directory.  In the latter case, bibtex-completion assumes that the
 names of the note files are composed of the BibTeX-key plus a
 suffix that is specified in `bibtex-completion-notes-extension'."
   :group 'bibtex-completion
-  :type '(choice file directory))
+  :type '(choice file directory (const nil)))
 
 (defcustom bibtex-completion-notes-template-multiple-files
   "#+TITLE: Notes on: ${author} (${year}): ${title}\n\n"
