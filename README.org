@@ -142,7 +142,7 @@ which means that all entry types are presented in the same way: authors, title, 
       (t             . "${=has-pdf=:1}${=has-note=:1} ${=type=:3} ${year:4} ${author:36} ${title:*}")))
 #+END_SRC
 
-For this to work, you have to add ~journal~ and ~booktitle~ to ~bibtex-completion~additional-search-fields~.  See next section.
+For this to work, you have to add ~journal~ and ~booktitle~ to ~bibtex-completion-additional-search-fields~.  See next section.
 
 ** Fields used for searching
 
