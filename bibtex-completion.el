@@ -99,7 +99,7 @@ directory.  In the latter case, bibtex-completion assumes that the
 names of the note files are composed of the BibTeX-key plus a
 suffix that is specified in `bibtex-completion-notes-extension'."
   :group 'bibtex-completion
-  :type '(choice file directory))
+  :type '(choice file directory (const nil)))
 
 (defcustom bibtex-completion-notes-template-multiple-files
   "#+TITLE: Notes on: ${author} (${year}): ${title}\n\n"
@@ -218,13 +218,13 @@ browser in `helm-browse-url-default-browser-alist'"
   "The fields that are used for searching in addition to author,
 editor, title, year, BibTeX key, and entry type."
   :group 'bibtex-completion
-  :type 'list)
+  :type '(repeat string))
 
 (defcustom bibtex-completion-no-export-fields nil
   "A list of fields that should be ignored when exporting BibTeX
 entries."
   :group 'bibtex-completion
-  :type 'list)
+  :type '(repeat string))
 
 (defcustom bibtex-completion-cite-commands '("cite" "Cite" "parencite"
 "Parencite" "footcite" "footcitetext" "textcite" "Textcite"

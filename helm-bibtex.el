@@ -116,8 +116,7 @@
  for oldvar = (intern (concat "helm-bibtex-" var))
  for newvar = (intern (concat "bibtex-completion-" var))
  do
- (defvaralias newvar oldvar)
- (make-obsolete-variable oldvar newvar "2016-03-20"))
+ (define-obsolete-variable-alias oldvar newvar "2016-03-20"))
 
 ;; Helm-specific configurations:
 
