@@ -380,30 +380,29 @@ actually exist. Also sets `bibtex-completion-display-formats-internal'."
                        (-flatten (list bibtex-completion-bibliography)))))
          bibtex-completion-string-cache)))
 
-(defun bibtex-completion-parse-strings ()
+(defun bibtex-completion-parse-strings (&optional ht-strings)
   "Parse the BibTeX strings listed in the current buffer and
 return a list of entries in the order in which they appeared in
-the BibTeX file."
+the BibTeX file.
+
+If HT-STRINGS is provided it is assumed to be a hash table used
+for string replacement."
   (goto-char (point-min))
   (let  ((strings (cl-loop
+                   with ht = (if ht-strings ht-strings (make-hash-table :test #'equal))
                    for entry-type = (parsebib-find-next-item)
                    while entry-type
                    if (string= (downcase entry-type) "string")
-                   collect (parsebib-read-string))))
+                   collect (let ((entry (parsebib-read-string (point) ht)))
+                             (puthash (car entry) (cdr entry) ht)
+                             entry)
+                   )))
     (-filter (lambda (x) x) strings)))
 
-(defun bibtex-completion--string-hash-table (files)
-  "Construct a hash table for string replacements found in FILES"
+(defun bibtex-completion-update-strings-ht (ht strings)
   (cl-loop
-   with entries =
-   (cl-loop
-    for file in files
-    for entries = (cddr (assoc file bibtex-completion-string-cache))
-    append entries)
-   with ht = (make-hash-table :test #'equal :size (length entries))
-   for entry in entries
-   do (puthash (car entry) (gethash (cdr entry) ht (bibtex-completion-clean-string (cdr entry))) ht)
-   finally return ht))
+   for entry in strings
+   do (puthash (car entry) (cdr entry) ht)))
 
 (defun bibtex-completion-candidates ()
   "Reads the BibTeX files and returns a list of conses, one for
@@ -412,9 +411,12 @@ containing authors, editors, title, year, type, and key of the
 entry.  This is string is used for matching.  The second element
 is the entry (only the fields listed above) as an alist."
   (let ((files (nreverse (bibtex-completion-normalize-bibliography 'bibtex)))
+        (ht-strings (make-hash-table :test #'equal))
         reparsed-files)
+
     ;; Open each bibliography file in a temporary buffer,
-    ;; check hash of bibliography and reparse if necessary:
+    ;; check hash of bibliography and mark for reparsing if necessary:
+
     (cl-loop
      for file in files
      do
@@ -423,63 +425,47 @@ is the entry (only the fields listed above) as an alist."
        (let ((bibliography-hash (secure-hash 'sha256 (current-buffer))))
          (unless (string= (cadr (assoc file bibtex-completion-cache))
                           bibliography-hash)
-           (bibtex-completion-clear-cache (list file))
-           (message "Parsing bibliography file %s ..." file)
-           (push (-cons* file
-                         bibliography-hash
-                         (bibtex-completion-parse-bibliography))
-                 bibtex-completion-cache)
-
-           (bibtex-completion-clear-string-cache (list file))
-           (push (-cons* file
-                         bibliography-hash
-                         (bibtex-completion-parse-strings))
-                 bibtex-completion-string-cache)
-
            ;; Mark file as reparsed.
            ;; This will be useful to resolve cross-references:
            (push file reparsed-files)))))
 
+    ;; reparse if necessary
+
+    (when reparsed-files
+      (cl-loop
+       for file in files
+       do
+       (with-temp-buffer
+         (insert-file-contents file)
+         (let ((bibliography-hash (secure-hash 'sha256 (current-buffer))))
+           (if (not (member file reparsed-files))
+               (bibtex-completion-update-strings-ht ht-strings
+                                                    (cddr (assoc file bibtex-completion-string-cache)))
+             (progn
+               (message "Parsing bibliography file %s ..." file)
+               (bibtex-completion-clear-string-cache (list file))
+               (push (-cons* file
+                             bibliography-hash
+                             (bibtex-completion-parse-strings ht-strings))
+                     bibtex-completion-string-cache)
+
+               (bibtex-completion-clear-cache (list file))
+               (push (-cons* file
+                             bibliography-hash
+                             (bibtex-completion-parse-bibliography ht-strings))
+                     bibtex-completion-cache))))))
+      (setf bibtex-completion-string-hash-table ht-strings))
+
     ;; If some files were reparsed, resolve cross-references:
     (when reparsed-files
-      (setf bibtex-completion-string-hash-table (bibtex-completion--string-hash-table files))
-      (message "Replacing strings ...")
-      (bibtex-completion-replace-strings files reparsed-files)
       (message "Resolving cross-references ...")
       (bibtex-completion-resolve-crossrefs files reparsed-files))
+
     ;; Finally return the list of candidates:
     (nreverse
      (cl-loop
       for file in files
       append (cddr (assoc file bibtex-completion-cache))))))
-
-(defun bibtex-completion-replace-strings-in-entry (entry ht is-candidate)
-  "Replace strings in ENTRY by looking up replacements in HT.
-
-If IS-CANDIDATE is t then ENTRY is assumed to be the output of
-bibtex-completion-make-candidate"
-  (let ((entry (-map (lambda (x)
-                       (cons (car x)
-                             (gethash (cdr x) ht (cdr x))))
-                     (if is-candidate (cdr entry) entry))))
-    (if is-candidate
-        (bibtex-completion-make-candidate entry)
-      entry)))
-
-(defun bibtex-completion-replace-strings (files reparsed-files)
-  "Replace strings in all entries for all FILES.
-
-REPARSED-FILES is a sublist of FILES which was just reparsed."
-  (cl-loop
-   for file in files
-   for entries = (cddr (assoc file bibtex-completion-cache))
-   do (setf
-       (cddr (assoc file bibtex-completion-cache))
-       (cl-loop
-        for entry in entries
-        collect (bibtex-completion-replace-strings-in-entry entry
-                                                            bibtex-completion-string-hash-table
-                                                            (not (member file reparsed-files)))))))
 
 (defun bibtex-completion-resolve-crossrefs (files reparsed-files)
   "Expand all entries with fields from cross-referenced entries
@@ -510,7 +496,7 @@ reparsed whereas the other files in FILES were up-to-date."
    ;; The file was not reparsed.
    ;; Resolve crossrefs then make candidates for the entries with a crossref field:
    do (setf
-       (cddr (assoc file bibtex-completion-cache)) 
+       (cddr (assoc file bibtex-completion-cache))
        (cl-loop
         for entry in entries
         ;; Entries are \(STRING . ALIST\) conses.
@@ -556,10 +542,12 @@ whereas the other files in FILES were up-to-date."
          (s-join " " (-map #'cdr entry)))
         entry))
 
-(defun bibtex-completion-parse-bibliography ()
+(defun bibtex-completion-parse-bibliography (&optional ht-strings)
   "Parse the BibTeX entries listed in the current buffer and
 return a list of entries in the order in which they appeared in
-the BibTeX file. Also do some preprocessing of the entries."
+the BibTeX file. Also do some preprocessing of the entries.
+
+If HT-STRINGS is provided it is assumed to be a hash table."
   (goto-char (point-min))
   (cl-loop
    with fields = (append '("title" "year" "crossref")
@@ -568,7 +556,7 @@ the BibTeX file. Also do some preprocessing of the entries."
    for entry-type = (parsebib-find-next-item)
    while entry-type
    unless (member-ignore-case entry-type '("preamble" "string" "comment"))
-   collect (let* ((entry (parsebib-read-entry entry-type))
+   collect (let* ((entry (parsebib-read-entry entry-type (point) ht-strings))
                   (fields (cons (if (assoc-string "author" entry 'case-fold)
                                     "author"
                                   "editor")
@@ -584,10 +572,8 @@ record with that key.  Fields from crossreferenced entries are
 appended to the requested entry."
   (let* ((entry (bibtex-completion-get-entry1 entry-key))
          (crossref (bibtex-completion-get-value "crossref" entry))
-         (crossref (gethash crossref bibtex-completion-string-hash-table crossref))
          (crossref (when crossref (bibtex-completion-get-entry1 crossref))))
-    (bibtex-completion-replace-strings-in-entry
-     (bibtex-completion-remove-duplicated-fields (append entry crossref)) bibtex-completion-string-hash-table nil)))
+    (bibtex-completion-remove-duplicated-fields (append entry crossref))))
 
 (defun bibtex-completion-get-entry1 (entry-key &optional do-not-find-pdf)
   (with-temp-buffer
@@ -600,7 +586,7 @@ appended to the requested entry."
                            nil t)
         (let ((entry-type (match-string 1)))
           (reverse (bibtex-completion-prepare-entry
-                    (parsebib-read-entry entry-type) nil do-not-find-pdf)))
+                    (parsebib-read-entry entry-type (point) bibtex-completion-string-hash-table) nil do-not-find-pdf)))
       (progn
         (display-warning :warning (concat "Bibtex-completion couldn't find entry with key \"" entry-key "\"."))
         nil))))
@@ -623,17 +609,17 @@ file is specified, or if the specified file does not exist, or if
         (let ((value (replace-regexp-in-string "\\([^\\]\\);" "\\1\^^" value)))
           (cl-loop  ; Looping over the files:
            for record in (s-split "\^^" value)
-           ; Replace unescaped colons by field separator:
+                                        ; Replace unescaped colons by field separator:
            for record = (replace-regexp-in-string "\\([^\\]\\|^\\):" "\\1\^_" record)
-           ; Unescape stuff:
+                                        ; Unescape stuff:
            for record = (replace-regexp-in-string "\\\\\\(.\\)" "\\1" record)
-           ; Now we can safely split:
+                                        ; Now we can safely split:
            for record = (s-split "\^_" record)
            for file-name = (nth 0 record)
            for path = (or (nth 1 record) "")
            for paths = (if (s-match "^[A-Z]:" path)
                            (list path)                 ; Absolute Windows path
-                                                       ; Something else:
+                                        ; Something else:
                          (append
                           (list
                            path
