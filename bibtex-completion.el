@@ -1086,7 +1086,7 @@ line."
       (widen)
       (show-all)
       (goto-char (point-min))
-      (if (re-search-forward (format bibtex-completion-notes-key-pattern key) nil t)
+      (if (re-search-forward (format bibtex-completion-notes-key-pattern (regexp-quote key)) nil t)
                                         ; Existing entry found:
           (when (eq major-mode 'org-mode)
             (org-narrow-to-subtree)
