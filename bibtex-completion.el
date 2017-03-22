@@ -702,11 +702,23 @@ matching PDFs for an entry, the first is opened."
       (-each it bibtex-completion-pdf-open-function)
     (message "No PDF(s) found.")))
 
+(defun bibtex-completion-extract-url (field entry)
+  "Extract URL from FIELD of ENTRY.
+
+Return nil if no URL is found."
+  (let* ((note (bibtex-completion-get-value field entry)))
+    (if note
+        (when (string-match "https?://" note)
+          (replace-regexp-in-string ".*\\(https?://[^} ]+\\).*" "\\1" note))
+      note)))
+
 (defun bibtex-completion-open-url-or-doi (keys)
   "Open the associated URL or DOI in a browser."
   (dolist (key keys)
     (let* ((entry (bibtex-completion-get-entry key))
-           (url (bibtex-completion-get-value "url" entry))
+           (url (or
+                 (bibtex-completion-get-value "url" entry)
+                 (bibtex-completion-extract-url "note" entry)))
            (doi (bibtex-completion-get-value "doi" entry))
            (browse-url-browser-function
             (or bibtex-completion-browser-function
