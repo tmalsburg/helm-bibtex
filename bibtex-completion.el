@@ -965,7 +965,7 @@ guidelines.  Return DEFAULT if FIELD is not present in ENTRY."
                  ((= l 1) (car authors))
                  ((< l 8) (concat (s-join ", " (-butlast authors))
                                   ", & " (-last-item authors)))
-                 (t (concat (s-join ", " (-slice authors 1 8)) ", …"))))))
+                 (t (concat (s-join ", " (-slice authors 0 7)) ", …"))))))
 
 (defun bibtex-completion-apa-format-editors (value)
   (cl-loop for a in (s-split " and " value t)
