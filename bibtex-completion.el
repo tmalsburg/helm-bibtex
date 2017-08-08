@@ -423,7 +423,7 @@ reparsed whereas the other files in FILES were up-to-date."
                      (bibtex-completion-remove-duplicated-fields
                       ;; Insert an empty field so we can discard the crossref info if needed:
                       (append entry
-                              (acons "" ""
+                              (cl-acons "" ""
                                      (gethash (downcase crossref) entry-hash))))
                    entry))))
    else
@@ -441,7 +441,7 @@ reparsed whereas the other files in FILES were up-to-date."
                      (bibtex-completion-remove-duplicated-fields
                       ;; Discard crossref info and resolve crossref again:
                       (append (--take-while (> (length (car it)) 0) entry-alist)
-                              (acons "" ""
+                              (cl-acons "" ""
                                      (gethash (downcase crossref) entry-hash)))))
                   entry)))))
 
