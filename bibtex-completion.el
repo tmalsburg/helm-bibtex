@@ -1191,11 +1191,8 @@ BibTeX files. If this fails, return
            (string= (or (f-ext (buffer-file-name)) "") "bib")
            (list (buffer-file-name)))
       (and (buffer-file-name)
-           (require 'reftex-parse nil t)
-           (reftex-locate-bibliography-files
-            (if (fboundp 'TeX-master-directory)
-                (TeX-master-directory)
-              (file-name-directory (buffer-file-name)))))
+           (require 'reftex-cite nil t)
+           (reftex-get-bibfile-list))
       bibtex-completion-bibliography))
 
 (provide 'bibtex-completion)
