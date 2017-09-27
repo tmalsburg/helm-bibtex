@@ -136,10 +136,18 @@ reread."
   (when arg
     (bibtex-completion-clear-cache))
   (bibtex-completion-init)
-  (ivy-read "BibTeX Items: "
-            (bibtex-completion-candidates)
-            :caller 'ivy-bibtex
-            :action ivy-bibtex-default-action))
+  (let* ((candidates (bibtex-completion-candidates))
+         (key (bibtex-completion-key-at-point))
+         (preselect (and key
+                         (cl-position-if (lambda (cand)
+                                           (member (cons "=key=" key)
+                                                   (cdr cand)))
+                                         candidates))))
+    (ivy-read "BibTeX Items: "
+              candidates
+              :preselect preselect
+              :caller 'ivy-bibtex
+              :action ivy-bibtex-default-action)))
 
 ;;;###autoload
 (defun ivy-bibtex-with-local-bibliography (&optional arg)
