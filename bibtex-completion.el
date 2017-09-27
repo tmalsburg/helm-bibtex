@@ -1192,7 +1192,7 @@ BibTeX files. If this fails, return
            (list (buffer-file-name)))
       (and (buffer-file-name)
            (require 'reftex-cite nil t)
-           (reftex-get-bibfile-list))
+           (ignore-errors (reftex-get-bibfile-list)))
       bibtex-completion-bibliography))
 
 (provide 'bibtex-completion)
