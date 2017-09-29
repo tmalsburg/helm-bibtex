@@ -1185,15 +1185,13 @@ editing."
   "Return a list of BibTeX files associated with the current
 file. If the current file is a BibTeX file, return this
 file. Otherwise, try to use `reftex' to find the associated
-BibTeX files. If this fails, return
-`bibtex-completion-bibliography'."
+BibTeX files. If this fails, return nil."
   (or (and (buffer-file-name)
            (string= (or (f-ext (buffer-file-name)) "") "bib")
            (list (buffer-file-name)))
       (and (buffer-file-name)
            (require 'reftex-cite nil t)
-           (reftex-get-bibfile-list))
-      bibtex-completion-bibliography))
+           (ignore-errors (reftex-get-bibfile-list)))))
 
 (defun bibtex-completion-key-at-point ()
   "Return the key of the BibTeX entry at point. If the current
