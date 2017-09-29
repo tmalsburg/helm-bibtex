@@ -179,8 +179,7 @@ comes out in the right buffer."
 
 (defvar helm-source-bibtex
   (helm-build-sync-source "BibTeX entries"
-    :init 'bibtex-completion-init
-    :candidates 'bibtex-completion-candidates
+    :candidates 'helm-bibtex-candidates
     :filtered-candidate-transformer 'helm-bibtex-candidates-formatter
     :action (helm-make-actions
              "Open PDF, URL or DOI"       'helm-bibtex-open-any
@@ -215,10 +214,23 @@ reread."
   (interactive "P")
   (when arg
     (bibtex-completion-clear-cache))
-  (helm :sources (list helm-source-bibtex helm-source-fallback-options)
-        :full-frame helm-bibtex-full-frame
-        :buffer "*helm bibtex*"
-        :candidate-number-limit 500))
+  (bibtex-completion-init)
+  (let* ((candidates (bibtex-completion-candidates))
+         (key (bibtex-completion-key-at-point))
+         (preselect (and key
+                         (cl-position-if (lambda (cand)
+                                           (member (cons "=key=" key)
+                                                   (cdr cand)))
+                                         candidates))))
+    (helm :sources (list helm-source-bibtex helm-source-fallback-options)
+          :full-frame helm-bibtex-full-frame
+          :buffer "*helm bibtex*"
+          :preselect (lambda ()
+                       (and preselect
+                            (> preselect 0)
+                            (helm-next-line preselect)))
+          :candidate-number-limit (max 500 (1+ (or preselect 0)))
+          :bibtex-candidates candidates)))
 
 ;;;###autoload
 (defun helm-bibtex-with-local-bibliography (&optional arg)
