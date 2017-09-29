@@ -225,8 +225,10 @@ reread."
     (helm :sources (list helm-source-bibtex helm-source-fallback-options)
           :full-frame helm-bibtex-full-frame
           :buffer "*helm bibtex*"
-          :preselect  (lambda ()
-                        (and preselect (helm-next-line preselect)))
+          :preselect (lambda ()
+                       (and preselect
+                            (> preselect 0)
+                            (helm-next-line preselect)))
           :candidate-number-limit (max 500 (1+ (or preselect 0)))
           :bibtex-candidates candidates)))
 
