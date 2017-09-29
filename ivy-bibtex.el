@@ -127,11 +127,15 @@ expression."
             :action (lambda (candidate) (bibtex-completion-fallback-action (cdr candidate) search-expression))))
 
 ;;;###autoload
-(defun ivy-bibtex (&optional arg)
+(defun ivy-bibtex (&optional arg local-bib)
   "Search BibTeX entries using ivy.
 
 With a prefix ARG the cache is invalidated and the bibliography
-reread."
+reread.
+
+If LOCAL-BIB is non-nil, display that the BibTeX entries are read
+from the local bibliography. This is set internally by
+`ivy-bibtex-with-local-bibliography'."
   (interactive "P")
   (when arg
     (bibtex-completion-clear-cache))
@@ -143,7 +147,7 @@ reread."
                                            (member (cons "=key=" key)
                                                    (cdr cand)))
                                          candidates))))
-    (ivy-read "BibTeX Items: "
+    (ivy-read (format "BibTeX entries%s: " (if local-bib " (local)" ""))
               candidates
               :preselect preselect
               :caller 'ivy-bibtex
@@ -156,8 +160,10 @@ reread."
 With a prefix ARG the cache is invalidated and the bibliography
 reread."
   (interactive "P")
-  (let ((bibtex-completion-bibliography (bibtex-completion-find-local-bibliography)))
-    (ivy-bibtex arg)))
+  (let* ((local-bib (bibtex-completion-find-local-bibliography))
+         (bibtex-completion-bibliography (or local-bib
+                                             bibtex-completion-bibliography)))
+    (ivy-bibtex arg local-bib)))
 
 (ivy-set-display-transformer
  'ivy-bibtex

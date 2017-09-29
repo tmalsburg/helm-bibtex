@@ -179,6 +179,8 @@ comes out in the right buffer."
 
 (defvar helm-source-bibtex
   (helm-build-sync-source "BibTeX entries"
+    :header-name (lambda (name)
+                   (format "%s%s: " name (if helm-bibtex-local-bib " (local)" "")))
     :candidates 'helm-bibtex-candidates
     :filtered-candidate-transformer 'helm-bibtex-candidates-formatter
     :action (helm-make-actions
@@ -206,11 +208,15 @@ comes out in the right buffer."
 ;; Helm-bibtex command:
 
 ;;;###autoload
-(defun helm-bibtex (&optional arg)
+(defun helm-bibtex (&optional arg local-bib)
   "Search BibTeX entries.
 
 With a prefix ARG, the cache is invalidated and the bibliography
-reread."
+reread.
+
+If LOCAL-BIB is non-nil, display that the BibTeX entries are read
+from the local bibliography. This is set internally by
+`helm-bibtex-with-local-bibliography'."
   (interactive "P")
   (when arg
     (bibtex-completion-clear-cache))
@@ -230,7 +236,8 @@ reread."
                             (> preselect 0)
                             (helm-next-line preselect)))
           :candidate-number-limit (max 500 (1+ (or preselect 0)))
-          :bibtex-candidates candidates)))
+          :bibtex-candidates candidates
+          :bibtex-local-bib local-bib)))
 
 ;;;###autoload
 (defun helm-bibtex-with-local-bibliography (&optional arg)
@@ -239,8 +246,10 @@ reread."
 With a prefix ARG the cache is invalidated and the bibliography
 reread."
   (interactive "P")
-  (let ((bibtex-completion-bibliography (bibtex-completion-find-local-bibliography)))
-    (helm-bibtex arg)))
+  (let* ((local-bib (bibtex-completion-find-local-bibliography))
+         (bibtex-completion-bibliography (or local-bib
+                                             bibtex-completion-bibliography)))
+    (helm-bibtex arg local-bib)))
 
 (provide 'helm-bibtex)
 
