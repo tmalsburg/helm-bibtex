@@ -296,14 +296,13 @@ editor names."
   :group 'bibtex-completion
   :type '(alist :key-type symbol :value-type string))
 
-(defcustom bibtex-completion-cross-referenced-entry-types '("proceedings" "book")
+(defvar bibtex-completion-cross-referenced-entry-types
+  '("proceedings" "mvproceedings" "book" "mvbook" "collection" "mvcollection")
   "The list of potentially cross-referenced entry types (in
-  lowercase). Only entries of these types will be checked in
-  order to resolve cross-references. The \"proceedings\" and
-  \"book\" types are usually sufficient; adding more types can
-  slow down resolution for large biblioraphies."
-  :group 'bibtex-completion
-  :type '(choice string (repeat string)))
+  lowercase). Only entries of these types are checked in
+  order to resolve cross-references. The default list is usually
+  sufficient; adding more types can slow down resolution for
+  large biblioraphies.")
 
 (defvar bibtex-completion-display-formats-internal nil
   "Stores `bibtex-completion-display-formats' together with the
@@ -455,9 +454,12 @@ reparsed whereas the other files in FILES were up-to-date."
                   entry)))))
 
 (defun bibtex-completion-make-entry-hash (files reparsed-files)
-  "Return a hash table of all bibliography entries in FILES,
+  "Return a hash table of all potentially cross-referenced bibliography entries in FILES,
 assuming that only those files in REPARSED-FILES were reparsed
-whereas the other files in FILES were up-to-date."
+whereas the other files in FILES were up-to-date. Only entries
+whose type belongs to
+`bibtex-completion-cross-referenced-entry-types' are included in
+the hash table."
   (cl-loop
    with entries =
      (cl-loop
