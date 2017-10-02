@@ -942,6 +942,8 @@ guidelines.  Return DEFAULT if FIELD is not present in ENTRY."
          ;; the journal in its title.
          ("pages" (s-join "–" (s-split "[^0-9]+" value t)))
          ("doi" (s-concat " http://dx.doi.org/" value))
+         ("year" (or value
+                     (car (split-string (bibtex-completion-get-value "date" entry) "-"))))
          (_ value))
       "")))
 
