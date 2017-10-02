@@ -296,6 +296,14 @@ editor names."
   :group 'bibtex-completion
   :type '(alist :key-type symbol :value-type string))
 
+(defvar bibtex-completion-cross-referenced-entry-types
+  '("proceedings" "mvproceedings" "book" "mvbook" "collection" "mvcollection")
+  "The list of potentially cross-referenced entry types (in
+  lowercase). Only entries of these types are checked in
+  order to resolve cross-references. The default list is usually
+  sufficient; adding more types can slow down resolution for
+  large biblioraphies.")
+
 (defvar bibtex-completion-display-formats-internal nil
   "Stores `bibtex-completion-display-formats' together with the
 \"used width\" of each format string. This is set internally.")
@@ -446,9 +454,12 @@ reparsed whereas the other files in FILES were up-to-date."
                   entry)))))
 
 (defun bibtex-completion-make-entry-hash (files reparsed-files)
-  "Return a hash table of all bibliography entries in FILES,
+  "Return a hash table of all potentially cross-referenced bibliography entries in FILES,
 assuming that only those files in REPARSED-FILES were reparsed
-whereas the other files in FILES were up-to-date."
+whereas the other files in FILES were up-to-date. Only entries
+whose type belongs to
+`bibtex-completion-cross-referenced-entry-types' are included in
+the hash table."
   (cl-loop
    with entries =
      (cl-loop
@@ -463,10 +474,8 @@ whereas the other files in FILES were up-to-date."
    with ht = (make-hash-table :test #'equal :size (length entries))
    for entry in entries
    for key = (bibtex-completion-get-value "=key=" entry)
-   ;; Other types than proceedings and books can be
-   ;; cross-referenced, but I suppose that isn't really used:
    if (member (downcase (bibtex-completion-get-value "=type=" entry))
-              '("proceedings" "book"))
+              bibtex-completion-cross-referenced-entry-types)
    do (puthash (downcase key) entry ht)
    finally return ht))
 
