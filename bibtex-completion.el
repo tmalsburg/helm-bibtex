@@ -482,17 +482,21 @@ return a list of entries in the order in which they appeared in
 the BibTeX file. Also do some preprocessing of the entries."
   (goto-char (point-min))
   (cl-loop
-   with fields = (append '("title" "year" "crossref")
+   with fields = (append '("title" "crossref")
                          (-map (lambda (it) (if (symbolp it) (symbol-name it) it))
                                bibtex-completion-additional-search-fields))
    for entry-type = (parsebib-find-next-item)
    while entry-type
    unless (member-ignore-case entry-type '("preamble" "string" "comment"))
    collect (let* ((entry (parsebib-read-entry entry-type))
-                  (fields (cons (if (assoc-string "author" entry 'case-fold)
-                                    "author"
-                                  "editor")
-                                fields)))
+                  (fields (append
+                           (list (if (assoc-string "author" entry 'case-fold)
+                                     "author"
+                                   "editor")
+                                 (if (assoc-string "date" entry 'case-fold)
+                                     "date"
+                                   "year"))
+                           fields)))
              (-map (lambda (it)
                      (cons (downcase (car it)) (cdr it)))
                    (bibtex-completion-prepare-entry entry fields)))))
@@ -656,6 +660,9 @@ the variable `bibtex-completion-display-formats'."
          (when (and (string= field-name "author")
                     (not field-value))
            (setq field-value (bibtex-completion-get-value "editor" entry)))
+         (when (and (string= field-name "year")
+                    (not field-value))
+           (setq field-value (car (split-string (bibtex-completion-get-value "date" entry) "-"))))
          (setq field-value (bibtex-completion-clean-string (or field-value " ")))
          (when (member field-name '("author" "editor"))
            (setq field-value (bibtex-completion-shorten-authors field-value)))
@@ -833,7 +840,8 @@ format.  Uses first matching PDF if several are available."
                 for author = (bibtex-completion-shorten-authors
                               (or (bibtex-completion-get-value "author" entry)
                                   (bibtex-completion-get-value "editor" entry)))
-                for year = (bibtex-completion-get-value "year" entry)
+                for year = (or (bibtex-completion-get-value "year" entry)
+                               (car (split-string (bibtex-completion-get-value "date" entry) "-")))
                 for pdf = (car (bibtex-completion-find-pdf key))
                 if pdf
                   collect (format "[[file:%s][%s (%s)]]" pdf author year)
@@ -934,6 +942,8 @@ guidelines.  Return DEFAULT if FIELD is not present in ENTRY."
          ;; the journal in its title.
          ("pages" (s-join "–" (s-split "[^0-9]+" value t)))
          ("doi" (s-concat " http://dx.doi.org/" value))
+         ("year" (or value
+                     (car (split-string (bibtex-completion-get-value "date" entry) "-"))))
          (_ value))
       "")))
 
