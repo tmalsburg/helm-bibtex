@@ -7,6 +7,7 @@ Ivy-bibtex: [[http://melpa.org/#/ivy-bibtex][http://melpa.org/packages/ivy-bibte
 Helm-bibtex and ivy-bibtex allow you to search and manage your BibTeX bibliography.  They both share the same generic backend, bibtex-completion, but one uses the Helm completion framework and the other Ivy as a front-end.
 
 * News
+- 2017-10-02: Use date field if year is not defined.
 - 2017-09-29: If there is a BibTeX entry, citation macro, or org-bibtex entry at point, the corresponding publication will be pre-selected in helm-bibtex and ivy-bibtex giving quick access to PDFs and other functions.
 - 2016-11-24: Added support for bare relative paths to PDF files.  Concatenates the path in the ~file~ field to all paths in ~bibtex-completion-library-path~.
 - 2016-11-24: Added citation function for APA-style citations in org files.  See ~bibtex-completion-format-citation-org-apa-link-to-PDF~.
