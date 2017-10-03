@@ -671,7 +671,7 @@ the variable `bibtex-completion-display-formats'."
            (setq field-value (bibtex-completion-get-value "editor" entry)))
          (when (and (string= field-name "year")
                     (not field-value))
-           (setq field-value (car (split-string (bibtex-completion-get-value "date" entry) "-"))))
+           (setq field-value (car (split-string (bibtex-completion-get-value "date" entry "") "-"))))
          (setq field-value (bibtex-completion-clean-string (or field-value " ")))
          (when (member field-name '("author" "editor"))
            (setq field-value (bibtex-completion-shorten-authors field-value)))
@@ -850,7 +850,7 @@ format.  Uses first matching PDF if several are available."
                               (or (bibtex-completion-get-value "author" entry)
                                   (bibtex-completion-get-value "editor" entry)))
                 for year = (or (bibtex-completion-get-value "year" entry)
-                               (car (split-string (bibtex-completion-get-value "date" entry) "-")))
+                               (car (split-string (bibtex-completion-get-value "date" entry "") "-")))
                 for pdf = (car (bibtex-completion-find-pdf key))
                 if pdf
                   collect (format "[[file:%s][%s (%s)]]" pdf author year)
@@ -952,7 +952,7 @@ guidelines.  Return DEFAULT if FIELD is not present in ENTRY."
          ("pages" (s-join "–" (s-split "[^0-9]+" value t)))
          ("doi" (s-concat " http://dx.doi.org/" value))
          ("year" (or value
-                     (car (split-string (bibtex-completion-get-value "date" entry) "-"))))
+                     (car (split-string (bibtex-completion-get-value "date" entry "") "-"))))
          (_ value))
       "")))
 
