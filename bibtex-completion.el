@@ -1114,7 +1114,7 @@ defined.  Surrounding curly braces are stripped."
                                           bibtex-completion-no-export-fields)
                              '("=type=" "=key=" "=has-pdf=" "=has-note=" "crossref")))
              concat
-             (format "  %s = %s,\n" name value)))))
+             (format "  %s = {%s},\n" name value)))))
 
 (defun bibtex-completion-add-PDF-attachment (keys)
   "Attach the PDFs of the selected entries where available."
