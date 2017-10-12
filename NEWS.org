@@ -3,6 +3,39 @@
 This file lists changes that are visible to users (such as feature
 additions) but no bug fixes and code clean-ups.
 
+** [2017-10-10 Tue]
+- Added support for ~@string~ constants.  Thanks to @malb.
+
+** [2017-10-02 Mon]
+- Use date field if year is not defined.  Thanks to @ericdanan.
+
+** [2017-09-29 Fri]
+- If there is a BibTeX entry, citation macro, or org-bibtex entry at
+  point, the corresponding publication will be pre-selected in
+  helm-bibtex and ivy-bibtex giving quick access to PDFs and other
+  functions.  Thanks to @ericdanan.
+
+** [2016-11-24 Thu]
+- Added support for bare relative paths to PDF files.  Concatenates
+  the path in the ~file~ field to all paths in
+  ~bibtex-completion-library-path~.
+
+** [2016-11-24 Thu]
+- Added citation function for APA-style citations in org files.  See
+  ~bibtex-completion-format-citation-org-apa-link-to-PDF~.
+
+** [2016-11-18 Fri]
+- Added support for bibliographies in org-bibtex format.  See [[#minimal-configuration][here]] for
+  details.  Thanks to @ericdanan for this contribution.
+
+** [2016-11-10 Thu]
+- Layout of search results can now be customized.  See here [[#customize-layout-of-search-results][here]] for
+  details.
+
+** [2016-10-07 Fri]
+- Added bibtex-completion-open-any, made it the default action for
+  helm-bibtex and ivy-bibtex
+
 ** [2016-09-29 Thu]
 - Performance improvements in ivy-bibtex.  *Note:* If you changed your
   default action in ivy-bibtex, you have to rename the action,
