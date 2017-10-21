@@ -7,6 +7,7 @@ Ivy-bibtex: [[http://melpa.org/#/ivy-bibtex][http://melpa.org/packages/ivy-bibte
 Helm-bibtex and ivy-bibtex allow you to search and manage your BibTeX bibliography.  They both share the same generic backend, bibtex-completion, but one uses the Helm completion framework and the other Ivy as a front-end.
 
 * News
+- 2017-10-21: Added support for multiple PDFs or other file types.
 - 2017-10-02: Use date field if year is not defined.
 - 2017-09-29: If there is a BibTeX entry, citation macro, or org-bibtex entry at point, the corresponding publication will be pre-selected in helm-bibtex and ivy-bibtex giving quick access to PDFs and other functions.
 - 2016-11-24: Added support for bare relative paths to PDF files.  Concatenates the path in the ~file~ field to all paths in ~bibtex-completion-library-path~.
@@ -90,7 +91,7 @@ Specify where PDFs can be found:
 (setq bibtex-completion-library-path '("/path1/to/pdfs" "/path2/to/pdfs"))
 #+END_SRC
 
-Bibtex-completion assumes that the name of a PDF consists of the BibTeX key followed by the suffix ~.pdf~.  For example, if a BibTeX entry has the key ~Darwin1859~, bibtex-completion searches for ~Darwin1859.pdf~.
+Bibtex-completion assumes that the name of a PDF consists of the BibTeX key followed plus a user-defined suffix (~.pdf~ by default).  For example, if a BibTeX entry has the key ~Darwin1859~, bibtex-completion searches for ~Darwin1859.pdf~.
 
 If the BibTeX entries have a field that specifies the full path to the PDFs, that field can also be used.  For example, JabRef and Zotero store the location of PDFs in a field called ~File~:
 
@@ -185,24 +186,54 @@ Here is another example for the Linux PDF viewer Evince:
     (call-process "evince" nil 0 nil fpath)))
 #+END_SRC
 
+** Additional PDFs
+:PROPERTIES:
+:CUSTOM_ID: additional
+:END:
+
+You may store additional PDFs for a given entry, such as an annotated version of the original PDF, a file containing supplemental material, or chapter files. If the ~file~ field is used to link PDFs to entries (see section [[https://github.com/tmalsburg/helm-bibtex#pdf-files][PDF files]]), these additional PDFs can simply be added to that field.  If the action “Open PDF file” is triggered, you will then be prompted for the file to open.
+
+If the ~file~ field is not used but instead the naming scheme ~bibtex-key + .pdf~ (again see [[https://github.com/tmalsburg/helm-bibtex#pdf-files][PDF files]]), you can obtain the same behavior with:
+
+#+BEGIN_SRC emacs-lisp
+(setq bibtex-completion-find-additional-pdfs t)
+#+END_SRC
+
+All files whose name start with the bibtex key will then be associated with an entry. It is then sufficient to name your files accordingly (for example with the [[http://askubuntu.com/questions/58546/how-to-easily-rename-files-using-command-line][rename utility]]). Examples:
+
+- ~bibtex-key-annotatee.pdf~
+- ~bibtex-key-supplemental.pdf~
+- ~bibtex-key-chapter1.pdf~
+
+Note that for perfornance reasons, these additional files are only detected when triggering an action, such as "Open PDF file". When the whole bibliography is loaded, only the "main" PDF ~bibtex-key.pdf~ is detected.
+
+** Other file types than PDF
+
+If you store files in a different format than PDF, then you can set the variable ~bibtex-completion-pdf-extension~ accordingly. Example:
+
+#+BEGIN_SRC emacs-lisp
+(setq bibtex-completion-pdf-extenaion ".djvu")
+#+END_SRC
+
+If you store files in various formats, then you can specify a list instead of a single file type:
+
+#+BEGIN_SRC emacs-lisp
+(setq bibtex-completion-pdf-extenaion '(".pdf" ".djvu"))
+#+END_SRC
+
+Extensions in this list are then tried sequentially until a file is found. Beware that this can reduce performance for large bibliographies.
+
 ** Action for opening annotated PDFs
 :PROPERTIES:
 :CUSTOM_ID: annotated
 :END:
 
-Some users store two versions of each PDF, one as distributed by the journal and one containing their annotations.  If the ~file~ field is used to link PDFs to entries (see section [[https://github.com/tmalsburg/helm-bibtex#pdf-files][PDF files]]), the annotated version can simply be added to that field.  If the action “Open PDF file” is triggered, the annotated version is going to be opened along with the plain version.
-
-If the ~file~ field is not used but instead the naming scheme ~bibtex-key + .pdf~ (again see [[https://github.com/tmalsburg/helm-bibtex#pdf-files][PDF files]]), we need modify bibtex-completion.  First, name your annotated PDFs following the scheme ~bibtex-key + -annotated.pdf~ (for example with the [[http://askubuntu.com/questions/58546/how-to-easily-rename-files-using-command-line][rename utility]]) and add the following code at the end of your Emacs configuration (more precisely, somewhere after loading helm-bibtex or ivy-bibtex):
+If can define an additional action to specifically open annotated PDFs, rather than merely enabling support for multiple PDFs (see section [[#additional][Additional PDFs]]. First, name your annotated PDFs following the scheme ~bibtex-key + -annotated.pdf~ as explained in that section and add the following code at the end of your Emacs configuration (more precisely, somewhere after loading helm-bibtex or ivy-bibtex):
 
 #+BEGIN_SRC elisp
   (defun bibtex-completion-open-annotated-pdf (keys)
-    (--if-let
-	(-flatten
-	 (-map (lambda (key)
-		 (bibtex-completion-find-pdf (s-concat key "-annotated")))
-	       keys))
-	(-each it bibtex-completion-pdf-open-function)
-      (message "No PDF(s) found.")))
+    (let ((bibtex-completion-pdf-extension "-annotated.pdf"))
+      (bibtex-completion-open-pdf keys)))
 #+END_SRC
 
 *Helm-bibtex*:  Add the following after the above code:
@@ -223,7 +254,7 @@ If the ~file~ field is not used but instead the naming scheme ~bibtex-key + .pdf
    '(("P" ivy-bibtex-open-annotated-pdf "Open annotated PDF (if present)")))
 #+END_SRC
 
-This gives you an additional action for opening the annotated PDF.  A message will be displayed in the minibuffer if no such PDF was found for an entry.  See [[#change-actions][Change the available actions]] and [[#create-actions][Create new actions]] for explanations about the code.
+See [[#change-actions][Change the available actions]] and [[#create-actions][Create new actions]] for explanations about the code.
 
 ** Action for opening supplemental materials
 You can use the same approaches as described in the previous section ([[#annotated][Action for opening annotated PDFs]]).
