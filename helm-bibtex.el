@@ -24,22 +24,12 @@
 ;; bibtex-completion backend.
 ;;
 ;; News:
-;; - 11/24/2016: Added support for bare relative paths to PDF
-;;   files.  Concatenates the path in the `file' field to all paths
-;;   in `bibtex-completion-library-path'.
-;; - 11/24/2016: Added citation function for APA-style citations in org
-;;   files.  See `bibtex-completion-format-citation-org-apa-link-to-PDF'.
-;; - 11/18/2016: Added support for bibliographies in org-bibtex
-;;   format.  See docstring of `bibtex-completion-bibliography'.
-;; - 11/10/2016: Layout of search results can now be customized.
-;; - 04/18/2016: Improved support for Mendely/Jabref/Zotero way of
-;;   referencing PDFs.
-;; - 04/06/2016: Generic functions are factored out into a backend for
-;;   use with other completion frameworks like ivy.
-;; - 04/02/2016: Added support for biblio.el which is useful for
-;;   importing BibTeX from CrossRef and other sources.  See new
-;;   fallback options and the section "Importing BibTeX from CrossRef"
-;;   on the GitHub page.
+;; - 10/10/2017: We now have support for ~@string~ constants.
+;; - 10/02/2017: Use date field if year is not defined.
+;; - 09/29/2017: If there is a BibTeX entry, citation macro, or
+;;   org-bibtex entry at point, the corresponding publication will be
+;;   pre-selected in helm-bibtex and ivy-bibtex giving quick access to
+;;   PDFs and other functions.
 ;;
 ;; See NEWS.org for old news.
 ;;

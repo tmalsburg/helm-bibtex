@@ -25,23 +25,12 @@
 ;; this is the ivy version.
 ;;
 ;; News:
-;; - 11/24/2016: Added support for bare relative paths to PDF
-;;   files.  Concatenates the path in the `file' field to all paths
-;;   in `bibtex-completion-library-path'.
-;; - 11/24/2016: Added citation function for APA-style citations in org
-;;   files.  See `bibtex-completion-format-citation-org-apa-link-to-PDF'.
-;; - 11/18/2016: Added support for bibliographies in org-bibtex
-;;   format.  See docstring of `bibtex-completion-bibliography'.
-;; - 11/10/2016: Layout of search results can now be customized.
-;; - 09/29/2016: Performance improvements in ivy-bibtex.  Note: If
-;;   you changed your default action in ivy-bibtex, you have to rename
-;;   the action, e.g. from `bibtex-completion-insert-key` to
-;;   `ivy-bibtex-insert-key`.  For details see
-;;   https://github.com/tmalsburg/helm-bibtex#change-the-default-action
-;; - 09/20/2016: Added fallback options to ivy frontend.
-;; - 04/18/2016: Improved support for Mendely/Jabref/Zotero way of
-;;   referencing PDFs.
-;; - 04/12/2016: Published ivy version of helm-bibtex.
+;; - 10/10/2017: We now have support for ~@string~ constants.
+;; - 10/02/2017: Use date field if year is not defined.
+;; - 09/29/2017: If there is a BibTeX entry, citation macro, or
+;;   org-bibtex entry at point, the corresponding publication will be
+;;   pre-selected in helm-bibtex and ivy-bibtex giving quick access to
+;;   PDFs and other functions.
 ;;
 ;; See NEWS.org for old news.
 ;;
