@@ -7,7 +7,7 @@ Ivy-bibtex: [[http://melpa.org/#/ivy-bibtex][http://melpa.org/packages/ivy-bibte
 Helm-bibtex and ivy-bibtex allow you to search and manage your BibTeX bibliography.  They both share the same generic backend, bibtex-completion, but one uses the Helm completion framework and the other Ivy as a front-end.
 
 * News
-- 2017-10-21: Added support for [[#additionalpdfs][multiple PDFs]] or [[#otherfiletypesthanpdf][other file types]].
+- 2017-10-21: Added support for [[Additional PDFs][multiple PDFs]] or [[Other file types than PDF][other file types]].
 - 2017-10-10: Added support for ~@string~ constants.
 - 2017-10-02: Use date field if year is not defined.
 - 2017-09-29: If there is a BibTeX entry, citation macro, or
