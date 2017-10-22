@@ -220,9 +220,6 @@ If you store files in various formats, then you can specify a list instead of a 
 
 Extensions in this list are then tried sequentially until a file is found. Beware that this can reduce performance for large bibliographies.
 
-** Action for opening supplemental materials
-You can use the same approaches as described in the previous section ([[#annotated][Action for opening annotated PDFs]]).
-
 ** Browser used for opening URLs and DOIs
 
 By default bibtex-completion uses whatever is Emacs’ default.  However, there are a variety of alternatives (see the documentation of ~bibtex-completion-browser-function~ for a complete list).  Example:
