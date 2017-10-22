@@ -205,11 +205,8 @@ All files whose name start with the BibTeX key will then be associated with an e
 Note that for performance reasons, these additional files are only detected when triggering an action, such as "Open PDF file". When the whole bibliography is loaded, only the "main" PDF ~bibtex-key.pdf~ is detected.
 
 ** Other file types than PDF
-:PROPERTIES:
-:CUSTOM_ID: otherfiletypesthanpdf
-:END:
 
-If you store files in a different format than PDF, then you can set the variable ~bibtex-completion-pdf-extension~ accordingly. Example:
+If documents are referenced via the naming scheme ~bibtex-key.pdf~ but you are storing files in a different format than PDF, you can set the variable ~bibtex-completion-pdf-extension~ accordingly. Example:
 
 #+BEGIN_SRC emacs-lisp
 (setq bibtex-completion-pdf-extenaion ".djvu")

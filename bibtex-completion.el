@@ -74,7 +74,8 @@ systems default viewer for PDFs is used."
   possible to use another file type. It can also be a list of
   file types, which are then tried sequentially until a file is
   found. Beware that adding file types can reduce performance for
-  large bibliographies"
+  large bibliographies.  This variable has no effect if PDFs are
+  referenced via the file field."
   :group 'bibtex-completion
   :type 'string)
 
