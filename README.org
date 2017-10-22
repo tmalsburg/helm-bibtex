@@ -185,26 +185,29 @@ Here is another example for the Linux PDF viewer Evince:
 
 ** Additional PDFs
 :PROPERTIES:
-:CUSTOM_ID: additional
+:CUSTOM_ID: additionalpdfs
 :END:
 
-You may store additional PDFs for a given entry, such as an annotated version of the original PDF, a file containing supplemental material, or chapter files. If the ~file~ field is used to link PDFs to entries (see section [[https://github.com/tmalsburg/helm-bibtex#pdf-files][PDF files]]), these additional PDFs can simply be added to that field.  If the action “Open PDF file” is triggered, you will then be prompted for the file to open.
+You may store additional PDFs for a given entry, such as an annotated version of the original PDF, a file containing supplemental material, or chapter files.  If the ~file~ field is used to link PDFs to entries (see section [[https://github.com/tmalsburg/helm-bibtex#pdf-files][PDF files]]), these additional PDFs can simply be added to that field.  If the action “Open PDF file” is triggered, you will then be prompted for the file to open.
 
-If the ~file~ field is not used but instead the naming scheme ~bibtex-key + .pdf~ (again see [[https://github.com/tmalsburg/helm-bibtex#pdf-files][PDF files]]), you can obtain the same behavior with:
+If the ~file~ field is not used but instead the naming scheme ~bibtex-key~ + ~.pdf~ (again see [[https://github.com/tmalsburg/helm-bibtex#pdf-files][PDF files]]), you can obtain the same behavior with:
 
 #+BEGIN_SRC emacs-lisp
 (setq bibtex-completion-find-additional-pdfs t)
 #+END_SRC
 
-All files whose name start with the bibtex key will then be associated with an entry. It is then sufficient to name your files accordingly (for example with the [[http://askubuntu.com/questions/58546/how-to-easily-rename-files-using-command-line][rename utility]]). Examples:
+All files whose name start with the BibTeX key will then be associated with an entry.  It is then sufficient to name your files accordingly (for example with the [[http://askubuntu.com/questions/58546/how-to-easily-rename-files-using-command-line][rename utility]]). Examples:
 
-- ~bibtex-key-annotatee.pdf~
+- ~bibtex-key-annotated.pdf~
 - ~bibtex-key-supplemental.pdf~
 - ~bibtex-key-chapter1.pdf~
 
-Note that for perfornance reasons, these additional files are only detected when triggering an action, such as "Open PDF file". When the whole bibliography is loaded, only the "main" PDF ~bibtex-key.pdf~ is detected.
+Note that for performance reasons, these additional files are only detected when triggering an action, such as "Open PDF file". When the whole bibliography is loaded, only the "main" PDF ~bibtex-key.pdf~ is detected.
 
 ** Other file types than PDF
+:PROPERTIES:
+:CUSTOM_ID: otherfiletypesthanpdf
+:END:
 
 If you store files in a different format than PDF, then you can set the variable ~bibtex-completion-pdf-extension~ accordingly. Example:
 
@@ -219,39 +222,6 @@ If you store files in various formats, then you can specify a list instead of a 
 #+END_SRC
 
 Extensions in this list are then tried sequentially until a file is found. Beware that this can reduce performance for large bibliographies.
-
-** Action for opening annotated PDFs
-:PROPERTIES:
-:CUSTOM_ID: annotated
-:END:
-
-If can define an additional action to specifically open annotated PDFs, rather than merely enabling support for multiple PDFs (see section [[#additional][Additional PDFs]]. First, name your annotated PDFs following the scheme ~bibtex-key + -annotated.pdf~ as explained in that section and add the following code at the end of your Emacs configuration (more precisely, somewhere after loading helm-bibtex or ivy-bibtex):
-
-#+BEGIN_SRC elisp
-  (defun bibtex-completion-open-annotated-pdf (keys)
-    (let ((bibtex-completion-pdf-extension "-annotated.pdf"))
-      (bibtex-completion-open-pdf keys)))
-#+END_SRC
-
-*Helm-bibtex*:  Add the following after the above code:
-
-#+BEGIN_SRC elisp
-  (helm-bibtex-helmify-action bibtex-completion-open-annotated-pdf helm-bibtex-open-annotated-pdf)
-  (helm-add-action-to-source
-   "Open annotated PDF (if present)" 'helm-bibtex-open-annotated-pdf
-   helm-source-bibtex 1)
-#+END_SRC
-
-*Ivy-bibtex*:  Add the following after the above code:
-
-#+BEGIN_SRC elisp
-  (ivy-bibtex-ivify-action bibtex-completion-open-annotated-pdf ivy-bibtex-open-annotated-pdf)
-  (ivy-add-actions
-   'ivy-bibtex
-   '(("P" ivy-bibtex-open-annotated-pdf "Open annotated PDF (if present)")))
-#+END_SRC
-
-See [[#change-actions][Change the available actions]] and [[#create-actions][Create new actions]] for explanations about the code.
 
 ** Action for opening supplemental materials
 You can use the same approaches as described in the previous section ([[#annotated][Action for opening annotated PDFs]]).
