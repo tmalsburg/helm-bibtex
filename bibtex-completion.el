@@ -69,6 +69,24 @@ systems default viewer for PDFs is used."
   :group 'bibtex-completion
   :type 'function)
 
+(defcustom bibtex-completion-pdf-extension ".pdf"
+  "The extension of a BibTeX entry's \"PDF\" file. This makes it
+  possible to use another file type. It can also be a list of
+  file types, which are then tried sequentially until a file is
+  found. Beware that adding file types can reduce performance for
+  large bibliographies"
+  :group 'bibtex-completion
+  :type 'string)
+
+(defcustom bibtex-completion-find-additional-pdfs nil
+  "If non-nil, all files whose base name starts with the BibTeX
+  key and ends with `bibtex-completion-pdf-extension' are
+  considered as PDFs, not only \"<key>.<extension>\". Note that
+  for performance reasons, an entry is only marked as having a
+  PDF if \"<key>.<extension\" exists."
+  :group 'bibtex-completion
+  :type 'boolean)
+  
 (defcustom bibtex-completion-pdf-symbol "⌘"
   "Symbol used to indicate that a PDF file is available for a
 publication.  This should be a single character."
@@ -645,26 +663,52 @@ file is specified, or if the specified file does not exist, or if
            for result = (-first 'f-exists? paths)
            if (not (s-blank-str? result)) collect result)))))))
 
-(defun bibtex-completion-find-pdf-in-library (key-or-entry)
-  "Searches the directories in `bibtex-completion-library-path' for a
-PDF whose names is composed of the BibTeX key plus \".pdf\".  The
-path of the first matching PDF is returned."
+(defun bibtex-completion-find-pdf-in-library (key-or-entry &optional find-additional)
+  "Searches the directories in `bibtex-completion-library-path'
+for a PDF whose name is composed of the BibTeX key plus
+`bibtex-completion-pdf-extension'.  The path of the first matching
+PDF is returned.
+
+If FIND-ADDITIONAL is non-nil, the paths of all PDFs whose name
+starts with the BibTeX key and ends with
+`bibtex-completion-pdf-extension' are returned instead."
   (let* ((key (if (stringp key-or-entry)
                   key-or-entry
                 (bibtex-completion-get-value "=key=" key-or-entry)))
-         (path (-first 'f-file?
-                       (--map (f-join it (s-concat key ".pdf"))
-                              (-flatten (list bibtex-completion-library-path))))))
-    (when path (list path))))
+         (main-pdf (cl-loop
+                    for dir in (-flatten bibtex-completion-library-path)
+                    append (cl-loop
+                            for ext in (-flatten bibtex-completion-pdf-extension)
+                            collect (f-join dir (s-concat key ext))))))
+    (if find-additional
+        (sort ; move main pdf on top of the list if needed
+         (cl-loop
+          for dir in (-flatten bibtex-completion-library-path)
+          append (directory-files dir t
+                                  (s-concat "^" (regexp-quote key)
+                                            ".*\\("
+                                            (mapconcat 'regexp-quote
+                                                       (-flatten bibtex-completion-pdf-extension)
+                                                       "\\|")
+                                            "\\)$")))
+         (lambda (x y)
+           (and (member x main-pdf)
+                (not (member y main-pdf)))))
+      (-flatten (-first 'f-file? main-pdf)))))
 
-(defun bibtex-completion-find-pdf (key-or-entry)
+(defun bibtex-completion-find-pdf (key-or-entry &optional find-additional)
   "Returns the path of the PDF associated with the specified
-entry.  This is either the path specified in the field
-`bibtex-completion-pdf-field' or, if that does not exist, the first PDF
-in any of the directories in `bibtex-completion-library-path' whose
-name is \"<bibtex-key>.pdf\".  Returns nil if no PDF is found."
+entry.  This is either the path(s) specified in the field
+`bibtex-completion-pdf-field' or, if that does not exist, the
+first PDF in any of the directories in
+`bibtex-completion-library-path' whose name is composed of the
+the BibTeX key plus `bibtex-completion-pdf-extension' (or if
+FIND-ADDITIONAL is non-nil, all PDFs in
+`bibtex-completion-library-path' whose name starts with the
+BibTeX key and ends with `bibtex-completion-pdf-extension').
+Returns nil if no PDF is found."
   (or (bibtex-completion-find-pdf-in-field key-or-entry)
-      (bibtex-completion-find-pdf-in-library key-or-entry)))
+      (bibtex-completion-find-pdf-in-library key-or-entry find-additional)))
 
 (defun bibtex-completion-prepare-entry (entry &optional fields do-not-find-pdf)
   "Prepare ENTRY for display.
@@ -775,16 +819,27 @@ values."
     nil))
 
 
-(defun bibtex-completion-open-pdf (keys)
+(defun bibtex-completion-open-pdf (keys &optional fallback-action)
   "Open the PDFs associated with the marked entries using the
-function specified in `bibtex-completion-pdf-open-function'.  All paths
-in `bibtex-completion-library-path' are searched.  If there are several
-matching PDFs for an entry, the first is opened."
-  (--if-let
-      (-flatten
-       (-map 'bibtex-completion-find-pdf keys))
-      (-each it bibtex-completion-pdf-open-function)
-    (message "No PDF(s) found.")))
+function specified in `bibtex-completion-pdf-open-function'.
+If multiple PDFs are found for an entry, ask for the one to
+open using `completion-read'.  If FALLBACK-ACTION is non-nil, it is called in
+case no PDF is found."
+  (dolist (key keys)
+    (let ((pdf (bibtex-completion-find-pdf key bibtex-completion-find-additional-pdfs)))
+      (cond
+       ((> (length pdf) 1)
+        (let* ((pdf (f-uniquify-alist pdf))
+               (choice (completing-read "File to open: " (mapcar 'cdr pdf) nil t))
+               (file (car (rassoc choice pdf))))
+          (funcall bibtex-completion-pdf-open-function file)))
+       (pdf
+        (funcall bibtex-completion-pdf-open-function (car pdf)))
+       (fallback-action
+        (funcall fallback-action (list key)))
+       (t
+        (message "No PDF(s) found for this entry: %s"
+                 key))))))
 
 (defun bibtex-completion-open-url-or-doi (keys)
   "Open the associated URL or DOI in a browser."
@@ -808,17 +863,7 @@ function specified in `bibtex-completion-pdf-open-function'.
 If multiple PDFs are found for an entry, ask for the one to
 open using `completion-read'.  If no PDF is found, try to open a URL
 or DOI in the browser instead."
-  (dolist (key keys)
-    (let* ((pdf (bibtex-completion-find-pdf key)))
-      (if (not pdf)
-          (bibtex-completion-open-url-or-doi (list key))
-        (cond ((> (length pdf) 1)
-               (let* ((pdf (f-uniquify-alist pdf))
-                      (choice (completing-read "File to open: " (mapcar 'cdr pdf)))
-                      (file (car (rassoc choice pdf))))
-                 (funcall bibtex-completion-pdf-open-function file)))
-              (t
-               (funcall bibtex-completion-pdf-open-function (car pdf))))))))
+  (bibtex-completion-open-pdf keys 'bibtex-completion-open-url-or-doi))
 
 (defun bibtex-completion-format-citation-default (keys)
   "Default formatter for keys, separates multiple keys with commas."
@@ -905,7 +950,7 @@ several are available.  Entries for which no PDF is available are
 omitted."
   (s-join ", " (cl-loop
                 for key in keys
-                for pdfs = (bibtex-completion-find-pdf key)
+                for pdfs = (bibtex-completion-find-pdf key bibtex-completion-find-additional-pdfs)
                 append (--map (format "[[%s][%s]]" it key) pdfs))))
 
 (defun bibtex-completion-format-citation-org-apa-link-to-PDF (keys)
@@ -1118,11 +1163,12 @@ defined.  Surrounding curly braces are stripped."
 
 (defun bibtex-completion-add-PDF-attachment (keys)
   "Attach the PDFs of the selected entries where available."
-  (--if-let
-      (-flatten
-       (-map 'bibtex-completion-find-pdf keys))
-      (-each it 'mml-attach-file)
-    (message "No PDF(s) found.")))
+  (dolist (key keys)
+    (let ((pdf (bibtex-completion-find-pdf key bibtex-completion-find-additional-pdfs)))
+      (if pdf
+          (mapc 'mml-attach-file pdf)
+        (message "No PDF(s) found for this entry: %s"
+                 key)))))
 
 (define-minor-mode bibtex-completion-notes-mode
   "Minor mode for managing notes."
@@ -1237,13 +1283,17 @@ can be added either from an open buffer or a file."
          (path (if (cdr path)
                    (completing-read "Add pdf to: " path nil t)
                  (car path)))
-         (pdf (expand-file-name (concat key ".pdf") path)))
+         (pdf (expand-file-name (completing-read "Rename pdf to: "
+                                                 (--map (s-concat key it)
+                                                        (-flatten bibtex-completion-pdf-extension))
+                                                 nil nil key)
+                                path)))
     (cond
      (buffer
       (with-current-buffer buffer
-        (write-file pdf)))
+        (write-file pdf t)))
      (file
-      (copy-file file pdf)))))
+      (copy-file file pdf 1)))))
 
 (defun bibtex-completion-fallback-action (url-or-function search-expression)
   (let ((browse-url-browser-function
