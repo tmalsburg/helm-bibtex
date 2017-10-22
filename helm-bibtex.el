@@ -24,6 +24,9 @@
 ;; bibtex-completion backend.
 ;;
 ;; News:
+;; - 2017-10-21: Added support for multiple PDFs or other file
+;;   types.  See `bibtex-completion-pdf-extension' and
+;;   `bibtex-completion-find-additional-pdfs' for details.
 ;; - 10/10/2017: We now have support for ~@string~ constants.
 ;; - 10/02/2017: Use date field if year is not defined.
 ;; - 09/29/2017: If there is a BibTeX entry, citation macro, or
