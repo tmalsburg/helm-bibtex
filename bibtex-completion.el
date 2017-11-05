@@ -623,64 +623,56 @@ appended to the requested entry."
         (display-warning :warning (concat "Bibtex-completion couldn't find entry with key \"" entry-key "\"."))
         nil))))
 
-(defun bibtex-completion-find-pdf-in-field (key-or-entry)
+(defun bibtex-completion-find-pdf-in-field (entry)
   "Returns the path of the PDF specified in the field
 `bibtex-completion-pdf-field' if that file exists.  Returns nil if no
-file is specified, or if the specified file does not exist, or if
-`bibtex-completion-pdf-field' is nil."
-  (when bibtex-completion-pdf-field
-    (let* ((entry (if (stringp key-or-entry)
-                      (bibtex-completion-get-entry1 key-or-entry t)
-                    key-or-entry))
-           (value (bibtex-completion-get-value bibtex-completion-pdf-field entry)))
-      (cond
-       ((not value) nil)         ; Field not defined.
-       ((f-file? value) (list value))   ; A bare full path was found.
-       ((-any 'f-file? (--map (f-join it (f-filename value)) (-flatten bibtex-completion-library-path))) (-filter 'f-file? (--map (f-join it (f-filename value)) (-flatten bibtex-completion-library-path))))
-       (t                               ; Zotero/Mendeley/JabRef format:
-        (let ((value (replace-regexp-in-string "\\([^\\]\\);" "\\1\^^" value)))
-          (cl-loop  ; Looping over the files:
-           for record in (s-split "\^^" value)
+file is specified, or if the specified file does not exist."
+  (let ((value (bibtex-completion-get-value bibtex-completion-pdf-field entry)))
+    (cond
+     ((not value) nil)         ; Field not defined.
+     ((f-file? value) (list value))   ; A bare full path was found.
+     ((-any 'f-file? (--map (f-join it (f-filename value)) (-flatten bibtex-completion-library-path))) (-filter 'f-file? (--map (f-join it (f-filename value)) (-flatten bibtex-completion-library-path))))
+     (t                               ; Zotero/Mendeley/JabRef format:
+      (let ((value (replace-regexp-in-string "\\([^\\]\\);" "\\1\^^" value)))
+        (cl-loop  ; Looping over the files:
+         for record in (s-split "\^^" value)
                                         ; Replace unescaped colons by field separator:
-           for record = (replace-regexp-in-string "\\([^\\]\\|^\\):" "\\1\^_" record)
+         for record = (replace-regexp-in-string "\\([^\\]\\|^\\):" "\\1\^_" record)
                                         ; Unescape stuff:
-           for record = (replace-regexp-in-string "\\\\\\(.\\)" "\\1" record)
+         for record = (replace-regexp-in-string "\\\\\\(.\\)" "\\1" record)
                                         ; Now we can safely split:
-           for record = (s-split "\^_" record)
-           for file-name = (nth 0 record)
-           for path = (or (nth 1 record) "")
-           for paths = (if (s-match "^[A-Z]:" path)
-                           (list path)                 ; Absolute Windows path
+         for record = (s-split "\^_" record)
+         for file-name = (nth 0 record)
+         for path = (or (nth 1 record) "")
+         for paths = (if (s-match "^[A-Z]:" path)
+                         (list path)                 ; Absolute Windows path
                                         ; Something else:
-                         (append
-                          (list
-                           path
-                           (f-join (f-root) path) ; Mendeley #105
-                           (f-join (f-root) path file-name)) ; Mendeley #105
-                          (--map (f-join it path)
-                                 (-flatten bibtex-completion-library-path)) ; Jabref #100
-                          (--map (f-join it path file-name)
-                                 (-flatten bibtex-completion-library-path)))) ; Jabref #100
-           for result = (-first 'f-exists? paths)
-           if (not (s-blank-str? result)) collect result)))))))
+                       (append
+                        (list
+                         path
+                         (f-join (f-root) path) ; Mendeley #105
+                         (f-join (f-root) path file-name)) ; Mendeley #105
+                        (--map (f-join it path)
+                               (-flatten bibtex-completion-library-path)) ; Jabref #100
+                        (--map (f-join it path file-name)
+                               (-flatten bibtex-completion-library-path)))) ; Jabref #100
+         for result = (-first 'f-exists? paths)
+         if (not (s-blank-str? result)) collect result))))))
 
-(defun bibtex-completion-find-pdf-in-library (key-or-entry &optional find-additional)
+(defun bibtex-completion-find-pdf-in-library (key &optional find-additional)
   "Searches the directories in `bibtex-completion-library-path'
-for a PDF whose name is composed of the BibTeX key plus
+for a PDF whose name is composed of KEY plus
 `bibtex-completion-pdf-extension'.  The path of the first matching
 PDF is returned.
 
 If FIND-ADDITIONAL is non-nil, the paths of all PDFs whose name
-starts with the BibTeX key and ends with
+starts with KEY and ends with
 `bibtex-completion-pdf-extension' are returned instead."
-  (let* ((key (if (stringp key-or-entry)
-                  key-or-entry
-                (bibtex-completion-get-value "=key=" key-or-entry)))
-         (main-pdf (cl-loop
-                    for dir in (-flatten bibtex-completion-library-path)
-                    append (cl-loop
-                            for ext in (-flatten bibtex-completion-pdf-extension)
-                            collect (f-join dir (s-concat key ext))))))
+  (let ((main-pdf (cl-loop
+                   for dir in (-flatten bibtex-completion-library-path)
+                   append (cl-loop
+                           for ext in (-flatten bibtex-completion-pdf-extension)
+                           collect (f-join dir (s-concat key ext))))))
     (if find-additional
         (sort ; move main pdf on top of the list if needed
          (cl-loop
@@ -697,7 +689,7 @@ starts with the BibTeX key and ends with
                 (not (member y main-pdf)))))
       (-flatten (-first 'f-file? main-pdf)))))
 
-(defun bibtex-completion-find-pdf (key-or-entry &optional find-additional)
+(defun bibtex-completion-find-pdf (key-or-entry &optional find-additional find-crossref)
   "Returns the path of the PDF associated with the specified
 entry.  This is either the path(s) specified in the field
 `bibtex-completion-pdf-field' or, if that does not exist, the
@@ -707,9 +699,26 @@ the BibTeX key plus `bibtex-completion-pdf-extension' (or if
 FIND-ADDITIONAL is non-nil, all PDFs in
 `bibtex-completion-library-path' whose name starts with the
 BibTeX key and ends with `bibtex-completion-pdf-extension').
-Returns nil if no PDF is found."
-  (or (bibtex-completion-find-pdf-in-field key-or-entry)
-      (bibtex-completion-find-pdf-in-library key-or-entry find-additional)))
+Returns nil if no PDF is found.
+
+If FIND-CROSSREF is non-nil and the entry has a crossref field,
+PDF(s) of the cross-referenced entry are appended."
+  (let (key entry crossref)
+    (if (stringp key-or-entry)
+        (setq key key-or-entry)
+      (setq entry key-or-entry))
+    (append
+     (or (when bibtex-completion-pdf-field
+           (bibtex-completion-find-pdf-in-field (or entry
+                                                    (setq entry (bibtex-completion-get-entry1 key t)))))
+         (bibtex-completion-find-pdf-in-library (or key
+                                                    (bibtex-completion-get-value "=key=" entry))
+                                                find-additional))
+     (and find-crossref
+          (setq crossref (bibtex-completion-get-value "crossref"
+                                                      (or entry
+                                                          (bibtex-completion-get-entry1 key t))))
+          (bibtex-completion-find-pdf crossref find-additional)))))
 
 (defun bibtex-completion-prepare-entry (entry &optional fields do-not-find-pdf)
   "Prepare ENTRY for display.
@@ -827,7 +836,7 @@ If multiple PDFs are found for an entry, ask for the one to
 open using `completion-read'.  If FALLBACK-ACTION is non-nil, it is called in
 case no PDF is found."
   (dolist (key keys)
-    (let ((pdf (bibtex-completion-find-pdf key bibtex-completion-find-additional-pdfs)))
+    (let ((pdf (bibtex-completion-find-pdf key bibtex-completion-find-additional-pdfs t)))
       (cond
        ((> (length pdf) 1)
         (let* ((pdf (f-uniquify-alist pdf))
@@ -951,7 +960,7 @@ several are available.  Entries for which no PDF is available are
 omitted."
   (s-join ", " (cl-loop
                 for key in keys
-                for pdfs = (bibtex-completion-find-pdf key bibtex-completion-find-additional-pdfs)
+                for pdfs = (bibtex-completion-find-pdf key bibtex-completion-find-additional-pdfs t)
                 append (--map (format "[[%s][%s]]" it key) pdfs))))
 
 (defun bibtex-completion-format-citation-org-apa-link-to-PDF (keys)
@@ -965,7 +974,7 @@ format.  Uses first matching PDF if several are available."
                                   (bibtex-completion-get-value "editor" entry)))
                 for year = (or (bibtex-completion-get-value "year" entry)
                                (car (split-string (bibtex-completion-get-value "date" entry "") "-")))
-                for pdf = (car (bibtex-completion-find-pdf key))
+                for pdf = (car (bibtex-completion-find-pdf key nil t))
                 if pdf
                   collect (format "[[file:%s][%s (%s)]]" pdf author year)
                 else
@@ -1165,7 +1174,7 @@ defined.  Surrounding curly braces are stripped."
 (defun bibtex-completion-add-PDF-attachment (keys)
   "Attach the PDFs of the selected entries where available."
   (dolist (key keys)
-    (let ((pdf (bibtex-completion-find-pdf key bibtex-completion-find-additional-pdfs)))
+    (let ((pdf (bibtex-completion-find-pdf key bibtex-completion-find-additional-pdfs t)))
       (if pdf
           (mapc 'mml-attach-file pdf)
         (message "No PDF(s) found for this entry: %s"
