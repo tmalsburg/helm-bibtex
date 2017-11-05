@@ -718,14 +718,14 @@ PDF(s) of the cross-referenced entry are appended."
     (append
      (or (when bibtex-completion-pdf-field
            (bibtex-completion-find-pdf-in-field (or entry
-                                                    (setq entry (bibtex-completion-get-entry1 key t)))))
+                                                    (setq entry (bibtex-completion-get-entry1 key t t)))))
          (bibtex-completion-find-pdf-in-library (or key
                                                     (bibtex-completion-get-value "=key=" entry))
                                                 find-additional))
      (and find-crossref
           (setq crossref (bibtex-completion-get-value "crossref"
                                                       (or entry
-                                                          (bibtex-completion-get-entry1 key t))))
+                                                          (bibtex-completion-get-entry1 key t t))))
           (bibtex-completion-find-pdf crossref find-additional)))))
 
 (defun bibtex-completion-prepare-entry (entry &optional fields do-not-find-pdf do-not-find-notes)
@@ -863,7 +863,7 @@ case no PDF is found."
 (defun bibtex-completion-open-url-or-doi (keys)
   "Open the associated URL or DOI in a browser."
   (dolist (key keys)
-    (let* ((entry (bibtex-completion-get-entry key))
+    (let* ((entry (bibtex-completion-get-entry key t t))
            (url (bibtex-completion-get-value "url" entry))
            (doi (bibtex-completion-get-value "doi" entry))
            (browse-url-browser-function
@@ -977,7 +977,7 @@ omitted."
 format.  Uses first matching PDF if several are available."
   (s-join ", " (cl-loop
                 for key in keys
-                for entry = (bibtex-completion-get-entry key)
+                for entry = (bibtex-completion-get-entry key t t)
                 for author = (bibtex-completion-shorten-authors
                               (or (bibtex-completion-get-value "author" entry)
                                   (bibtex-completion-get-value "editor" entry)))
@@ -1010,7 +1010,7 @@ format.  Uses first matching PDF if several are available."
   "Returns a plain text reference in APA format for the
 publication specified by KEY."
   (let*
-   ((entry (bibtex-completion-get-entry key))
+   ((entry (bibtex-completion-get-entry key t t))
     (ref (pcase (downcase (bibtex-completion-get-value "=type=" entry))
            ("article"
             (s-format
@@ -1165,7 +1165,7 @@ defined.  Surrounding curly braces are stripped."
   (insert (s-join "\n" (--map (bibtex-completion-make-bibtex it) keys))))
 
 (defun bibtex-completion-make-bibtex (key)
-  (let* ((entry (bibtex-completion-get-entry key))
+  (let* ((entry (bibtex-completion-get-entry key t t))
          (entry-type (bibtex-completion-get-value "=type=" entry)))
     (format "@%s{%s,\n%s}\n"
             entry-type key
@@ -1176,7 +1176,7 @@ defined.  Surrounding curly braces are stripped."
              unless (member name
                             (append (-map (lambda (it) (if (symbolp it) (symbol-name it) it))
                                           bibtex-completion-no-export-fields)
-                             '("=type=" "=key=" "=has-pdf=" "=has-note=" "crossref")))
+                             '("=type=" "=key=" "crossref")))
              concat
              (format "  %s = {%s},\n" name value)))))
 
@@ -1230,7 +1230,7 @@ line."
           (unless (f-exists? path)
             (insert (s-format bibtex-completion-notes-template-multiple-files
                               'bibtex-completion-apa-get-value
-                              (bibtex-completion-get-entry key)))))
+                              (bibtex-completion-get-entry key t t)))))
                                         ; One file for all notes:
       (unless (and buffer-file-name
                    (f-same? bibtex-completion-notes-path buffer-file-name))
@@ -1246,7 +1246,7 @@ line."
             (org-cycle-hide-drawers nil)
             (bibtex-completion-notes-mode 1))
                                         ; Create a new entry:
-        (let ((entry (bibtex-completion-get-entry key)))
+        (let ((entry (bibtex-completion-get-entry key t t)))
           (goto-char (point-max))
           (insert (s-format bibtex-completion-notes-template-one-file
                             'bibtex-completion-apa-get-value
