@@ -603,17 +603,19 @@ If HT-STRINGS is provided it is assumed to be a hash table."
                      (cons (downcase (car it)) (cdr it)))
                    (bibtex-completion-prepare-entry entry fields)))))
 
-(defun bibtex-completion-get-entry (entry-key)
+(defun bibtex-completion-get-entry (entry-key &optional do-not-find-pdf do-not-find-notes)
   "Given a BibTeX key this function scans all bibliographies
-listed in `bibtex-completion-bibliography' and returns an alist of the
-record with that key.  Fields from crossreferenced entries are
-appended to the requested entry."
-  (let* ((entry (bibtex-completion-get-entry1 entry-key))
+listed in `bibtex-completion-bibliography' and returns an alist
+of the record with that key.  Fields from crossreferenced entries
+are appended to the requested entry.  If
+DO-NOT-FIND-PDF (resp. DO-NOT-FIND-NOTES) is non-nil, this
+function does not attempt to find a PDF (resp. notes) file."
+  (let* ((entry (bibtex-completion-get-entry1 entry-key  do-not-find-pdf do-not-find-notes))
          (crossref (bibtex-completion-get-value "crossref" entry))
-         (crossref (when crossref (bibtex-completion-get-entry1 crossref))))
+         (crossref (when crossref (bibtex-completion-get-entry1 crossref do-not-find-pdf do-not-find-notes))))
     (bibtex-completion-remove-duplicated-fields (append entry crossref))))
 
-(defun bibtex-completion-get-entry1 (entry-key &optional do-not-find-pdf)
+(defun bibtex-completion-get-entry1 (entry-key &optional do-not-find-pdf do-not-find-notes)
   (with-temp-buffer
     (mapc #'insert-file-contents
           (bibtex-completion-normalize-bibliography 'bibtex))
@@ -624,7 +626,7 @@ appended to the requested entry."
                            nil t)
         (let ((entry-type (match-string 1)))
           (reverse (bibtex-completion-prepare-entry
-                    (parsebib-read-entry entry-type (point) bibtex-completion-string-hash-table) nil do-not-find-pdf)))
+                    (parsebib-read-entry entry-type (point) bibtex-completion-string-hash-table) nil do-not-find-pdf do-not-find-notes)))
       (progn
         (display-warning :warning (concat "Bibtex-completion couldn't find entry with key \"" entry-key "\"."))
         nil))))
@@ -726,15 +728,15 @@ PDF(s) of the cross-referenced entry are appended."
                                                           (bibtex-completion-get-entry1 key t))))
           (bibtex-completion-find-pdf crossref find-additional)))))
 
-(defun bibtex-completion-prepare-entry (entry &optional fields do-not-find-pdf)
+(defun bibtex-completion-prepare-entry (entry &optional fields do-not-find-pdf do-not-find-notes)
   "Prepare ENTRY for display.
 ENTRY is an alist representing an entry as returned by
 parsebib-read-entry. All the fields not in FIELDS are removed
 from ENTRY, with the exception of the \"=type=\" and \"=key=\"
 fields. If FIELDS is empty, all fields are kept. Also add a
 =has-pdf= and/or =has-note= field, if they exist for ENTRY.  If
-DO-NOT-FIND-PDF is non-nil, this function does not attempt to
-find a PDF file."
+DO-NOT-FIND-PDF (resp. DO-NOT-FIND-NOTES) is non-nil, this
+function does not attempt to find a PDF (resp. notes) file."
   (when entry ; entry may be nil, in which case just return nil
     (let* ((fields (when fields (append fields (list "=type=" "=key=" "=has-pdf=" "=has-note="))))
            ; Check for PDF:
@@ -743,22 +745,23 @@ find a PDF file."
                     entry))
            (entry-key (cdr (assoc "=key=" entry)))
            ; Check for notes:
-           (entry (if (or
-                       ;; One note file per entry:
-                       (and bibtex-completion-notes-path
-                            (f-directory? bibtex-completion-notes-path)
-                            (f-file? (f-join bibtex-completion-notes-path
-                                             (s-concat entry-key
-                                                       bibtex-completion-notes-extension))))
-                       ;; All notes in one file:
-                       (and bibtex-completion-notes-path
-                            (f-file? bibtex-completion-notes-path)
-                            (with-current-buffer (find-file-noselect bibtex-completion-notes-path)
-                              (save-excursion
-                                (save-restriction
-                                  (widen)
-                                  (goto-char (point-min))
-                                  (re-search-forward (format bibtex-completion-notes-key-pattern (regexp-quote entry-key)) nil t))))))
+           (entry (if (and (not do-not-find-notes)
+                           (or
+                            ;; One note file per entry:
+                            (and bibtex-completion-notes-path
+                                 (f-directory? bibtex-completion-notes-path)
+                                 (f-file? (f-join bibtex-completion-notes-path
+                                                  (s-concat entry-key
+                                                            bibtex-completion-notes-extension))))
+                            ;; All notes in one file:
+                            (and bibtex-completion-notes-path
+                                 (f-file? bibtex-completion-notes-path)
+                                 (with-current-buffer (find-file-noselect bibtex-completion-notes-path)
+                                   (save-excursion
+                                     (save-restriction
+                                       (widen)
+                                       (goto-char (point-min))
+                                       (re-search-forward (format bibtex-completion-notes-key-pattern (regexp-quote entry-key)) nil t)))))))
                       (cons (cons "=has-note=" bibtex-completion-notes-symbol) entry)
                     entry))
            ; Remove unwanted fields:
