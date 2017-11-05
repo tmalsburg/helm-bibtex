@@ -517,7 +517,10 @@ reparsed whereas the other files in FILES were up-to-date."
                       ;; Insert an empty field so we can discard the crossref info if needed:
                       (append entry
                               (cl-acons "" ""
-                                     (gethash (downcase crossref) entry-hash))))
+                                        (cl-remove-if
+                                         (lambda (field)
+                                           (string= (car field) "=has-note"))
+                                         (gethash (downcase crossref) entry-hash)))))
                    entry))))
    else
    ;; The file was not reparsed.
@@ -535,7 +538,10 @@ reparsed whereas the other files in FILES were up-to-date."
                       ;; Discard crossref info and resolve crossref again:
                       (append (--take-while (> (length (car it)) 0) entry-alist)
                               (cl-acons "" ""
-                                     (gethash (downcase crossref) entry-hash)))))
+                                        (cl-remove-if
+                                         (lambda (field)
+                                           (string= (car field) "=has-note"))               
+                                         (gethash (downcase crossref) entry-hash))))))
                   entry)))))
 
 (defun bibtex-completion-make-entry-hash (files reparsed-files)
