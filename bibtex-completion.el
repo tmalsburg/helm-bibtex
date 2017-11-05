@@ -955,7 +955,7 @@ inside or just after a citation command, only adds KEYS to it."
           (--map (format "ebib:%s" it) keys)))
 
 (defun bibtex-completion-format-citation-org-link-to-PDF (keys)
-  "Formatter for org-links to PDF.  Uses first matching PDF if
+  "Formatter for org-links to PDF.  Uses all matching PDFs if
 several are available.  Entries for which no PDF is available are
 omitted."
   (s-join ", " (cl-loop
@@ -1152,7 +1152,7 @@ defined.  Surrounding curly braces are stripped."
    (funcall 'bibtex-completion-format-citation-default keys)))
 
 (defun bibtex-completion-insert-bibtex (keys)
-  "Insert BibTeX key at point."
+  "Insert BibTeX entry at point."
   (insert (s-join "\n" (--map (bibtex-completion-make-bibtex it) keys))))
 
 (defun bibtex-completion-make-bibtex (key)
