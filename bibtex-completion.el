@@ -1203,42 +1203,45 @@ line."
 (defun bibtex-completion-edit-notes (keys)
   "Open the notes associated with the selected entries using `find-file'."
   (dolist (key keys)
-    (if (and bibtex-completion-notes-path
-             (f-directory? bibtex-completion-notes-path))
+    (let* ((entry (bibtex-completion-get-entry key))
+           (year (or (bibtex-completion-get-value "year" entry)
+                     (car (split-string (bibtex-completion-get-value "date" entry "") "-"))))
+           (entry (push (cons "year" year) entry)))
+      (if (and bibtex-completion-notes-path
+               (f-directory? bibtex-completion-notes-path))
                                         ; One notes file per publication:
-        (let* ((path (f-join bibtex-completion-notes-path
-                             (s-concat key bibtex-completion-notes-extension))))
-          (find-file path)
-          (unless (f-exists? path)
-            (insert (s-format bibtex-completion-notes-template-multiple-files
-                              'bibtex-completion-apa-get-value
-                              (bibtex-completion-get-entry key)))))
+          (let* ((path (f-join bibtex-completion-notes-path
+                               (s-concat key bibtex-completion-notes-extension))))
+            (find-file path)
+            (unless (f-exists? path)
+              (insert (s-format bibtex-completion-notes-template-multiple-files
+                                'bibtex-completion-apa-get-value
+                                entry))))
                                         ; One file for all notes:
-      (unless (and buffer-file-name
-                   (f-same? bibtex-completion-notes-path buffer-file-name))
-        (find-file-other-window bibtex-completion-notes-path))
-      (widen)
-      (show-all)
-      (goto-char (point-min))
-      (if (re-search-forward (format bibtex-completion-notes-key-pattern (regexp-quote key)) nil t)
+        (unless (and buffer-file-name
+                     (f-same? bibtex-completion-notes-path buffer-file-name))
+          (find-file-other-window bibtex-completion-notes-path))
+        (widen)
+        (show-all)
+        (goto-char (point-min))
+        (if (re-search-forward (format bibtex-completion-notes-key-pattern (regexp-quote key)) nil t)
                                         ; Existing entry found:
+            (when (eq major-mode 'org-mode)
+              (org-narrow-to-subtree)
+              (re-search-backward "^\*+ " nil t)
+              (org-cycle-hide-drawers nil)
+              (bibtex-completion-notes-mode 1))
+                                        ; Create a new entry:
+            (goto-char (point-max))
+            (insert (s-format bibtex-completion-notes-template-one-file
+                              'bibtex-completion-apa-get-value
+                              entry)))
           (when (eq major-mode 'org-mode)
             (org-narrow-to-subtree)
             (re-search-backward "^\*+ " nil t)
             (org-cycle-hide-drawers nil)
-            (bibtex-completion-notes-mode 1))
-                                        ; Create a new entry:
-        (let ((entry (bibtex-completion-get-entry key)))
-          (goto-char (point-max))
-          (insert (s-format bibtex-completion-notes-template-one-file
-                            'bibtex-completion-apa-get-value
-                            entry)))
-        (when (eq major-mode 'org-mode)
-          (org-narrow-to-subtree)
-          (re-search-backward "^\*+ " nil t)
-          (org-cycle-hide-drawers nil)
-          (goto-char (point-max))
-          (bibtex-completion-notes-mode 1))))))
+            (goto-char (point-max))
+            (bibtex-completion-notes-mode 1))))))
 
 (defun bibtex-completion-buffer-visiting (file)
   (or (get-file-buffer file)
