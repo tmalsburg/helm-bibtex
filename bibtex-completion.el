@@ -655,14 +655,19 @@ file is specified, or if the specified file does not exist, or if
                          (append
                           (list
                            path
+                           file-name
                            (f-join (f-root) path) ; Mendeley #105
                            (f-join (f-root) path file-name)) ; Mendeley #105
                           (--map (f-join it path)
                                  (-flatten bibtex-completion-library-path)) ; Jabref #100
                           (--map (f-join it path file-name)
                                  (-flatten bibtex-completion-library-path)))) ; Jabref #100
-           for result = (-first 'f-exists? paths)
-           if (not (s-blank-str? result)) collect result)))))))
+           for result = (-first (lambda (path)
+                                  (if (and (not (s-blank-str? path))
+                                           (f-exists? path))
+                                      path nil)) paths)
+           if result collect result)))))))
+
 
 (defun bibtex-completion-find-pdf-in-library (key-or-entry &optional find-additional)
   "Searches the directories in `bibtex-completion-library-path'
