@@ -39,6 +39,18 @@
 (require 'f)
 (require 'biblio)
 
+;; Silence byte-compiler
+(declare-function reftex-what-macro "reftex-parse")
+(declare-function reftex-get-bibfile-list "reftex-cite")
+(declare-function outline-show-all "outline")
+(when (version< emacs-version "25.1")
+  (defalias 'show-all 'outline-show-all))
+(declare-function org-narrow-to-subtree "org")
+(declare-function org-cycle-hide-drawers "org")
+(declare-function org-find-property "org")
+(declare-function org-show-entry "org")
+(declare-function org-entry-get "org")
+
 (defgroup bibtex-completion nil
   "Helm plugin for searching entries in a BibTeX bibliography."
   :group 'completion)
@@ -1222,7 +1234,7 @@ line."
                      (f-same? bibtex-completion-notes-path buffer-file-name))
           (find-file-other-window bibtex-completion-notes-path))
         (widen)
-        (show-all)
+        (outline-show-all)
         (goto-char (point-min))
         (if (re-search-forward (format bibtex-completion-notes-key-pattern (regexp-quote key)) nil t)
                                         ; Existing entry found:
