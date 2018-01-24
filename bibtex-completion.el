@@ -43,8 +43,6 @@
 (declare-function reftex-what-macro "reftex-parse")
 (declare-function reftex-get-bibfile-list "reftex-cite")
 (declare-function outline-show-all "outline")
-(when (version< emacs-version "25.1")
-  (defalias 'show-all 'outline-show-all))
 (declare-function org-narrow-to-subtree "org")
 (declare-function org-cycle-hide-drawers "org")
 (declare-function org-find-property "org")
