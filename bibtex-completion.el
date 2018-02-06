@@ -441,6 +441,8 @@ for string replacement."
    for entry in strings
    do (puthash (car entry) (cdr entry) ht)))
 
+(defvar bibtex-completion-cached-notes-keys nil)
+
 (defun bibtex-completion-candidates ()
   "Reads the BibTeX files and returns a list of conses, one for
 each entry.  The first element of these conses is a string
@@ -465,6 +467,15 @@ is the entry (only the fields listed above) as an alist."
            ;; Mark file as reparsed.
            ;; This will be useful to resolve cross-references:
            (push file reparsed-files)))))
+
+    (when (and bibtex-completion-notes-path
+               (f-file? bibtex-completion-notes-path))
+      (with-temp-buffer
+        (insert-file-contents bibtex-completion-notes-path)
+        (setq bibtex-completion-cached-notes-keys
+              (let ((tree (org-element-parse-buffer 'headline)))
+                (org-element-map tree 'headline
+                  (lambda (id) (org-element-property :CUSTOM_ID id)))))))
 
     ;; reparse if necessary
 
@@ -753,12 +764,7 @@ find a PDF file."
                        ;; All notes in one file:
                        (and bibtex-completion-notes-path
                             (f-file? bibtex-completion-notes-path)
-                            (with-current-buffer (find-file-noselect bibtex-completion-notes-path)
-                              (save-excursion
-                                (save-restriction
-                                  (widen)
-                                  (goto-char (point-min))
-                                  (re-search-forward (format bibtex-completion-notes-key-pattern (regexp-quote entry-key)) nil t))))))
+			    (member (regexp-quote entry-key) bibtex-completion-cached-notes-keys)))
                       (cons (cons "=has-note=" bibtex-completion-notes-symbol) entry)
                     entry))
            ; Remove unwanted fields:
