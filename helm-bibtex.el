@@ -92,6 +92,9 @@
 (require 'helm-easymenu)
 (require 'bibtex-completion)
 
+;; Silence the byte compiler
+(eval-when-compile (defvar helm-bibtex-local-bib))
+
 ;; The following allows people to continue using their old helm-bibtex
 ;; configurations:
 
