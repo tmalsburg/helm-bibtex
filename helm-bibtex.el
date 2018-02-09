@@ -131,13 +131,8 @@ When nil, the window will split below."
 ;; work-around.  See also this bug report:
 ;; http://debbugs.gnu.org/cgi/bugreport.cgi?bug=19395
 (defun helm-bibtex-window-width ()
-  (if (and (not (featurep 'xemacs))
-           (display-graphic-p)
-           overflow-newline-into-fringe
-           (/= (frame-parameter nil 'left-fringe) 0)
-           (/= (frame-parameter nil 'right-fringe) 0))
-      (1- (window-body-width))
-    (1- (window-body-width))))
+  "Return the width of the window to pass to `helm-bibtex-candidates-formatter'."
+  (1- (window-body-width)))
 
 (defun helm-bibtex-candidates-formatter (candidates _)
   "Format CANDIDATES for display in helm."
