@@ -92,6 +92,9 @@
 (require 'helm-easymenu)
 (require 'bibtex-completion)
 
+;; Silence the byte compiler
+(eval-when-compile (defvar helm-bibtex-local-bib))
+
 ;; The following allows people to continue using their old helm-bibtex
 ;; configurations:
 
@@ -114,8 +117,8 @@
 ;; Helm-specific configurations:
 
 (defcustom helm-bibtex-full-frame t
-  "Non-nil means open `helm-bibtex' using the entire window. When
-nil, the window will split below."
+  "Non-nil means open `helm-bibtex' using the entire window.
+When nil, the window will split below."
   :group 'bibtex-completion
   :type 'boolean)
 
@@ -128,15 +131,11 @@ nil, the window will split below."
 ;; work-around.  See also this bug report:
 ;; http://debbugs.gnu.org/cgi/bugreport.cgi?bug=19395
 (defun helm-bibtex-window-width ()
-  (if (and (not (featurep 'xemacs))
-           (display-graphic-p)
-           overflow-newline-into-fringe
-           (/= (frame-parameter nil 'left-fringe) 0)
-           (/= (frame-parameter nil 'right-fringe) 0))
-      (1- (window-body-width))
-    (1- (window-body-width))))
+  "Return the width of the window to pass to `helm-bibtex-candidates-formatter'."
+  (1- (window-body-width)))
 
 (defun helm-bibtex-candidates-formatter (candidates _)
+  "Format CANDIDATES for display in helm."
   (cl-loop
    with width = (with-helm-window (helm-bibtex-window-width))
    for entry in candidates
@@ -147,9 +146,9 @@ nil, the window will split below."
 ;; Warp bibtex-completion actions with some helm-specific code:
 
 (defmacro helm-bibtex-helmify-action (action name)
-  "Wraps the function ACTION in another function named NAME which
-passes the candidates marked in helm to ACTION.  Also uses
-with-helm-current-buffer such that when ACTION inserts text it
+  "Wrap ACTION in another function NAME.
+Then pass the candidates marked in helm to ACTION.  Also uses
+`with-helm-current-buffer' such that when ACTION inserts text it
 comes out in the right buffer."
   `(defun ,name (_)
      (let ((keys (helm-marked-candidates :with-wildcard t)))
@@ -208,7 +207,7 @@ With a prefix ARG, the cache is invalidated and the bibliography
 reread.
 
 If LOCAL-BIB is non-nil, display that the BibTeX entries are read
-from the local bibliography. This is set internally by
+from the local bibliography.  This is set internally by
 `helm-bibtex-with-local-bibliography'."
   (interactive "P")
   (when arg
