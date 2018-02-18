@@ -441,7 +441,8 @@ for string replacement."
    for entry in strings
    do (puthash (car entry) (cdr entry) ht)))
 
-(defvar bibtex-completion-cached-notes-keys nil)
+(defvar bibtex-completion-cached-notes-keys nil
+  "A cache storing notes keys obtained when the bibliography was last parsed.")
 
 (defun bibtex-completion-candidates ()
   "Reads the BibTeX files and returns a list of conses, one for
@@ -475,7 +476,7 @@ is the entry (only the fields listed above) as an alist."
         (setq bibtex-completion-cached-notes-keys
               (let ((tree (org-element-parse-buffer 'headline)))
                 (org-element-map tree 'headline
-                  (lambda (id) (org-element-property :CUSTOM_ID id)))))))
+                  (lambda (key) (org-element-property :CUSTOM_ID key)))))))
 
     ;; reparse if necessary
 
