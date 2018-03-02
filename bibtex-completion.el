@@ -38,6 +38,7 @@
 (require 's)
 (require 'f)
 (require 'biblio)
+(require 'org-element)
 
 ;; Silence byte-compiler
 (declare-function reftex-what-macro "reftex-parse")
