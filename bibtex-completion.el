@@ -473,6 +473,7 @@ is the entry (only the fields listed above) as an alist."
     (when (and bibtex-completion-notes-path
                (f-file? bibtex-completion-notes-path))
       (with-temp-buffer
+	(org-mode)     ;;  need this to avoid error in emacs 25.3.1
         (insert-file-contents bibtex-completion-notes-path)
         (setq bibtex-completion-cached-notes-keys
               (let ((tree (org-element-parse-buffer 'headline)))
