@@ -209,13 +209,13 @@ Note that for performance reasons, these additional files are only detected when
 If documents are referenced via the naming scheme ~bibtex-key.pdf~ but you are storing files in a different format than PDF, you can set the variable ~bibtex-completion-pdf-extension~ accordingly. Example:
 
 #+BEGIN_SRC emacs-lisp
-(setq bibtex-completion-pdf-extenaion ".djvu")
+(setq bibtex-completion-pdf-extension ".djvu")
 #+END_SRC
 
 If you store files in various formats, then you can specify a list instead of a single file type:
 
 #+BEGIN_SRC emacs-lisp
-(setq bibtex-completion-pdf-extenaion '(".pdf" ".djvu"))
+(setq bibtex-completion-pdf-extension '(".pdf" ".djvu"))
 #+END_SRC
 
 Extensions in this list are then tried sequentially until a file is found. Beware that this can reduce performance for large bibliographies.
