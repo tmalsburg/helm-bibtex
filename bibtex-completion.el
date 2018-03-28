@@ -767,7 +767,7 @@ find a PDF file."
                        ;; All notes in one file:
                        (and bibtex-completion-notes-path
                             (f-file? bibtex-completion-notes-path)
-			    (member (regexp-quote entry-key) bibtex-completion-cached-notes-keys)))
+			    (member entry-key bibtex-completion-cached-notes-keys)))
                       (cons (cons "=has-note=" bibtex-completion-notes-symbol) entry)
                     entry))
            ; Remove unwanted fields:
