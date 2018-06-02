@@ -24,12 +24,14 @@
 ;; bibtex-completion backend.
 ;;
 ;; News:
+;; - 02/06/2018: Reload bibliography proactively when bib files are
+;;   changed.
 ;; - 21/10/2017: Added support for multiple PDFs and other file
 ;;   types.  See `bibtex-completion-pdf-extension' and
 ;;   `bibtex-completion-find-additional-pdfs' for details.
 ;; - 10/10/2017: Added support for ~@string~ constants.
-;; - 10/02/2017: Date field is used when year is undefined.
-;; - 09/29/2017: BibTeX entry, citation macro, or org-bibtex entry at
+;; - 02/10/2017: Date field is used when year is undefined.
+;; - 29/09/2017: BibTeX entry, citation macro, or org-bibtex entry at
 ;;   point, will be pre-selected in helm-bibtex and ivy-bibtex giving
 ;;   quick access to PDFs and other functions.
 ;;

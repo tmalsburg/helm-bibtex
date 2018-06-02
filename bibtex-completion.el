@@ -39,6 +39,7 @@
 (require 'f)
 (require 'biblio)
 (require 'org-element)
+(require 'filenotify)
 
 ;; Silence byte-compiler
 (declare-function reftex-what-macro "reftex-parse")
@@ -373,14 +374,36 @@ bibtex files."
     collect main-file
     unless (equal type 'main)
     collect bibtex-file)))
+
+(defvar bibtex-completion-file-watch-descriptors nil
+  "List of file watches monitoring bibliography files for changes.")
   
 (defun bibtex-completion-init ()
   "Checks that the files and directories specified by the user
 actually exist. Also sets `bibtex-completion-display-formats-internal'."
+
+  ;; Remove current watch-descriptors for bibliography files:
+  (mapc (lambda (watch-descriptor)
+          (file-notify-rm-watch watch-descriptor))
+        bibtex-completion-file-watch-descriptors)
+  (setq bibtex-completion-file-watch-descriptors nil)
+
+  ;; Check that all specified bibliography files exist and add file
+  ;; watches for automatic reloading of the bibliography when a file
+  ;; is changed:
   (mapc (lambda (file)
-          (unless (f-file? file)
-                  (user-error "Bibliography file %s could not be found." file)))
-        (bibtex-completion-normalize-bibliography))
+          (if (f-file? file)
+              (let ((watch-descriptor
+                     (file-notify-add-watch file
+                                            '(change)
+                                            (lambda (event) (bibtex-completion-candidates)))))
+                (setq bibtex-completion-file-watch-descriptors
+                      (cons watch-descriptor bibtex-completion-file-watch-descriptors)))
+            (user-error "Bibliography file %s could not be found." file)))
+            (bibtex-completion-normalize-bibliography))
+
+  ;; Pre-calculate minimal widths needed by the format strings for
+  ;; various entry types:
   (setq bibtex-completion-display-formats-internal
         (mapcar (lambda (format)
                   (let* ((format-string (cdr format))
