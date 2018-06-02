@@ -201,7 +201,7 @@ comes out in the right buffer."
 ;; Helm-bibtex command:
 
 ;;;###autoload
-(defun helm-bibtex (&optional arg local-bib)
+(defun helm-bibtex (&optional arg local-bib input)
   "Search BibTeX entries.
 
 With a prefix ARG, the cache is invalidated and the bibliography
@@ -224,6 +224,7 @@ from the local bibliography.  This is set internally by
     (helm :sources (list helm-source-bibtex helm-source-fallback-options)
           :full-frame helm-bibtex-full-frame
           :buffer "*helm bibtex*"
+          :input input
           :preselect (lambda ()
                        (and preselect
                             (> preselect 0)
