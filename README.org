@@ -300,13 +300,7 @@ For convenience, frequent searches can be captured in commands and bound to key 
 
 With a prefix ARG, the cache is invalidated and the bibliography reread."
   (interactive "P")
-  (when arg
-    (bibtex-completion-clear-cache))
-  (helm :sources (list helm-source-bibtex helm-source-fallback-options)
-        :full-frame helm-bibtex-full-frame
-        :buffer "*helm bibtex*"
-        :input "Jane Doe"
-        :candidate-number-limit 500))
+  (helm-bibtex arg nil "Jane Doe"))
 
 ;; Bind this search function to Ctrl-x p:
 (global-set-key (kbd "C-x p") 'helm-bibtex-my-publications)
