@@ -209,7 +209,11 @@ reread.
 
 If LOCAL-BIB is non-nil, display that the BibTeX entries are read
 from the local bibliography.  This is set internally by
-`helm-bibtex-with-local-bibliography'."
+`helm-bibtex-with-local-bibliography'.
+
+If INPUT is non-nil and a string, that value is going to be used
+as a predefined search term.  Can be used to define functions for
+frequent searches (e.g. your own publications)."
   (interactive "P")
   (when arg
     (bibtex-completion-clear-cache))
