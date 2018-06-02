@@ -387,7 +387,7 @@ The letters ~p~ and ~e~ are the key bindings for the two actions in the action m
 #+BEGIN_SRC emacs-lisp
 (ivy-add-actions
    'ivy-bibtex
-   '(("P" 'ivy-bibtex-open-annotated-pdf "Open annotated PDF (if present)")))
+   '(("P" ivy-bibtex-open-annotated-pdf "Open annotated PDF (if present)")))
 #+END_SRC
 
 ** Create new actions
