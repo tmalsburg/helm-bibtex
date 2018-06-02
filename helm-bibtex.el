@@ -24,15 +24,14 @@
 ;; bibtex-completion backend.
 ;;
 ;; News:
-;; - 2017-10-21: Added support for multiple PDFs or other file
+;; - 21/10/2017: Added support for multiple PDFs and other file
 ;;   types.  See `bibtex-completion-pdf-extension' and
 ;;   `bibtex-completion-find-additional-pdfs' for details.
-;; - 10/10/2017: We now have support for ~@string~ constants.
-;; - 10/02/2017: Use date field if year is not defined.
-;; - 09/29/2017: If there is a BibTeX entry, citation macro, or
-;;   org-bibtex entry at point, the corresponding publication will be
-;;   pre-selected in helm-bibtex and ivy-bibtex giving quick access to
-;;   PDFs and other functions.
+;; - 10/10/2017: Added support for ~@string~ constants.
+;; - 10/02/2017: Date field is used when year is undefined.
+;; - 09/29/2017: BibTeX entry, citation macro, or org-bibtex entry at
+;;   point, will be pre-selected in helm-bibtex and ivy-bibtex giving
+;;   quick access to PDFs and other functions.
 ;;
 ;; See NEWS.org for old news.
 ;;
