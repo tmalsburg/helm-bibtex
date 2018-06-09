@@ -136,7 +136,10 @@ suffix that is specified in `bibtex-completion-notes-extension'."
   "#+TITLE: Notes on: ${author-or-editor} (${year}): ${title}\n\n"
   "Template used to create a new note when each note is stored in
 a separate file.  '${field-name}' can be used to insert the value
-of a BibTeX field into the template."
+of a BibTeX field into the template.  Apart from the fields defined in
+the entry, one can also use the virtual field `author-or-editor` which
+contains the author names if defined and otherwise the names of the
+editors."
   :group 'bibtex-completion
   :type 'string)
 
@@ -144,7 +147,10 @@ of a BibTeX field into the template."
   "\n* ${author-or-editor} (${year}): ${title}\n  :PROPERTIES:\n  :Custom_ID: ${=key=}\n  :END:\n\n"
   "Template used to create a new note when all notes are stored
 in one file.  '${field-name}' can be used to insert the value of
-a BibTeX field into the template."
+a BibTeX field into the template.  Apart from the fields defined in
+the entry, one can also use the virtual field `author-or-editor` which
+contains the author names if defined and otherwise the names of the
+editors."
   :group 'bibtex-completion
   :type 'string)
 

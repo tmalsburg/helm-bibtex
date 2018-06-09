@@ -24,6 +24,8 @@
 ;; bibtex-completion backend.
 ;;
 ;; News:
+;; - 09/06/2018: Added virtual APA field `author-or-editor` for use in
+;;   notes templates.
 ;; - 02/06/2018: Reload bibliography proactively when bib files are
 ;;   changed.
 ;; - 21/10/2017: Added support for multiple PDFs and other file
