@@ -40,6 +40,7 @@
 (require 'biblio)
 (require 'org-element)
 (require 'filenotify)
+(require 'subr-x)
 
 ;; Silence byte-compiler
 (declare-function reftex-what-macro "reftex-parse")
