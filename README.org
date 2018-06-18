@@ -34,7 +34,7 @@ See [[file:NEWS.org]] for old news.
   arXiv, Google Scholar, Library of Congress, etc.
 - Import BibTeX entries from CrossRef and other sources.
 
-Helm-bibtex’ and ivy-bitex’ main selling points are efficient search in large bibliographies using powerful search expressions and tight integration into your Emacs workflows.  They both can perform the following actions on entries matching the search expression: open the PDF associated with an entry, its URL or DOI, insert a citation for that entry, the BibTeX key, the BibTeX entry, or a plain text reference, attach the PDF to an email, take notes, edit the BibTeX entry.  Many aspects can be configured to suit personal preferences.
+Helm-bibtex’ and ivy-bibtex’ main selling points are efficient search in large bibliographies using powerful search expressions and tight integration into your Emacs workflows.  They both can perform the following actions on entries matching the search expression: open the PDF associated with an entry, its URL or DOI, insert a citation for that entry, the BibTeX key, the BibTeX entry, or a plain text reference, attach the PDF to an email, take notes, edit the BibTeX entry.  Many aspects can be configured to suit personal preferences.
 
 * Example
 
