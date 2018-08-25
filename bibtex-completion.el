@@ -38,7 +38,6 @@
 (require 's)
 (require 'f)
 (require 'biblio)
-(require 'org-element)
 (require 'filenotify)
 (require 'subr-x)
 
@@ -51,6 +50,9 @@
 (declare-function org-find-property "org")
 (declare-function org-show-entry "org")
 (declare-function org-entry-get "org")
+(declare-function org-element-parse-buffer "org-element")
+(declare-function org-element-map "org-element")
+(declare-function org-element-property "org-element")
 
 (defgroup bibtex-completion nil
   "Helm plugin for searching entries in a BibTeX bibliography."
@@ -502,6 +504,7 @@ is the entry (only the fields listed above) as an alist."
 
     (when (and bibtex-completion-notes-path
                (f-file? bibtex-completion-notes-path))
+      (require 'org-element)
       (with-temp-buffer
 	(org-mode)     ;;  need this to avoid error in emacs 25.3.1
         (insert-file-contents bibtex-completion-notes-path)
