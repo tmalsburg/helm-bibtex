@@ -50,6 +50,7 @@
 (declare-function org-find-property "org")
 (declare-function org-show-entry "org")
 (declare-function org-entry-get "org")
+(defvar org-capture-templates)
 
 (defgroup bibtex-completion nil
   "Helm plugin for searching entries in a BibTeX bibliography."
