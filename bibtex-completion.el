@@ -848,10 +848,12 @@ the variable `bibtex-completion-display-formats'."
 
 
 (defun bibtex-completion-clean-string (s)
-  "Removes quoting and superfluous white space from BibTeX field
-values."
-  (if s (replace-regexp-in-string "[\n\t ]+" " "
-         (replace-regexp-in-string "[\"{}]+" "" s))
+  "Remove quoting and superfluous white space from BibTeX field values."
+  (if s
+      (--> (replace-regexp-in-string "[\n\t ]+" " " s)
+	   (replace-regexp-in-string "\\\\&" "&" it)
+	   (replace-regexp-in-string "\\\\%" "%" it)
+           (replace-regexp-in-string "[\"{}]+" "" it))
     nil))
 
 (defun bibtex-completion-shorten-authors (authors)
@@ -1230,7 +1232,7 @@ defined.  Surrounding curly braces are stripped."
    (substitute-command-keys
     " Finish \\[bibtex-completion-exit-notes-buffer], refile \\[org-refile]")))
 
-;; Define global minor mode. This is needed to the toggle minor mode.
+;; Define global minor mode. This is needed for toggling minor mode.
 (define-globalized-minor-mode bibtex-completion-notes-global-mode bibtex-completion-notes-mode bibtex-completion-notes-mode)
 
 (defun bibtex-completion-exit-notes-buffer ()
@@ -1240,8 +1242,7 @@ line."
   (interactive)
   (widen)
   (bibtex-completion-notes-global-mode -1)
-  (setq-local
-   header-line-format nil)
+  (setq-local header-line-format nil)
   (save-buffer)
   (let ((window (get-buffer-window (file-name-nondirectory bibtex-completion-notes-path))))
     (if (and window (not (one-window-p window)))
