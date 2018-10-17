@@ -468,6 +468,8 @@ for string replacement."
 (defvar bibtex-completion-cached-notes-keys nil
   "A cache storing notes keys obtained when the bibliography was last parsed.")
 
+(defvar bibtex-completion-notes-hash nil)
+
 (defun bibtex-completion-candidates ()
   "Reads the BibTeX files and returns a list of conses, one for
 each entry.  The first element of these conses is a string
@@ -499,14 +501,26 @@ is the entry (only the fields listed above) as an alist."
         (when (< (string-to-number (org-version)) 9)
           (org-mode))     ; Avoid error in older versions of Org (see pull/231)
         (insert-file-contents bibtex-completion-notes-path)
-        (setq bibtex-completion-cached-notes-keys
-              (let ((tree (org-element-parse-buffer 'headline)))
-                (org-element-map tree 'headline
-                  (lambda (key) (org-element-property :CUSTOM_ID key)))))))
+        (let ((notes-hash (secure-hash 'sha256 (current-buffer))))
+          ;; Check that we have cached notes keys and that the notes
+          ;; file hasn't changed
+          (if (and bibtex-completion-cached-notes-keys
+                   (string= notes-hash bibtex-completion-notes-hash))
+              bibtex-completion-cached-notes-keys
+            (setq bibtex-completion-cached-notes-keys
+                  (let ((tree (org-element-parse-buffer 'headline)))
+                    (org-element-map tree 'headline
+                      (lambda (key) (org-element-property :CUSTOM_ID key)))))))))
 
     ;; reparse if necessary
 
     (when reparsed-files
+
+      (with-temp-buffer
+        (insert-file-contents bibtex-completion-notes-path)
+        (let ((notes-hash (secure-hash 'sha256 (current-buffer))))
+          (setq bibtex-completion-notes-hash notes-hash)))
+
       (cl-loop
        for file in files
        do
