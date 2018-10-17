@@ -7,6 +7,7 @@ Ivy-bibtex: [[http://melpa.org/#/ivy-bibtex][http://melpa.org/packages/ivy-bibte
 Helm-bibtex and ivy-bibtex allow you to search and manage your BibTeX bibliography.  They both share the same generic backend, bibtex-completion, but one uses the Helm completion framework and the other Ivy as a front-end.
 
 * News
+- 2018-06-09: Added virtual APA field ~author-or-editor~ for use in notes templates.
 - 2018-06-02: Reload bibliography proactively when bib files are changed.
 - 2017-10-21: Added support for multiple PDFs or other file types.  See sections “Additional PDFs” and “Other file types than PDF”.
 - 2017-10-10: Added support for ~@string~ constants.
@@ -33,7 +34,7 @@ See [[file:NEWS.org]] for old news.
   arXiv, Google Scholar, Library of Congress, etc.
 - Import BibTeX entries from CrossRef and other sources.
 
-Helm-bibtex’ and ivy-bitex’ main selling points are efficient search in large bibliographies using powerful search expressions and tight integration into your Emacs workflows.  They both can perform the following actions on entries matching the search expression: open the PDF associated with an entry, its URL or DOI, insert a citation for that entry, the BibTeX key, the BibTeX entry, or a plain text reference, attach the PDF to an email, take notes, edit the BibTeX entry.  Many aspects can be configured to suit personal preferences.
+Helm-bibtex’ and ivy-bibtex’ main selling points are efficient search in large bibliographies using powerful search expressions and tight integration into your Emacs workflows.  They both can perform the following actions on entries matching the search expression: open the PDF associated with an entry, its URL or DOI, insert a citation for that entry, the BibTeX key, the BibTeX entry, or a plain text reference, attach the PDF to an email, take notes, edit the BibTeX entry.  Many aspects can be configured to suit personal preferences.
 
 * Example
 

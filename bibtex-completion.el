@@ -38,8 +38,8 @@
 (require 's)
 (require 'f)
 (require 'biblio)
-(require 'org-element)
 (require 'filenotify)
+(require 'subr-x)
 
 ;; Silence byte-compiler
 (declare-function reftex-what-macro "reftex-parse")
@@ -51,6 +51,9 @@
 (declare-function org-show-entry "org")
 (declare-function org-entry-get "org")
 (defvar org-capture-templates)
+(declare-function org-element-parse-buffer "org-element")
+(declare-function org-element-map "org-element")
+(declare-function org-element-property "org-element")
 
 (defgroup bibtex-completion nil
   "Helm plugin for searching entries in a BibTeX bibliography."
@@ -134,18 +137,24 @@ suffix that is specified in `bibtex-completion-notes-extension'."
   :type '(choice file directory (const nil)))
 
 (defcustom bibtex-completion-notes-template-multiple-files
-  "#+TITLE: Notes on: ${author} (${year}): ${title}\n\n"
+  "#+TITLE: Notes on: ${author-or-editor} (${year}): ${title}\n\n"
   "Template used to create a new note when each note is stored in
 a separate file.  '${field-name}' can be used to insert the value
-of a BibTeX field into the template."
+of a BibTeX field into the template.  Apart from the fields defined in
+the entry, one can also use the virtual field `author-or-editor` which
+contains the author names if defined and otherwise the names of the
+editors."
   :group 'bibtex-completion
   :type 'string)
 
 (defcustom bibtex-completion-notes-template-one-file
-  "\n* ${author} (${year}): ${title}\n  :PROPERTIES:\n  :Custom_ID: ${=key=}\n  :END:\n\n"
+  "\n* ${author-or-editor} (${year}): ${title}\n  :PROPERTIES:\n  :Custom_ID: ${=key=}\n  :END:\n\n"
   "Template used to create a new note when all notes are stored
 in one file.  '${field-name}' can be used to insert the value of
-a BibTeX field into the template."
+a BibTeX field into the template.  Apart from the fields defined in
+the entry, one can also use the virtual field `author-or-editor` which
+contains the author names if defined and otherwise the names of the
+editors."
   :group 'bibtex-completion
   :type 'string)
 
@@ -509,6 +518,7 @@ is the entry (only the fields listed above) as an alist."
 
     (when (and bibtex-completion-notes-path
                (f-file? bibtex-completion-notes-path))
+      (require 'org-element)
       (with-temp-buffer
         (when (< (string-to-number (org-version)) 9)
           (org-mode))     ; Avoid error in older versions of Org (see pull/231)
@@ -563,6 +573,7 @@ is the entry (only the fields listed above) as an alist."
       (bibtex-completion-resolve-crossrefs files reparsed-files))
 
     ;; Finally return the list of candidates:
+    (message "Done (re)loading bibliography.")
     (nreverse
      (cl-loop
       for file in files
@@ -1111,40 +1122,44 @@ publication specified by KEY."
 (defun bibtex-completion-apa-get-value (field entry &optional default)
   "Return FIELD or ENTRY formatted following the APA
 guidelines.  Return DEFAULT if FIELD is not present in ENTRY."
-  (let ((value (bibtex-completion-get-value field entry))
-        (entry-type (bibtex-completion-get-value "=type=" entry)))
-    (if value
-       (pcase field
-         ;; https://owl.english.purdue.edu/owl/resource/560/06/
-         ("author" (bibtex-completion-apa-format-authors value))
-         ("editor"
-          (if (string= entry-type "proceedings")
-              (bibtex-completion-apa-format-editors value)
-            (bibtex-completion-apa-format-editors value)))
-         ;; When referring to books, chapters, articles, or Web pages,
-         ;; capitalize only the first letter of the first word of a
-         ;; title and subtitle, the first word after a colon or a dash
-         ;; in the title, and proper nouns. Do not capitalize the first
-         ;; letter of the second word in a hyphenated compound word.
-         ("title" (replace-regexp-in-string ; remove braces
-                   "[{}]"
-                   ""
-                    (replace-regexp-in-string ; upcase initial letter
-                    "^[[:alpha:]]"
-                    'upcase
-                    (replace-regexp-in-string ; preserve stuff in braces from being downcased
-                     "\\(^[^{]*{\\)\\|\\(}[^{]*{\\)\\|\\(}.*$\\)\\|\\(^[^{}]*$\\)"
-                     (lambda (x) (downcase (s-replace "\\" "\\\\" x)))
-                     value))))
-         ("booktitle" value)
-         ;; Maintain the punctuation and capitalization that is used by
-         ;; the journal in its title.
-         ("pages" (s-join "–" (s-split "[^0-9]+" value t)))
-         ("doi" (s-concat " http://dx.doi.org/" value))
-         ("year" (or value
-                     (car (split-string (bibtex-completion-get-value "date" entry "") "-"))))
-         (_ value))
-      "")))
+  ;; Virtual fields:
+  (if (string= field "author-or-editor")
+      (let ((value (bibtex-completion-get-value "author" entry)))
+        (if value
+            (bibtex-completion-apa-format-authors value)
+          (bibtex-completion-apa-format-editors
+           (bibtex-completion-get-value "editor" entry))))
+    ;; Real fields:
+    (let ((value (bibtex-completion-get-value field entry)))
+      (if value
+          (pcase field
+            ;; https://owl.english.purdue.edu/owl/resource/560/06/
+            ("author" (bibtex-completion-apa-format-authors value))
+            ("editor" (bibtex-completion-apa-format-editors value))
+            ;; When referring to books, chapters, articles, or Web pages,
+            ;; capitalize only the first letter of the first word of a
+            ;; title and subtitle, the first word after a colon or a dash
+            ;; in the title, and proper nouns. Do not capitalize the first
+            ;; letter of the second word in a hyphenated compound word.
+            ("title" (replace-regexp-in-string ; remove braces
+                      "[{}]"
+                      ""
+                      (replace-regexp-in-string ; upcase initial letter
+                       "^[[:alpha:]]"
+                       'upcase
+                       (replace-regexp-in-string ; preserve stuff in braces from being downcased
+                        "\\(^[^{]*{\\)\\|\\(}[^{]*{\\)\\|\\(}.*$\\)\\|\\(^[^{}]*$\\)"
+                        (lambda (x) (downcase (s-replace "\\" "\\\\" x)))
+                        value))))
+            ("booktitle" value)
+            ;; Maintain the punctuation and capitalization that is used by
+            ;; the journal in its title.
+            ("pages" (s-join "–" (s-split "[^0-9]+" value t)))
+            ("doi" (s-concat " http://dx.doi.org/" value))
+            ("year" (or value
+                        (car (split-string (bibtex-completion-get-value "date" entry "") "-"))))
+            (_ value))
+        ""))))
 
 (defun bibtex-completion-apa-format-authors (value)
   (cl-loop for a in (s-split " and " value t)
