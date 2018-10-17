@@ -148,6 +148,17 @@ a BibTeX field into the template."
   :group 'bibtex-completion
   :type 'string)
 
+(defcustom bibtex-completion-capture-template
+  '("bibtex" "helm-bibtex" entry (file bibtex-completion-notes-path)
+    "%(bibtex-completion-capture-placeholder)")
+
+  "Template for creating new notes with org-capture.
+You should use \"bibtex\" as the key of the template and
+`bibtex-completion-capture-placeholder' as the placeholder. See
+`org-capture-templates'."
+  :group 'bibtex-completion
+  :type 'list)
+
 (defcustom bibtex-completion-notes-key-pattern
   ":Custom_ID: +%s\\( \\|$\\)"
   "The pattern used to find entries in the notes file.  Only
@@ -1263,48 +1274,69 @@ line."
         (delete-window window)
       (switch-to-buffer (other-buffer)))))
 
-(defun bibtex-completion-edit-notes (keys)
-  "Open the notes associated with the selected entries using `find-file'."
+(defun bibtex-completion-edit-notes-multiple-files (keys)
+  "Using one notes file per publication, open notes associated with the selected entries."
   (dolist (key keys)
-    (let* ((entry (bibtex-completion-get-entry key))
-           (year (or (bibtex-completion-get-value "year" entry)
-                     (car (split-string (bibtex-completion-get-value "date" entry "") "-"))))
-           (entry (push (cons "year" year) entry)))
-      (if (and bibtex-completion-notes-path
-               (f-directory? bibtex-completion-notes-path))
-                                        ; One notes file per publication:
-          (let* ((path (f-join bibtex-completion-notes-path
-                               (s-concat key bibtex-completion-notes-extension))))
-            (find-file path)
-            (unless (f-exists? path)
-              (insert (s-format bibtex-completion-notes-template-multiple-files
-                                'bibtex-completion-apa-get-value
-                                entry))))
-                                        ; One file for all notes:
+    (let ((entry (bibtex-completion-get-entry key))
+	  (path (f-join bibtex-completion-notes-path
+			(s-concat key bibtex-completion-notes-extension))))
+      ;; Why not `find-file-other-window'?
+      (find-file path)
+      (unless (f-exists? path)
+	(insert (s-format bibtex-completion-notes-template-multiple-files
+                          'bibtex-completion-apa-get-value
+                          entry))))))
+
+(defun bibtex-completion-clean-notes-string (s)
+  "Unescape ampersand and remove brackets from S."
+  (--> (replace-regexp-in-string "\\\\&" "&" s)
+       (replace-regexp-in-string "[\\\{}]+" "" it)))
+
+(defun bibtex-completion-capture-placeholder ()
+  "Placeholder for `bibtex-completion-capture-template'."
+  (bibtex-completion-clean-notes-string
+   (s-format bibtex-completion-notes-template-one-file
+	     'bibtex-completion-apa-get-value entry)))
+
+(defun bibtex-completion-edit-notes-one-file (keys)
+  "Using one file for all notes, open notes associated with the selected entries.
+If notes are not found, create one using org-capture (see
+`bibtex-completion-capture-template')."
+  (dolist (key keys)
+    (let ((entry (bibtex-completion-get-entry key)))
+      (if (not (assoc "=has-note=" entry))
+	  ;; No notes found, so create one
+          (progn
+            (require 'org-capture)
+            (cl-pushnew bibtex-completion-capture-template
+                        org-capture-templates :test 'equal)
+	    (org-capture nil "bibtex")
+	    ;; Move point past drawer and empty lines
+	    (org-end-of-meta-data t)
+	    (when (eobp)
+	      (newline)
+	      (save-excursion
+		(newline))))
+	;; Existing notes found
         (unless (and buffer-file-name
                      (f-same? bibtex-completion-notes-path buffer-file-name))
           (find-file-other-window bibtex-completion-notes-path))
-        (widen)
-        (outline-show-all)
-        (goto-char (point-min))
-        (if (re-search-forward (format bibtex-completion-notes-key-pattern (regexp-quote key)) nil t)
-                                        ; Existing entry found:
-            (when (eq major-mode 'org-mode)
-              (org-narrow-to-subtree)
-              (re-search-backward "^\*+ " nil t)
-              (org-cycle-hide-drawers nil)
-              (bibtex-completion-notes-mode 1))
-                                        ; Create a new entry:
-            (goto-char (point-max))
-            (insert (s-format bibtex-completion-notes-template-one-file
-                              'bibtex-completion-apa-get-value
-                              entry)))
-          (when (eq major-mode 'org-mode)
-            (org-narrow-to-subtree)
-            (re-search-backward "^\*+ " nil t)
-            (org-cycle-hide-drawers nil)
-            (goto-char (point-max))
-            (bibtex-completion-notes-mode 1))))))
+	(widen)
+	(outline-show-all)
+	(org-link-search (concat "#" (regexp-quote key)))
+	(org-narrow-to-subtree)
+	(org-end-of-meta-data t)
+	(bibtex-completion-notes-mode 1)))))
+
+(defun bibtex-completion-edit-notes (keys)
+  "Open notes associated with the selected entries.
+If `bibtex-completion-notes-path' points to a directory run
+`bibtex-completion-edit-notes-multiple-files'. Otherwise run
+`bibtex-completion-edit-notes-one-file'."
+  (if (and bibtex-completion-notes-path
+           (f-directory? bibtex-completion-notes-path))
+      (bibtex-completion-edit-notes-multiple-files keys)
+    (bibtex-completion-edit-notes-one-file keys)))
 
 (defun bibtex-completion-buffer-visiting (file)
   (or (get-file-buffer file)
