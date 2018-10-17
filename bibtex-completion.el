@@ -496,7 +496,8 @@ is the entry (only the fields listed above) as an alist."
     (when (and bibtex-completion-notes-path
                (f-file? bibtex-completion-notes-path))
       (with-temp-buffer
-	(org-mode)     ;;  need this to avoid error in emacs 25.3.1
+        (when (< (string-to-number (org-version)) 9)
+          (org-mode))     ; Avoid error in older versions of Org (see pull/231)
         (insert-file-contents bibtex-completion-notes-path)
         (setq bibtex-completion-cached-notes-keys
               (let ((tree (org-element-parse-buffer 'headline)))
