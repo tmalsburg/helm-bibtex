@@ -539,9 +539,10 @@ is the entry (only the fields listed above) as an alist."
     (when reparsed-files
 
       (with-temp-buffer
-        (insert-file-contents bibtex-completion-notes-path)
-        (let ((notes-hash (secure-hash 'sha256 (current-buffer))))
-          (setq bibtex-completion-notes-hash notes-hash)))
+        (when-let (notes-file bibtex-completion-notes-path)
+          (insert-file-contents notes-file)
+          (let ((notes-hash (secure-hash 'sha256 (current-buffer))))
+            (setq bibtex-completion-notes-hash notes-hash))))
 
       (cl-loop
        for file in files
