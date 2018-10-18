@@ -574,7 +574,8 @@ is the entry (only the fields listed above) as an alist."
       (bibtex-completion-resolve-crossrefs files reparsed-files))
 
     ;; Finally return the list of candidates:
-    (message "Done (re)loading bibliography.")
+    (when reparsed-files
+      (message "Done reloading bibliography"))
     (nreverse
      (cl-loop
       for file in files
