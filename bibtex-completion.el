@@ -1326,8 +1326,9 @@ If notes are not found, create one using org-capture (see
 	  ;; No notes found, so create one
           (progn
             (require 'org-capture)
-            (cl-pushnew bibtex-completion-capture-template
-                        org-capture-templates :test 'equal)
+            (unless (assoc-default "bibtex" org-capture-templates)
+              (cl-pushnew bibtex-completion-capture-template
+                          org-capture-templates :test 'equal))
 	    (org-capture nil "bibtex")
 	    ;; Move point past drawer and empty lines
 	    (org-end-of-meta-data t)
