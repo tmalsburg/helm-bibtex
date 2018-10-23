@@ -592,6 +592,10 @@ Bibtex-completion caches the bibliography to prevent a costly reread when a new 
 
 This will use [[https://github.com/cpitclaudel/biblio.el][biblio.el]] to search the CrossRef database.  In the results list, place the cursor on the entry of interest and hit ~c~ to copy the BibTeX for that entry or ~i~ to insert it at point.  Press ~q~ to close the buffer with the search results.  See the [[https://github.com/cpitclaudel/biblio.el/blob/master/README.md][documentation of biblio.el]] for details.
 
+*** Searching on a different source
+    Sometimes the search term will not yield the desired results on the first fallback source selected and you may wish to pick another fallback option with the same search term.
+    For this you can use ~helm-resume~ (or ~ivy-resume~) to get back to the initial helm (ivy) menu with the last search term pre-entered allowing you to efficiently choose another option.
+
 * Advanced usage (a.k.a. hacks)
 
 Below I provide code that was useful for me or other users.  Note that this code may make assumptions that do not hold in your setup.  Read the code carefully before executing it and make changes as needed.
