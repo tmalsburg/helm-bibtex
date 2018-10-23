@@ -57,8 +57,8 @@ or
 
 #+BEGIN_SRC emacs-lisp
 (autoload 'ivy-bibtex "ivy-bibtex" "" t)
-;; ivy-bibtex requires ivy's `ivy--regex-ignore-order` regex builder, which 
-;; ignores the order of regexp tokens when searching for matching candidates. 
+;; ivy-bibtex requires ivy's `ivy--regex-ignore-order` regex builder, which
+;; ignores the order of regexp tokens when searching for matching candidates.
 ;; Add something like this to your init file:
 (setq ivy-re-builders-alist
       '((ivy-bibtex . ivy--regex-ignore-order)
@@ -114,7 +114,7 @@ File specifications can be bare paths or follow the format used by JabRef, Zoter
 
 ** Notes
 
-Bibtex-completion supports two methods for storing notes.  It can either store all notes in one file or store notes in multiple files, one file per publication.  In the first case, the customization variable ~bibtex-completion-notes-path~ has to be set to the full path of the notes file: 
+Bibtex-completion supports two methods for storing notes.  It can either store all notes in one file or store notes in multiple files, one file per publication.  In the first case, the customization variable ~bibtex-completion-notes-path~ has to be set to the full path of the notes file:
 
 #+BEGIN_SRC emacs-lisp
 (setq bibtex-completion-notes-path "/path/to/notes.org")
@@ -320,7 +320,7 @@ With a prefix ARG, the cache is invalidated and the bibliography reread."
   (bibtex-completion-init)
   (ivy-read "BibTeX Items: "
             (bibtex-completion-candidates)
-            :initial-input "Jane Doe" 
+            :initial-input "Jane Doe"
             :caller 'ivy-bibtex
             :action ivy-bibtex-default-action))
 
@@ -516,7 +516,7 @@ A common use case is where a search term is written in a document (say in your L
 
 ** Actions for selected publications
 
-The available actions are: 
+The available actions are:
 - Open a PDF if present, or a URL or DOI (default action)
 - Open the URL or DOI in browser
 - Insert citation
@@ -542,7 +542,7 @@ The available actions are:
 
 *Helm-bibtex*: Start an email to your colleague (~C-x m~) and execute ~helm-bibtex~.  Search for your new publications and mark them with ~C-<space>~, then press ~<f7>~ to execute the action “Attach PDF to email”.  Then ~M-x helm-resume~ (the publications are still marked) and press ~<f6>~ to execute the action “Insert BibTeX entry”.  Optionally insert more human readable references using ~M-x helm-resume~ and ~<f4>~ to execute the action “Insert reference”.  Send email (~C-c C-c~).  Done.  This takes less than 10 seconds.
 
-*Ivy-bibtex*: Start an email to your colleague (~C-x m~) and execute ~ivy-bibtex~.  Search for your new publications and select the first one, then press ~C-M-o a~ to execute the action “Attach PDF to email”. Then press ~C-M-o b~ to execute the action “Insert BibTeX entry”. Optionally insert a more human readable reference using ~C-M-o r~ to execute the action “Insert reference”. Then select your next publication and again ~C-M-o a~, ~C-M-o b~ and, optionally, ~C-M-o r~. And so on.  Send email (~C-c C-c~).  Done. 
+*Ivy-bibtex*: Start an email to your colleague (~C-x m~) and execute ~ivy-bibtex~.  Search for your new publications and select the first one, then press ~C-M-o a~ to execute the action “Attach PDF to email”. Then press ~C-M-o b~ to execute the action “Insert BibTeX entry”. Optionally insert a more human readable reference using ~C-M-o r~ to execute the action “Insert reference”. Then select your next publication and again ~C-M-o a~, ~C-M-o b~ and, optionally, ~C-M-o r~. And so on.  Send email (~C-c C-c~).  Done.
 
  Of course, this assumes that you’re sending email from Emacs, e.g. via [[http://www.djcbsoftware.nl/code/mu/mu4e.html][Mu4e]].
 
@@ -561,7 +561,7 @@ Helm-bibtex and ivy-bibtex have powerful search capabilities but some common sea
 }
 #+END_SRC
 
-Since ~tags~ is not a standard BibTeX field, bibtex-completion by default doesn’t consider it when searching.  In order to be able to search for tags, we therefore have to tell bibtex-completion that the ~tags~ field is relevant, too: 
+Since ~tags~ is not a standard BibTeX field, bibtex-completion by default doesn’t consider it when searching.  In order to be able to search for tags, we therefore have to tell bibtex-completion that the ~tags~ field is relevant, too:
 
 #+BEGIN_SRC elsip
 (setq bibtex-completion-additional-search-fields '(tags))
@@ -578,7 +578,7 @@ The action for inserting a citation command into a LaTeX document prompts for th
 
 ** Force reloading of the bibliography
 
-Bibtex-completion caches the bibliography to prevent a costly reread when a new query is started.  However, bibtex-completion does not check whether new PDFs or notes were added since the last read and hence the symbols indicating the presence or absence of these items may be incorrect.  A reread can be forced using a prefix argument.  
+Bibtex-completion caches the bibliography to prevent a costly reread when a new query is started.  However, bibtex-completion does not check whether new PDFs or notes were added since the last read and hence the symbols indicating the presence or absence of these items may be incorrect.  A reread can be forced using a prefix argument.
 
 *Helm-bibtex*: Either do ~C-u M-x helm-bibtex~ or ~C-u~ followed by whatever key binding you use to invoke helm-bibtex.
 
@@ -586,7 +586,7 @@ Bibtex-completion caches the bibliography to prevent a costly reread when a new 
 
 ** Import BibTeX from CrossRef
 
-*Helm-bibtex*: Start helm-bibtex and enter search terms.  Then select “CrossRef” in the section titled “Fallback options”.  (You can use the left and right arrow keys to switch between sections.) 
+*Helm-bibtex*: Start helm-bibtex and enter search terms.  Then select “CrossRef” in the section titled “Fallback options”.  (You can use the left and right arrow keys to switch between sections.)
 
 *Ivy-bibtex*: Start ivy-bibtex and enter search terms.  Then press ~M-o f~ to see the list of fallback options and and select "CrossRef".
 
