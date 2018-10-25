@@ -137,12 +137,13 @@ suffix that is specified in `bibtex-completion-notes-extension'."
 
 (defcustom bibtex-completion-notes-template-multiple-files
   "#+TITLE: Notes on: ${author-or-editor} (${year}): ${title}\n\n"
-  "Template used to create a new note when each note is stored in
-a separate file.  '${field-name}' can be used to insert the value
-of a BibTeX field into the template.  Apart from the fields defined in
-the entry, one can also use the virtual field `author-or-editor` which
+  "Template used to create a new note when each note is stored in a
+separate file. '${field-name}' can be used to insert the value of a
+BibTeX field into the template. Apart from the fields defined in the
+entry, one can also use the virtual fields `author-or-editor` -- which
 contains the author names if defined and otherwise the names of the
-editors."
+editors -- and `author-abbrev` -- which abbreviates to 'First author
+et al.' when there are three or more authors."
   :group 'bibtex-completion
   :type 'string)
 
@@ -151,9 +152,10 @@ editors."
   "Template used to create a new note when all notes are stored
 in one file.  '${field-name}' can be used to insert the value of
 a BibTeX field into the template.  Apart from the fields defined in
-the entry, one can also use the virtual field `author-or-editor` which
+the entry, one can also use the virtual field `author-or-editor` -- which
 contains the author names if defined and otherwise the names of the
-editors."
+editors -- and `author-abbrev` -- which abbreviates to 'First author
+et al.' when there are three or more authors."
   :group 'bibtex-completion
   :type 'string)
 
@@ -1107,6 +1109,8 @@ guidelines.  Return DEFAULT if FIELD is not present in ENTRY."
             ;; https://owl.english.purdue.edu/owl/resource/560/06/
             ("author" (bibtex-completion-apa-format-authors value))
             ("editor" (bibtex-completion-apa-format-editors value))
+            ;; For three or more authors, abbreviate to "Author et al"
+            ("author-abbrev" (bibtex-completion-apa-format-authors-abbrev value))
             ;; When referring to books, chapters, articles, or Web pages,
             ;; capitalize only the first letter of the first word of a
             ;; title and subtitle, the first word after a colon or a dash
@@ -1161,6 +1165,35 @@ guidelines.  Return DEFAULT if FIELD is not present in ENTRY."
                  ((< l 8) (concat (s-join ", " (-butlast authors))
                                   ", & " (-last-item authors)))
                  (t (concat (s-join ", " (-slice authors 0 7)) ", …"))))))
+
+(defun bibtex-completion-apa-format-authors-abbrev (value)
+  (cl-loop for a in (s-split " and " value t)
+           if (s-index-of "{" a)
+             collect
+             (replace-regexp-in-string "[{}]" "" a)
+             into authors
+           else if (s-index-of "," a)
+             collect
+             (let ((p (s-split " *, *" a t)))
+               (concat
+                (car p) ", "
+                (s-join " " (-map (lambda (it) (concat (s-left 1 it) "."))
+                                  (s-split " " (cadr p))))))
+             into authors
+           else
+             collect
+             (let ((p (s-split " " a t)))
+               (concat
+                (-last-item p) ", "
+                (s-join " " (-map (lambda (it) (concat (s-left 1 it) "."))
+                                  (-butlast p)))))
+             into authors
+           finally return
+             (let ((l (length authors)))
+               (cond
+                 ((= l 1) (car authors))
+                 ((= l 2) (concat (s-join " & " authors)))
+                 (t (format "%s et al." (car authors)))))))
 
 (defun bibtex-completion-apa-format-editors (value)
   (cl-loop for a in (s-split " and " value t)
