@@ -145,7 +145,7 @@ When nil, the window will split below."
    for entry = (cdr entry)
    for entry-key = (bibtex-completion-get-value "=key=" entry)
    collect (cons (bibtex-completion-format-entry entry width) entry-key)))
-
+  
 ;; Warp bibtex-completion actions with some helm-specific code:
 
 (defmacro helm-bibtex-helmify-action (action name)
@@ -154,7 +154,19 @@ Then pass the candidates marked in helm to ACTION.  Also uses
 `with-helm-current-buffer' such that when ACTION inserts text it
 comes out in the right buffer."
   `(defun ,name (_)
-     (let ((keys (helm-marked-candidates :with-wildcard t)))
+     (let ((keys (with-current-buffer helm-buffer
+                   (or (cl-loop
+                        for (source . real) in helm-marked-candidates
+                        collect (propertize real
+                                            'scope (if (equal (assq 'name source)
+                                                              (assq 'name helm-source-bibtex-local))
+                                                       'local
+                                                     'global)))
+                       (list (propertize (helm-get-selection)
+                                         'scope (if (equal (assq 'name (helm-get-current-source))
+                                                           (assq 'name helm-source-bibtex-local))
+                                                    'local
+                                                  'global)))))))
        (with-helm-current-buffer
          (,action keys)))))
 
@@ -172,24 +184,32 @@ comes out in the right buffer."
 
 ;; Helm sources:
 
-(defvar helm-source-bibtex
-  (helm-build-sync-source "BibTeX entries"
-    :header-name (lambda (name)
-                   (format "%s%s: " name (if helm-bibtex-local-bib " (local)" "")))
-    :candidates 'helm-bibtex-candidates
+(defvar helm-bibtex-actions
+  '(("Open PDF, URL or DOI"       . helm-bibtex-open-any)
+    ("Open URL or DOI in browser" . helm-bibtex-open-url-or-doi)
+    ("Insert citation"            . helm-bibtex-insert-citation)
+    ("Insert reference"           . helm-bibtex-insert-reference)
+    ("Insert BibTeX key"          . helm-bibtex-insert-key)
+    ("Insert BibTeX entry"        . helm-bibtex-insert-bibtex)
+    ("Attach PDF to email"        . helm-bibtex-add-PDF-attachment)
+    ("Edit notes"                 . helm-bibtex-edit-notes)
+    ("Show entry"                 . helm-bibtex-show-entry)
+    ("Add PDF to library"         . helm-bibtex-add-pdf-to-library))
+  "Alist of actions for BibTeX sources.")
+
+(defvar helm-source-bibtex-global
+  (helm-build-sync-source "Global BibTeX entries"
+    :candidates 'helm-bibtex-candidates-global
     :filtered-candidate-transformer 'helm-bibtex-candidates-formatter
-    :action (helm-make-actions
-             "Open PDF, URL or DOI"       'helm-bibtex-open-any
-             "Open URL or DOI in browser" 'helm-bibtex-open-url-or-doi
-             "Insert citation"            'helm-bibtex-insert-citation
-             "Insert reference"           'helm-bibtex-insert-reference
-             "Insert BibTeX key"          'helm-bibtex-insert-key
-             "Insert BibTeX entry"        'helm-bibtex-insert-bibtex
-             "Attach PDF to email"        'helm-bibtex-add-PDF-attachment
-             "Edit notes"                 'helm-bibtex-edit-notes
-             "Show entry"                 'helm-bibtex-show-entry
-             "Add PDF to library"         'helm-bibtex-add-pdf-to-library))
-  "Source for searching in BibTeX files.")
+    :action 'helm-bibtex-actions)
+  "Source for searching in global BibTeX files.")
+
+(defvar helm-source-bibtex-local
+  (helm-build-sync-source "Local BibTeX entries"
+    :candidates 'helm-bibtex-candidates-local
+    :filtered-candidate-transformer 'helm-bibtex-candidates-formatter
+    :action 'helm-bibtex-actions)
+  "Source for searching in local BibTeX files.")
 
 (defvar helm-source-fallback-options
   '((name            . "Fallback options")
@@ -197,37 +217,44 @@ comes out in the right buffer."
     (candidates      . bibtex-completion-fallback-candidates)
     (no-matchplugin)
     (nohighlight)
+    (nomark)
     (action          . (lambda (candidate) (bibtex-completion-fallback-action candidate helm-pattern))))
   "Source for online look-up.")
 
 ;; Helm-bibtex command:
 
 ;;;###autoload
-(defun helm-bibtex (&optional arg local-bib input)
-  "Search BibTeX entries.
+(defun helm-bibtex (&optional arg scope input)
+  "Search BibTeX entries using helm.
 
 With a prefix ARG, the cache is invalidated and the bibliography
 reread.
 
-If LOCAL-BIB is non-nil, display that the BibTeX entries are read
-from the local bibliography.  This is set internally by
+If SCOPE is 'global or 'local, only the global or local
+bibliography is searched, respectively.  This is set iternally by
+`helm-bibtex-with-global-bibliography' and
 `helm-bibtex-with-local-bibliography'.
 
 If INPUT is non-nil and a string, that value is going to be used
 as a predefined search term.  Can be used to define functions for
 frequent searches (e.g. your own publications)."
   (interactive "P")
+  (bibtex-completion-init scope)
   (when arg
     (bibtex-completion-clear-cache))
-  (bibtex-completion-init)
   (let* ((candidates (bibtex-completion-candidates))
          (key (bibtex-completion-key-at-point))
          (preselect (and key
                          (cl-position-if (lambda (cand)
                                            (member (cons "=key=" key)
                                                    (cdr cand)))
-                                         candidates))))
-    (helm :sources (list helm-source-bibtex helm-source-fallback-options)
+                                         (append (cdr candidates) (car candidates)))))
+         (sources (list helm-source-fallback-options)))
+    (unless (eq scope 'local)
+      (push helm-source-bibtex-global sources))
+    (unless (eq scope 'global)
+      (push helm-source-bibtex-local sources))
+    (helm :sources sources
           :full-frame helm-bibtex-full-frame
           :buffer "*helm bibtex*"
           :input input
@@ -236,20 +263,26 @@ frequent searches (e.g. your own publications)."
                             (> preselect 0)
                             (helm-next-line preselect)))
           :candidate-number-limit (max 500 (1+ (or preselect 0)))
-          :bibtex-candidates candidates
-          :bibtex-local-bib local-bib)))
+          :bibtex-candidates-global (car candidates)
+          :bibtex-candidates-local (cdr candidates))))
 
 ;;;###autoload
-(defun helm-bibtex-with-local-bibliography (&optional arg)
-  "Search BibTeX entries with local bibliography.
+(defun helm-bibtex-with-global-bibliography (&optional arg)
+  "Search BibTeX entries in global bibliography using helm.
 
 With a prefix ARG the cache is invalidated and the bibliography
 reread."
   (interactive "P")
-  (let* ((local-bib (bibtex-completion-find-local-bibliography))
-         (bibtex-completion-bibliography (or local-bib
-                                             bibtex-completion-bibliography)))
-    (helm-bibtex arg local-bib)))
+  (helm-bibtex arg 'global))
+
+;;;###autoload
+(defun helm-bibtex-with-local-bibliography (&optional arg)
+  "Search BibTeX entries in local bibliography using helm.
+
+With a prefix ARG the cache is invalidated and the bibliography
+reread."
+  (interactive "P")
+  (helm-bibtex arg 'local))
 
 (provide 'helm-bibtex)
 

@@ -82,23 +82,38 @@
 (require 'bibtex-completion)
 
 (defcustom ivy-bibtex-default-action 'ivy-bibtex-open-any
-  "The default action for the `ivy-bibtex` command."
+  "The default action for the `ivy-bibtex' command."
   :group 'bibtex-completion
   :type 'function)
-  
+
+(defcustom ivy-bibtex-local-bibliography-face 'ivy-virtual
+  "The face used by the `ivy-bibtex' command to display entries from the local bibliography."
+  :group 'bibtex-completion
+  :type 'face)
+
+(defvar ivy-bibtex-local-bibliography-length nil
+  "The number of candidates in the local bibliography.  This is set internally by `ivy-bibtex'.")
+
 (defun ivy-bibtex-display-transformer (candidate)
+  "Format CANDIDATE for display in ivy."
   (let* ((width (1- (frame-width)))
          (idx (get-text-property 0 'idx candidate))
-         (entry (cdr (nth idx (ivy-state-collection ivy-last)))))
-    (bibtex-completion-format-entry entry width)))
+         (entry (cdr (nth idx (ivy-state-collection ivy-last))))
+         (str (bibtex-completion-format-entry entry width)))
+    (if (< idx ivy-bibtex-local-bibliography-length)
+        (propertize str 'face ivy-bibtex-local-bibliography-face)
+      str)))
 
 (defmacro ivy-bibtex-ivify-action (action name)
   "Wraps the function ACTION in another function named NAME which
 extracts the key from the candidate selected in ivy and passes it
 to ACTION."
   `(defun ,name (candidate)
-     (let ((key (cdr (assoc "=key=" (cdr candidate)))))
-       (,action (list key)))))
+     (let ((key (cdr (assoc "=key=" (cdr candidate))))
+           (idx (get-text-property 0 'idx (ivy-state-current ivy-last))))
+       (,action (list (propertize key 'scope (if (< idx ivy-bibtex-local-bibliography-length)
+                                                 'local
+                                               'global)))))))
 
 (ivy-bibtex-ivify-action bibtex-completion-open-any ivy-bibtex-open-any)
 (ivy-bibtex-ivify-action bibtex-completion-open-pdf ivy-bibtex-open-pdf)
@@ -114,7 +129,7 @@ to ACTION."
 
 (defun ivy-bibtex-fallback (search-expression)
   "Select a fallback option for SEARCH-EXPRESSION. This is meant
-to be used as an action in `ivy-read`, with `ivy-text` as search
+to be used as an action in `ivy-read', with `ivy-text' as search
 expression."
   (ivy-read "Fallback options: "
             (bibtex-completion-fallback-candidates)
@@ -122,43 +137,58 @@ expression."
             :action (lambda (candidate) (bibtex-completion-fallback-action (cdr candidate) search-expression))))
 
 ;;;###autoload
-(defun ivy-bibtex (&optional arg local-bib)
+(defun ivy-bibtex (&optional arg scope input)
   "Search BibTeX entries using ivy.
 
 With a prefix ARG the cache is invalidated and the bibliography
 reread.
 
-If LOCAL-BIB is non-nil, display that the BibTeX entries are read
-from the local bibliography. This is set internally by
-`ivy-bibtex-with-local-bibliography'."
+If SCOPE is 'global or 'local, only the global or local
+bibliography is searched, respectively.  This is set iternally by
+`ivy-bibtex-with-global-bibliography' and
+`ivy-bibtex-with-local-bibliography'.
+
+If INPUT is non-nil and a string, that value is going to be used
+as a predefined search term.  Can be used to define functions for
+frequent searches (e.g. your own publications)."
   (interactive "P")
+  (bibtex-completion-init scope)
   (when arg
     (bibtex-completion-clear-cache))
-  (bibtex-completion-init)
   (let* ((candidates (bibtex-completion-candidates))
+         (local-length (length (cdr candidates)))
+         (candidates (append (cdr candidates) (car candidates)))
          (key (bibtex-completion-key-at-point))
          (preselect (and key
                          (cl-position-if (lambda (cand)
                                            (member (cons "=key=" key)
                                                    (cdr cand)))
                                          candidates))))
-    (ivy-read (format "BibTeX entries%s: " (if local-bib " (local)" ""))
+    (setq ivy-bibtex-local-bibliography-length local-length)
+    (ivy-read "BibTeX entries: "
               candidates
+              :initial-input input
               :preselect preselect
               :caller 'ivy-bibtex
               :action ivy-bibtex-default-action)))
 
 ;;;###autoload
-(defun ivy-bibtex-with-local-bibliography (&optional arg)
-  "Search BibTeX entries with local bibliography.
+(defun ivy-bibtex-with-global-bibliography (&optional arg)
+  "Search BibTeX entries in globcal bibliography using ivy.
 
 With a prefix ARG the cache is invalidated and the bibliography
 reread."
   (interactive "P")
-  (let* ((local-bib (bibtex-completion-find-local-bibliography))
-         (bibtex-completion-bibliography (or local-bib
-                                             bibtex-completion-bibliography)))
-    (ivy-bibtex arg local-bib)))
+  (ivy-bibtex arg 'global))
+
+;;;###autoload
+(defun ivy-bibtex-with-local-bibliography (&optional arg)
+  "Search BibTeX entries in local bibliography using ivy.
+
+With a prefix ARG the cache is invalidated and the bibliography
+reread."
+  (interactive "P")
+  (ivy-bibtex arg 'local))
 
 (ivy-set-display-transformer
  'ivy-bibtex

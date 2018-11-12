@@ -337,6 +337,18 @@ editor names."
   :group 'bibtex-completion
   :type '(alist :key-type symbol :value-type string))
 
+(defcustom bibtex-completion-reverse-order '(entries)
+  "Non-nil if the order of bibliography files and/or entries
+should be reversed in the results list. More precisely, this is a
+list containing 'files if files should be reversed and 'entries
+if entries should be reversed. The default is to reverse entries
+but not files, so the last entry of the first file comes first."
+  :group 'bibtex-completion
+  :type '(choice (const :tag "Reverse files and entries" (files entries))
+                 (const :tag "Reverse files only" (files))
+                 (const :tag "Reverse entries only" (entries))
+                 (const :tag "Don't reverse anything" nil)))
+
 (defvar bibtex-completion-cross-referenced-entry-types
   '("proceedings" "mvproceedings" "book" "mvbook" "collection" "mvcollection")
   "The list of potentially cross-referenced entry types (in
@@ -363,35 +375,60 @@ file is reparsed.")
 (defvar bibtex-completion-string-hash-table nil
   "A hash table used for string replacements.")
 
+(defvar bibtex-completion-bibliography-internal nil
+  "Cons storing the global and local bibliography files currently
+  in use. This is set internally.")
+
 
-(defun bibtex-completion-normalize-bibliography (&optional type)
+(defun bibtex-completion-normalize-bibliography (&optional type scope)
   "Returns a list of bibliography file(s) in
-`bibtex-completion-bibliography'. If there are org-mode
+`bibtex-completion-bibliography-internal'. If there are org-mode
 bibliography-files, their corresponding bibtex files are listed
 as well, unless TYPE is 'main. If TYPE is 'bibtex, org-mode
 bibliography-files are instead replaced with their associated
-bibtex files."
-  (delete-dups
-   (cl-loop
-    for bib-file in (-flatten (list bibtex-completion-bibliography))
-    for main-file = (if (consp bib-file)
-                        (car bib-file)
-                      bib-file)
-    for bibtex-file = (if (consp bib-file)
-                          (cdr bib-file)
-                        (concat (file-name-sans-extension main-file) ".bib"))
-    unless (equal type 'bibtex)
-    collect main-file
-    unless (equal type 'main)
-    collect bibtex-file)))
+bibtex files. If SCOPE is 'global or 'local, only the global or
+local bibliography files (i.e. files in the car or cdr of
+`bibtex-completion-bibliography-internal') are listed,
+respectively."
+  (cl-loop
+   for bib-file in (append (and (not (eq scope 'local))
+                                (car bibtex-completion-bibliography-internal))
+                           (and (not (eq scope 'global))
+                                (cdr bibtex-completion-bibliography-internal)))
+   for main-file = (if (consp bib-file)
+                       (car bib-file)
+                     bib-file)
+   for bibtex-file = (if (consp bib-file)
+                         (cdr bib-file)
+                       (concat (file-name-sans-extension main-file) ".bib"))
+   unless (equal type 'bibtex)
+   collect (file-truename main-file)
+   unless (equal type 'main)
+   collect (file-truename bibtex-file)))
 
 (defvar bibtex-completion-file-watch-descriptors nil
   "List of file watches monitoring bibliography files for changes.")
   
-(defun bibtex-completion-init ()
+(defun bibtex-completion-init (&optional scope)
   "Checks that the files and directories specified by the user
-actually exist. Also sets `bibtex-completion-display-formats-internal'."
+actually exist. Also sets
+`bibtex-completion-display-formats-internal' and
+`bibtex-completion-bibliography-internal'. If SCOPE is 'global or
+'local, the cdr or car of the latter variable is set to nil,
+respectively."
 
+  ;; Set `bibtex-completion-bibliography-internal' according to SCOPE:
+  (setq bibtex-completion-bibliography-internal
+        (cons (-flatten (list bibtex-completion-bibliography)) nil))
+  (unless (eq scope 'global)
+    (setcdr bibtex-completion-bibliography-internal
+            (cl-remove-if
+             (lambda (file)
+               (member file (bibtex-completion-normalize-bibliography 'bibtex 'global)))
+             (bibtex-completion-find-local-bibliography))))
+  (when (eq scope 'local)
+    (setcar bibtex-completion-bibliography-internal nil))
+    
   ;; Remove current watch-descriptors for bibliography files:
   (mapc (lambda (watch-descriptor)
           (file-notify-rm-watch watch-descriptor))
@@ -432,7 +469,8 @@ actually exist. Also sets `bibtex-completion-display-formats-internal'."
                 bibtex-completion-display-formats)))
 
 (defun bibtex-completion-clear-cache (&optional files)
-  "Clears FILES from cache. If FILES is omitted, all files in `bibtex-completion-biblography' are cleared."
+  "Clears FILES from cache. If FILES is omitted, all files in
+`bibtex-completion-biblography-internal' are cleared."
   (setq bibtex-completion-cache
         (cl-remove-if
          (lambda (x)
@@ -442,13 +480,14 @@ actually exist. Also sets `bibtex-completion-display-formats-internal'."
          bibtex-completion-cache)))
 
 (defun bibtex-completion-clear-string-cache (&optional files)
-  "Clears FILES from cache. If FILES is omitted, all files in `bibtex-completion-bibliography' are cleared."
+  "Clears FILES from string cache. If FILES is omitted, all files
+in `bibtex-completion-bibliography-internal' are cleared."
   (setq bibtex-completion-string-cache
         (cl-remove-if
          (lambda (x)
            (member (car x)
                    (or files
-                       (-flatten (list bibtex-completion-bibliography)))))
+                       (bibtex-completion-normalize-bibliography 'bibtex))))
          bibtex-completion-string-cache)))
 
 (defun bibtex-completion-parse-strings (&optional ht-strings)
@@ -479,12 +518,17 @@ for string replacement."
   "A cache storing notes keys obtained when the bibliography was last parsed.")
 
 (defun bibtex-completion-candidates ()
-  "Reads the BibTeX files and returns a list of conses, one for
-each entry.  The first element of these conses is a string
+  "Reads the BibTeX files and returns lists of conses, one cons
+for each entry.  The first element of these conses is a string
 containing authors, editors, title, year, type, and key of the
 entry.  This is string is used for matching.  The second element
-is the entry (only the fields listed above) as an alist."
-  (let ((files (nreverse (bibtex-completion-normalize-bibliography 'bibtex)))
+is the entry (only the fields listed above) as an alist. The
+function returns a cons of two such lists, one for the car and
+one for the cdr of `bibtex-completion-bibliography-internal'"
+  (let ((files (funcall (if (memq 'files bibtex-completion-reverse-order)
+                            'reverse
+                          'identity)
+                        (bibtex-completion-normalize-bibliography 'bibtex)))
         (ht-strings (make-hash-table :test #'equal))
         reparsed-files)
 
@@ -546,12 +590,19 @@ is the entry (only the fields listed above) as an alist."
       (message "Resolving cross-references ...")
       (bibtex-completion-resolve-crossrefs files reparsed-files))
 
-    ;; Finally return the list of candidates:
+    ;; Finally return the lists of candidates:
     (message "Done (re)loading bibliography.")
-    (nreverse
-     (cl-loop
-      for file in files
-      append (cddr (assoc file bibtex-completion-cache))))))
+    (cl-loop
+     with local-bib = (bibtex-completion-normalize-bibliography 'bibtex 'local)
+     with order-fn = (if (memq 'entries bibtex-completion-reverse-order)
+                         'reverse
+                       'identity)
+     for file in files
+     if (member file local-bib)
+     append (funcall order-fn (cddr (assoc file bibtex-completion-cache))) into local-cands
+     else
+     append (funcall order-fn (cddr (assoc file bibtex-completion-cache))) into global-cands
+     finally return (cons global-cands local-cands))))
 
 (defun bibtex-completion-resolve-crossrefs (files reparsed-files)
   "Expand all entries with fields from cross-referenced entries
@@ -669,7 +720,7 @@ appended to the requested entry."
 (defun bibtex-completion-get-entry1 (entry-key &optional do-not-find-pdf)
   (with-temp-buffer
     (mapc #'insert-file-contents
-          (bibtex-completion-normalize-bibliography 'bibtex))
+          (bibtex-completion-normalize-bibliography 'bibtex (get-text-property 0 'scope entry-key)))
     (goto-char (point-min))
     (if (re-search-forward (concat "^[ \t]*@\\(" parsebib--bibtex-identifier
                                    "\\)[[:space:]]*[\(\{][[:space:]]*"
@@ -1343,10 +1394,11 @@ line."
 
 (defun bibtex-completion-show-entry (keys)
   "Show the first selected entry in the BibTeX file."
-  (catch 'break
-    (dolist (bib-file (bibtex-completion-normalize-bibliography 'main))
-      (let ((key (car keys))
-            (buf (bibtex-completion-buffer-visiting bib-file)))
+  (let ((key (car keys))
+        buf)
+    (catch 'break
+      (dolist (bib-file (bibtex-completion-normalize-bibliography 'main (get-text-property 0 'scope key)))
+        (setq buf (bibtex-completion-buffer-visiting bib-file))
         (find-file bib-file)
         (widen)
         (if (eq major-mode 'org-mode)
@@ -1409,10 +1461,15 @@ can be added either from an open buffer or a file."
 resources defined in `bibtex-completion-fallback-options' plus
 one entry for each bibliography file that will open that file for
 editing."
-  (let ((bib-files (bibtex-completion-normalize-bibliography 'main)))
+  (let ((bib-files (bibtex-completion-normalize-bibliography 'main))
+        (local-bib (bibtex-completion-normalize-bibliography 'main 'local)))
     (-concat
-      (--map (cons (s-concat "Create new entry in " (f-filename it))
-                   `(lambda (_search-expression) (find-file ,it) (goto-char (point-max)) (newline)))
+     (--map (cons (format "Create new entry in %-21s (%s)"
+                          (f-filename it)
+                          (if (member it local-bib)
+                              "local"
+                            "global"))
+                  `(lambda (_search-expression) (find-file ,it) (goto-char (point-max)) (newline)))
              bib-files)
       bibtex-completion-fallback-options)))
 
@@ -1423,10 +1480,10 @@ file. Otherwise, try to use `reftex' to find the associated
 BibTeX files. If this fails, return nil."
   (or (and (buffer-file-name)
            (string= (or (f-ext (buffer-file-name)) "") "bib")
-           (list (buffer-file-name)))
+           (list (file-truename (buffer-file-name))))
       (and (buffer-file-name)
            (require 'reftex-cite nil t)
-           (ignore-errors (reftex-get-bibfile-list)))))
+           (ignore-errors (mapcar 'file-truename (reftex-get-bibfile-list))))))
 
 (defun bibtex-completion-key-at-point ()
   "Return the key of the BibTeX entry at point. If the current
