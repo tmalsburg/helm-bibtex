@@ -101,7 +101,7 @@ systems default viewer for PDFs is used."
   PDF if \"<key>.<extension\" exists."
   :group 'bibtex-completion
   :type 'boolean)
-  
+
 (defcustom bibtex-completion-pdf-symbol "⌘"
   "Symbol used to indicate that a PDF file is available for a
 publication.  This should be a single character."
@@ -387,7 +387,7 @@ bibtex files."
 
 (defvar bibtex-completion-file-watch-descriptors nil
   "List of file watches monitoring bibliography files for changes.")
-  
+
 (defun bibtex-completion-init ()
   "Checks that the files and directories specified by the user
 actually exist. Also sets `bibtex-completion-display-formats-internal'."
@@ -878,6 +878,25 @@ values."
                concat (car p))
     nil))
 
+(defun bibtex-completion-find-start-page (key)
+  "Returns the starting page for a bibtex key from either the custom startpage field or from the beginning of the pages field. Returns 1 if no start page can be determined."
+  (let* ((entry (bibtex-completion-get-entry key))
+         (pages (bibtex-completion-get-value "pages" entry))
+         (start-page (bibtex-completion-get-value "startpage" entry)))
+    (if start-page
+        start-page
+      (if pages
+          (car (s-split "-" pages))
+        "1")))
+  )
+
+(defun bibtex-completion-pdf-find-offset (pdf start-page)
+  "From a pdf and the start page of an article, determines if the pdf should be opened at page 1 or at the given page. This is relevant for opening pdfs of whole journals at the location of a specific article."
+  (if (< (string-to-number start-page) (pdf-info-number-of-pages pdf))
+      start-page
+    "1")
+  )
+
 
 (defun bibtex-completion-open-pdf (keys &optional fallback-action)
   "Open the PDFs associated with the marked entries using the
@@ -894,7 +913,9 @@ case no PDF is found."
                (file (car (rassoc choice pdf))))
           (funcall bibtex-completion-pdf-open-function file)))
        (pdf
-        (funcall bibtex-completion-pdf-open-function (car pdf)))
+        (progn (funcall bibtex-completion-pdf-open-function (car pdf))
+               (when (derived-mode-p 'pdf-view-mode) ; when opening pdfs with find-file this is run in the newly opened pdf buffer. If pdf-tools is used we can calculate and jump to the starting page.
+                 (pdf-view-goto-label (bibtex-completion-pdf-find-offset (car pdf) (bibtex-completion-find-start-page key))))))
        (fallback-action
         (funcall fallback-action (list key)))
        (t
