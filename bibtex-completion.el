@@ -1327,15 +1327,16 @@ line."
               (bibtex-completion-notes-mode 1))
                                         ; Create a new entry:
             (goto-char (point-max))
-            (insert (s-format bibtex-completion-notes-template-one-file
-                              'bibtex-completion-apa-get-value
-                              entry)))
-          (when (eq major-mode 'org-mode)
-            (org-narrow-to-subtree)
-            (re-search-backward "^\*+ " nil t)
-            (org-cycle-hide-drawers nil)
-            (goto-char (point-max))
-            (bibtex-completion-notes-mode 1))))))
+            (save-excursion (insert (s-format bibtex-completion-notes-template-one-file
+                                              'bibtex-completion-apa-get-value
+                                              entry)))
+            (re-search-forward "^*+ " nil t))
+        (when (eq major-mode 'org-mode)
+          (org-narrow-to-subtree)
+          (re-search-backward "^\*+ " nil t)
+          (org-cycle-hide-drawers nil)
+          (goto-char (point-max))
+          (bibtex-completion-notes-mode 1))))))
 
 (defun bibtex-completion-buffer-visiting (file)
   (or (get-file-buffer file)
