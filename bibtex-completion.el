@@ -187,6 +187,8 @@ should be a single character."
      . (lambda (search-expression) (biblio--lookup-1 #'biblio-dblp-backend search-expression)))
     ("HAL (French open archive)                 (biblio.el)"
      . (lambda (search-expression) (biblio--lookup-1 #'biblio-hal-backend search-expression)))
+    ("IEEE                                      (biblio.el)"
+     . (lambda (search-expression) (biblio--lookup-1 #'biblio-ieee-backend search-expression)))
     ("Google Scholar                            (web)"
      . "https://scholar.google.co.uk/scholar?q=%s")
     ("Pubmed                                    (web)"
