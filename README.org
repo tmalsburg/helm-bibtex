@@ -191,6 +191,21 @@ Here is another example for the Linux PDF viewer Evince:
     (call-process "evince" nil 0 nil fpath)))
 #+END_SRC
 
+It is sometimes desirable to have both options (Emacs itself and external viewer) to open the PDF. The following adds an action with Evince as an external viewer bound to ~P~, in addition to the regular Emacs viewer with ~p~. The action works with ivy-bibtex; it would have to be adjusted for helm-bibtex (change the path to another viewer if necessary):
+
+#+BEGIN_SRC emacs-lisp
+(defun bibtex-completion-open-pdf-external (keys &optional fallback-action)
+  (let ((bibtex-completion-pdf-open-function
+         (lambda (fpath) (start-process "evince" "*helm-bibtex-evince*" "/usr/bin/evince" fpath))))
+    (bibtex-completion-open-pdf keys fallback-action)))
+
+(ivy-bibtex-ivify-action bibtex-completion-open-pdf-external ivy-bibtex-open-pdf-external)
+
+(ivy-add-actions
+ 'ivy-bibtex
+ '(("P" ivy-bibtex-open-pdf-external "Open PDF file in external viewer (if present)")))
+#+END_SRC
+
 ** Additional PDFs
 :PROPERTIES:
 :CUSTOM_ID: additionalpdfs
