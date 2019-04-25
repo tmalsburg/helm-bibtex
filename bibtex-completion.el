@@ -1372,14 +1372,16 @@ line."
 
 (defun bibtex-completion-add-pdf-to-library (keys)
   "Add a PDF to the library for the first selected entry. The PDF
-can be added either from an open buffer or a file."
+can be added either from an open buffer, a file, or a URL."
   (let* ((key (car keys))
          (source (char-to-string
-                  (read-char-choice "Add pdf from [b]uffer or [f]ile? " '(?b ?f))))
+                  (read-char-choice "Add pdf from [b]uffer, [f]ile, or [u]rl? " '(?b ?f ?u))))
          (buffer (when (string= source "b")
                    (read-buffer-to-switch "Add pdf buffer: ")))
          (file (when (string= source "f")
                  (expand-file-name (read-file-name "Add pdf file: " nil nil t))))
+         (url (when (string= source "u")
+                (read-string "Add pdf URL: ")))
          (path (-flatten (list bibtex-completion-library-path)))
          (path (if (cdr path)
                    (completing-read "Add pdf to: " path nil t)
@@ -1394,7 +1396,9 @@ can be added either from an open buffer or a file."
       (with-current-buffer buffer
         (write-file pdf t)))
      (file
-      (copy-file file pdf 1)))))
+      (copy-file file pdf 1))
+     (url
+      (url-copy-file url pdf 1)))))
 
 (defun bibtex-completion-fallback-action (url-or-function search-expression)
   (let ((browse-url-browser-function
