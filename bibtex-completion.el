@@ -101,7 +101,7 @@ systems default viewer for PDFs is used."
   PDF if \"<key>.<extension\" exists."
   :group 'bibtex-completion
   :type 'boolean)
-  
+
 (defcustom bibtex-completion-pdf-symbol "⌘"
   "Symbol used to indicate that a PDF file is available for a
 publication.  This should be a single character."
@@ -389,7 +389,7 @@ bibtex files."
 
 (defvar bibtex-completion-file-watch-descriptors nil
   "List of file watches monitoring bibliography files for changes.")
-  
+
 (defun bibtex-completion-init ()
   "Checks that the files and directories specified by the user
 actually exist. Also sets `bibtex-completion-display-formats-internal'."
@@ -1031,6 +1031,22 @@ format.  Uses first matching PDF if several are available."
                   collect (format "[[file:%s][%s (%s)]]" pdf author year)
                 else
                   collect (format "%s (%s)" author year))))
+
+;; When you want to create a todo list about reading, I think using
+;; PDF's title is more intuitive.
+(defun bibtex-completion-format-citation-org-title-link-to-PDF (keys)
+  "Formatter for org-links to PDF. Link text follows file title format.
+Uses first matching PDF if several are available."
+  (s-join ", " (cl-loop
+                for key in keys
+                for entry = (bibtex-completion-get-entry key)
+                for title = (bibtex-completion-get-value "title" entry)
+                for pdf = (or (car (bibtex-completion-find-pdf key))
+                              (bibtex-completion-get-value "url" entry))
+                if pdf
+                  collect (format "[[file:%s][%s]]" pdf title)
+                else
+                  collect (format "%s" title))))
 
 (defun bibtex-completion-insert-citation (keys)
   "Insert citation at point.  The format depends on
