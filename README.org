@@ -277,6 +277,16 @@ The list of modes can be extended and the citation functions can be changed usin
     (default       . bibtex-completion-format-citation-default)))
 #+END_SRC
 
+When you want to create a reading to-do list in org-mode, you may perfer using the title of the PDF file in the link. To achieve this goal, you can modify the variable ~bibtex-completion-format-citation-functions~ using the following code snippet:
+
+#+BEGIN_SRC emacs-lisp
+(setq bibtex-completion-format-citation-functions
+  '((org-mode      . bibtex-completion-format-citation-org-title-link-to-PDF)
+    (latex-mode    . bibtex-completion-format-citation-cite)
+    (markdown-mode . bibtex-completion-format-citation-pandoc-citeproc)
+    (default       . bibtex-completion-format-citation-default)))
+#+END_SRC
+
 A citation function has to accept a list of keys as input and return a string containing the citations.  See the predefined citation functions for examples.
 
 *** LaTeX citation commands
