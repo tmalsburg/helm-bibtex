@@ -1454,7 +1454,11 @@ default to \"CUSTOM_ID\"). Otherwise, return nil."
              (let ((macro (reftex-what-macro 1)))
                (and (stringp (car macro))
                     (string-match "\\`\\\\cite\\|cite\\'" (car macro))
-                    (thing-at-point 'symbol)))))
+                    ;; allow '_' in citekeys
+                    (let ((temp-syn-table (make-syntax-table)))
+                      (modify-syntax-entry ?_ "_" temp-syn-table)
+                      (with-syntax-table temp-syn-table
+                        (thing-at-point 'symbol)))))))
       (and (eq major-mode 'org-mode)
            (let (key)
              (and (setq key (org-entry-get nil
