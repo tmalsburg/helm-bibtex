@@ -1291,7 +1291,7 @@ line."
   (setq-local
    header-line-format nil)
   (save-buffer)
-  (let ((window (get-buffer-window (file-name-nondirectory bibtex-completion-notes-path))))
+  (let ((window (get-buffer-window (get-file-buffer bibtex-completion-notes-path))))
     (if (and window (not (one-window-p window)))
         (delete-window window)
       (switch-to-buffer (other-buffer)))))
