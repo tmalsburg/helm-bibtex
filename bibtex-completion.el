@@ -669,20 +669,20 @@ appended to the requested entry."
     (bibtex-completion-remove-duplicated-fields (append entry crossref))))
 
 (defun bibtex-completion-get-entry1 (entry-key &optional do-not-find-pdf)
-  (with-temp-buffer
-    (mapc #'insert-file-contents
-          (bibtex-completion-normalize-bibliography 'bibtex))
-    (goto-char (point-min))
-    (if (re-search-forward (concat "^[ \t]*@\\(" parsebib--bibtex-identifier
-                                   "\\)[[:space:]]*[\(\{][[:space:]]*"
-                                   (regexp-quote entry-key) "[[:space:]]*,")
-                           nil t)
-        (let ((entry-type (match-string 1)))
-          (reverse (bibtex-completion-prepare-entry
-                    (parsebib-read-entry entry-type (point) bibtex-completion-string-hash-table) nil do-not-find-pdf)))
-      (progn
-        (display-warning :warning (concat "Bibtex-completion couldn't find entry with key \"" entry-key "\"."))
-        nil))))
+  (let ((bib (bibtex-completion-normalize-bibliography 'bibtex)))
+    (with-temp-buffer
+      (mapc #'insert-file-contents bib)
+      (goto-char (point-min))
+      (if (re-search-forward (concat "^[ \t]*@\\(" parsebib--bibtex-identifier
+                                     "\\)[[:space:]]*[\(\{][[:space:]]*"
+                                     (regexp-quote entry-key) "[[:space:]]*,")
+                             nil t)
+          (let ((entry-type (match-string 1)))
+            (reverse (bibtex-completion-prepare-entry
+                      (parsebib-read-entry entry-type (point) bibtex-completion-string-hash-table) nil do-not-find-pdf)))
+        (progn
+          (display-warning :warning (concat "Bibtex-completion couldn't find entry with key \"" entry-key "\"."))
+          nil)))))
 
 (defun bibtex-completion-find-pdf-in-field (key-or-entry)
   "Returns the path of the PDF specified in the field
