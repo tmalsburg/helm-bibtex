@@ -1097,48 +1097,53 @@ publication specified by KEY."
   "Return FIELD or ENTRY formatted following the APA
 guidelines.  Return DEFAULT if FIELD is not present in ENTRY."
   ;; Virtual fields:
-  (if (string= field "author-or-editor")
-      (let ((value (bibtex-completion-get-value "author" entry)))
-        (if value
-            (bibtex-completion-apa-format-authors value)
-          (bibtex-completion-apa-format-editors
-           (bibtex-completion-get-value "editor" entry))))
-    ;; Real fields:
-    (let ((value (bibtex-completion-get-value field entry)))
-      (if value
-          (pcase field
-            ;; https://owl.english.purdue.edu/owl/resource/560/06/
-            ("author" (bibtex-completion-apa-format-authors value))
-            ("editor" (bibtex-completion-apa-format-editors value))
-            ;; For three or more authors, abbreviate to "Author et al"
-            ("author-abbrev" (bibtex-completion-apa-format-authors-abbrev value))
-            ;; When referring to books, chapters, articles, or Web pages,
-            ;; capitalize only the first letter of the first word of a
-            ;; title and subtitle, the first word after a colon or a dash
-            ;; in the title, and proper nouns. Do not capitalize the first
-            ;; letter of the second word in a hyphenated compound word.
-            ("title" (replace-regexp-in-string ; remove braces
-                      "[{}]"
-                      ""
-                      (replace-regexp-in-string ; remove macros
-                       "\\\\[[:alpha:]]+{"
+  (cond
+      ((string= field "author-or-editor")
+       (let ((value (bibtex-completion-get-value "author" entry)))
+         (if value
+             (bibtex-completion-apa-format-authors value)
+           (bibtex-completion-apa-format-editors
+            (bibtex-completion-get-value "editor" entry)))))
+    ((string= field "author-abbrev")
+     (let ((value (bibtex-completion-get-value "author" entry)))
+       (bibtex-completion-apa-format-authors-abbrev value)))
+    (t
+     ;; Real fields:
+     (let ((value (bibtex-completion-get-value field entry)))
+       (if value
+           (pcase field
+             ;; https://owl.english.purdue.edu/owl/resource/560/06/
+             ("author" (bibtex-completion-apa-format-authors value))
+             ("editor" (bibtex-completion-apa-format-editors value))
+             ;; For three or more authors, abbreviate to "Author et al"
+             ("author-abbrev" (bibtex-completion-apa-format-authors-abbrev value))
+             ;; When referring to books, chapters, articles, or Web pages,
+             ;; capitalize only the first letter of the first word of a
+             ;; title and subtitle, the first word after a colon or a dash
+             ;; in the title, and proper nouns. Do not capitalize the first
+             ;; letter of the second word in a hyphenated compound word.
+             ("title" (replace-regexp-in-string ; remove braces
+                       "[{}]"
                        ""
-                       (replace-regexp-in-string ; upcase initial letter
-                        "^[[:alpha:]]"
-                        'upcase
-                        (replace-regexp-in-string ; preserve stuff in braces from being downcased
-                         "\\(^[^{]*{\\)\\|\\(}[^{]*{\\)\\|\\(}.*$\\)\\|\\(^[^{}]*$\\)"
-                         (lambda (x) (downcase (s-replace "\\" "\\\\" x)))
-                         value)))))
-            ("booktitle" value)
-            ;; Maintain the punctuation and capitalization that is used by
-            ;; the journal in its title.
-            ("pages" (s-join "–" (s-split "[^0-9]+" value t)))
-            ("doi" (s-concat " http://dx.doi.org/" value))
-            ("year" (or value
-                        (car (split-string (bibtex-completion-get-value "date" entry "") "-"))))
-            (_ value))
-        ""))))
+                       (replace-regexp-in-string ; remove macros
+                        "\\\\[[:alpha:]]+{"
+                        ""
+                        (replace-regexp-in-string ; upcase initial letter
+                         "^[[:alpha:]]"
+                         'upcase
+                         (replace-regexp-in-string ; preserve stuff in braces from being downcased
+                          "\\(^[^{]*{\\)\\|\\(}[^{]*{\\)\\|\\(}.*$\\)\\|\\(^[^{}]*$\\)"
+                          (lambda (x) (downcase (s-replace "\\" "\\\\" x)))
+                          value)))))
+             ("booktitle" value)
+             ;; Maintain the punctuation and capitalization that is used by
+             ;; the journal in its title.
+             ("pages" (s-join "–" (s-split "[^0-9]+" value t)))
+             ("doi" (s-concat " http://dx.doi.org/" value))
+             ("year" (or value
+                         (car (split-string (bibtex-completion-get-value "date" entry "") "-"))))
+             (_ value))
+         "")))))
 
 (defun bibtex-completion-apa-format-authors (value)
   (cl-loop for a in (s-split " and " value t)
