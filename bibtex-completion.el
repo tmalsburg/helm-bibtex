@@ -1098,12 +1098,12 @@ publication specified by KEY."
 guidelines.  Return DEFAULT if FIELD is not present in ENTRY."
   ;; Virtual fields:
   (cond
-      ((string= field "author-or-editor")
-       (let ((value (bibtex-completion-get-value "author" entry)))
-         (if value
-             (bibtex-completion-apa-format-authors value)
-           (bibtex-completion-apa-format-editors
-            (bibtex-completion-get-value "editor" entry)))))
+    ((string= field "author-or-editor")
+     (let ((value (bibtex-completion-get-value "author" entry)))
+       (if value
+           (bibtex-completion-apa-format-authors value)
+         (bibtex-completion-apa-format-editors
+          (bibtex-completion-get-value "editor" entry)))))
     ((string= field "author-abbrev")
      (let ((value (bibtex-completion-get-value "author" entry)))
        (bibtex-completion-apa-format-authors-abbrev value)))
@@ -1115,8 +1115,6 @@ guidelines.  Return DEFAULT if FIELD is not present in ENTRY."
              ;; https://owl.english.purdue.edu/owl/resource/560/06/
              ("author" (bibtex-completion-apa-format-authors value))
              ("editor" (bibtex-completion-apa-format-editors value))
-             ;; For three or more authors, abbreviate to "Author et al"
-             ("author-abbrev" (bibtex-completion-apa-format-authors-abbrev value))
              ;; When referring to books, chapters, articles, or Web pages,
              ;; capitalize only the first letter of the first word of a
              ;; title and subtitle, the first word after a colon or a dash
