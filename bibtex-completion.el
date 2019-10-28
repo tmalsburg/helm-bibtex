@@ -989,9 +989,12 @@ inside or just after a citation command, only adds KEYS to it."
                 (postnote (if bibtex-completion-cite-prompt-for-optional-arguments
                               (read-from-minibuffer "Postnote: ")
                             "")))
-            (if (and (string= "" prenote) (string= "" postnote))
-                (format "\\%s{%s}" cite-command (s-join ", " keys))
-              (format "\\%s[%s][%s]{%s}" cite-command prenote postnote (s-join ", " keys))))))))))
+            (cond ((not (string= "" prenote))
+                   (format "\\%s[%s][%s]{%s}" cite-command prenote postnote (s-join ", " keys)))
+                  ((not (string= "" postnote))
+                   (format "\\%s[%s]{%s}" cite-command postnote (s-join ", " keys)))
+                  (t
+                   (format "\\%s{%s}" cite-command (s-join ", " keys)))))))))))
 
 (defun bibtex-completion-format-citation-pandoc-citeproc (keys)
   "Formatter for pandoc-citeproc citations."
