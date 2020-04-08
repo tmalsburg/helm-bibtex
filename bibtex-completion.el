@@ -1335,9 +1335,10 @@ line."
                                (s-concat key bibtex-completion-notes-extension))))
             (find-file path)
             (unless (f-exists? path)
-              (insert (s-format bibtex-completion-notes-template-multiple-files
-                                'bibtex-completion-apa-get-value
-                                entry))))
+              (insert (org-capture-fill-template
+                       (s-format bibtex-completion-notes-template-multiple-files
+                                 'bibtex-completion-apa-get-value
+                                 entry)))))
                                         ; One file for all notes:
         (unless (and buffer-file-name
                      (f-same? bibtex-completion-notes-path buffer-file-name))
