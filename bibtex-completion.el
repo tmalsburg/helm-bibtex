@@ -1335,10 +1335,13 @@ line."
                                (s-concat key bibtex-completion-notes-extension))))
             (find-file path)
             (unless (f-exists? path)
+              ;; First expend bibtex variables, then org-capture template
               (insert (org-capture-fill-template
-                       (s-format bibtex-completion-notes-template-multiple-files
-                                 'bibtex-completion-apa-get-value
-                                 entry)))))
+                       (concat (s-format bibtex-completion-notes-template-multiple-files
+                                         'bibtex-completion-apa-get-value
+                                         entry)
+                               "%s")))
+              (delete-region (point-max) (- (point-max) 3))))
                                         ; One file for all notes:
         (unless (and buffer-file-name
                      (f-same? bibtex-completion-notes-path buffer-file-name))
