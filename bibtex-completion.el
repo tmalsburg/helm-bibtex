@@ -1368,7 +1368,17 @@ line."
           (re-search-backward "^\*+ " nil t)
           (org-cycle-hide-drawers nil)
           (goto-char (point-max))
-          (bibtex-completion-notes-mode 1))))))
+          (bibtex-completion-notes-mode 1))
+        ;; Delete the final newline inserted by ‘org-capture-fill-template’
+        (delete-char -1)
+        ;; Move point to ‘%?’ if it’s included in the pattern
+        (when (save-excursion
+                (progn (goto-char (point-min))
+                       (re-search-forward "%\\?" nil t)))
+          (let ((beginning (match-beginning 0))
+                (end (match-end 0)))
+            (delete-region beginning end)
+            (goto-char beginning)))))))
 
 (defun bibtex-completion-buffer-visiting (file)
   (or (get-file-buffer file)
