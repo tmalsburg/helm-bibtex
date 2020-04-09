@@ -1358,9 +1358,10 @@ line."
               (bibtex-completion-notes-mode 1))
                                         ; Create a new entry:
             (goto-char (point-max))
-            (save-excursion (insert (s-format bibtex-completion-notes-template-one-file
-                                              'bibtex-completion-apa-get-value
-                                              entry)))
+            (save-excursion (insert (org-capture-fill-template
+                                     (s-format bibtex-completion-notes-template-one-file
+                                               'bibtex-completion-apa-get-value
+                                               entry))))
             (re-search-forward "^*+ " nil t))
         (when (eq major-mode 'org-mode)
           (org-narrow-to-subtree)
