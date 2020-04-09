@@ -1340,7 +1340,7 @@ line."
                        (concat (s-format bibtex-completion-notes-template-multiple-files
                                          'bibtex-completion-apa-get-value
                                          entry)
-                               "%s")))
+                               "%?")))
               (delete-region (point-max) (- (point-max) 3))))
                                         ; One file for all notes:
         (unless (and buffer-file-name
