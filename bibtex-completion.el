@@ -1336,12 +1336,15 @@ line."
             (find-file path)
             (unless (f-exists? path)
               ;; First expend bibtex variables, then org-capture template
-              (insert (org-capture-fill-template
-                       (concat (s-format bibtex-completion-notes-template-multiple-files
-                                         'bibtex-completion-apa-get-value
-                                         entry)
-                               "%?")))
-              (delete-region (point-max) (- (point-max) 3))))
+              (insert (replace-regexp-in-string
+                       "\\\\n" "
+"
+                       (org-capture-fill-template
+                        (s-format bibtex-completion-notes-template-multiple-files
+                                  'bibtex-completion-apa-get-value
+                                  entry))))
+              ;; Delete the final newline inserted by ‘org-capture-fill-template’
+              (delete-char -1)))
                                         ; One file for all notes:
         (unless (and buffer-file-name
                      (f-same? bibtex-completion-notes-path buffer-file-name))
@@ -1358,10 +1361,13 @@ line."
               (bibtex-completion-notes-mode 1))
                                         ; Create a new entry:
             (goto-char (point-max))
-            (save-excursion (insert (org-capture-fill-template
-                                     (s-format bibtex-completion-notes-template-one-file
-                                               'bibtex-completion-apa-get-value
-                                               entry))))
+            (save-excursion (insert (replace-regexp-in-string
+                                     "\\\\n" "
+"
+                                     (org-capture-fill-template
+                                      (s-format bibtex-completion-notes-template-one-file
+                                                'bibtex-completion-apa-get-value
+                                                entry)))))
             (re-search-forward "^*+ " nil t))
         (when (eq major-mode 'org-mode)
           (org-narrow-to-subtree)
