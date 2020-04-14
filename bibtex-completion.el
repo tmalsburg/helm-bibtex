@@ -1376,11 +1376,11 @@ according to `org-capture-templates'."
               (org-cycle-hide-drawers nil)
               (bibtex-completion-notes-mode 1))
                                         ; Create a new entry:
-            (goto-char (point-max))
-            (save-excursion (insert (bibtex-completion-fill-template
-                                     entry
-                                     bibtex-completion-notes-template-one-file)))
-            (re-search-forward "^*+ " nil t))
+          (goto-char (point-max))
+          (save-excursion (insert (bibtex-completion-fill-template
+                                   entry
+                                   bibtex-completion-notes-template-one-file)))
+          (re-search-forward "^*+ " nil t))
         (when (eq major-mode 'org-mode)
           (org-narrow-to-subtree)
           (re-search-backward "^\*+ " nil t)
