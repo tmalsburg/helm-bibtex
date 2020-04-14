@@ -1330,14 +1330,18 @@ according to `org-capture-templates'."
   (let ((bibtex-exp (s-format template
                               'bibtex-completion-apa-get-value
                               entry)))
-    (->> bibtex-exp
+    (--> bibtex-exp
          ;; Escape newlines to prevent `org-capture-fill-template' from
          ;; gobbling them
-         (replace-regexp-in-string "\n" "\\\\n")
-         (org-capture-fill-template)
+         (replace-regexp-in-string "\n\\|
+" "\\\\n" it)
+         (org-capture-fill-template it)
          ;; Restore newlines
          (replace-regexp-in-string "\\\\n" "
-"))))
+" it)
+         ;; Delete trailing newline inserted by `org-capture-fill-template'
+         (substring it 0 -1)
+         )))
 
 (defun bibtex-completion-edit-notes (keys)
   "Open the notes associated with the selected entries using `find-file'."
@@ -1356,9 +1360,7 @@ according to `org-capture-templates'."
               ;; First expend bibtex variables, then org-capture template
               (insert (bibtex-completion-fill-template
                        entry
-                       bibtex-completion-notes-template-multiple-files))
-              ;; Delete the final newline inserted by `org-capture-fill-template'
-              (delete-char -1)))
+                       bibtex-completion-notes-template-multiple-files))))
                                         ; One file for all notes:
         (unless (and buffer-file-name
                      (f-same? bibtex-completion-notes-path buffer-file-name))
