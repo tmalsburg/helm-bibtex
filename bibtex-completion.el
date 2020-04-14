@@ -1335,12 +1335,10 @@ according to `org-capture-templates'."
      (->> bibtex-exp
           ;; Escape newlines to prevent `org-capture-fill-template' from
           ;; gobbling them
-          (replace-regexp-in-string "\n\\|
-" "\\\\n")
+          (replace-regexp-in-string "\n" "\\\\n")
           (org-capture-fill-template)
           ;; Restore newlines
-          (replace-regexp-in-string "\\\\n" "
-"))
+          (replace-regexp-in-string "\\\\n" "\n"))
      0 -1)))
 
 (defun bibtex-completion-edit-notes (keys)
