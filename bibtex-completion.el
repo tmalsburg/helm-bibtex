@@ -1330,17 +1330,18 @@ according to `org-capture-templates'."
   (let ((bibtex-exp (s-format template
                               'bibtex-completion-apa-get-value
                               entry)))
-    (--> bibtex-exp
-         ;; Escape newlines to prevent `org-capture-fill-template' from
-         ;; gobbling them
-         (replace-regexp-in-string "\n\\|
-" "\\\\n" it)
-         (org-capture-fill-template it)
-         ;; Restore newlines
-         (replace-regexp-in-string "\\\\n" "
-" it)
-         ;; Delete trailing newline inserted by `org-capture-fill-template'
-         (substring it 0 -1))))
+    ;; Delete trailing newline inserted by `org-capture-fill-template'
+    (substring
+     (->> bibtex-exp
+          ;; Escape newlines to prevent `org-capture-fill-template' from
+          ;; gobbling them
+          (replace-regexp-in-string "\n\\|
+" "\\\\n")
+          (org-capture-fill-template)
+          ;; Restore newlines
+          (replace-regexp-in-string "\\\\n" "
+"))
+     0 -1)))
 
 (defun bibtex-completion-edit-notes (keys)
   "Open the notes associated with the selected entries using `find-file'."
