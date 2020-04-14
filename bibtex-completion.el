@@ -1321,6 +1321,24 @@ line."
         (delete-window window)
       (switch-to-buffer (other-buffer)))))
 
+(defun bibtex-completion-fill-template (entry template)
+  "Fill TEMPLATE according to info from ENTRY.
+
+First, the BibTeX fields are expanded (e.g. ${field-name}).
+Then, the `org-capture' %-escapes are replaced with their values
+according to `org-capture-templates'."
+  (let ((bibtex-exp (s-format template
+                              'bibtex-completion-apa-get-value
+                              entry)))
+    (->> bibtex-exp
+         ;; Escape newlines to prevent `org-capture-fill-template' from
+         ;; gobbling them
+         (replace-regexp-in-string "\n" "\\\\n")
+         (org-capture-fill-template)
+         ;; Restore newlines
+         (replace-regexp-in-string "\\\\n" "
+"))))
+
 (defun bibtex-completion-edit-notes (keys)
   "Open the notes associated with the selected entries using `find-file'."
   (dolist (key keys)
@@ -1336,14 +1354,10 @@ line."
             (find-file path)
             (unless (f-exists? path)
               ;; First expend bibtex variables, then org-capture template
-              (insert (replace-regexp-in-string
-                       "\\\\n" "
-"
-                       (org-capture-fill-template
-                        (s-format bibtex-completion-notes-template-multiple-files
-                                  'bibtex-completion-apa-get-value
-                                  entry))))
-              ;; Delete the final newline inserted by ‘org-capture-fill-template’
+              (insert (bibtex-completion-fill-template
+                       entry
+                       bibtex-completion-notes-template-multiple-files))
+              ;; Delete the final newline inserted by `org-capture-fill-template'
               (delete-char -1)))
                                         ; One file for all notes:
         (unless (and buffer-file-name
@@ -1361,13 +1375,9 @@ line."
               (bibtex-completion-notes-mode 1))
                                         ; Create a new entry:
             (goto-char (point-max))
-            (save-excursion (insert (replace-regexp-in-string
-                                     "\\\\n" "
-"
-                                     (org-capture-fill-template
-                                      (s-format bibtex-completion-notes-template-one-file
-                                                'bibtex-completion-apa-get-value
-                                                entry)))))
+            (save-excursion (insert (bibtex-completion-fill-template
+                                     entry
+                                     bibtex-completion-notes-template-one-file)))
             (re-search-forward "^*+ " nil t))
         (when (eq major-mode 'org-mode)
           (org-narrow-to-subtree)
@@ -1375,8 +1385,6 @@ line."
           (org-cycle-hide-drawers nil)
           (goto-char (point-max))
           (bibtex-completion-notes-mode 1))
-        ;; Delete the final newline inserted by ‘org-capture-fill-template’
-        (delete-char -1)
         ;; Move point to ‘%?’ if it’s included in the pattern
         (when (save-excursion
                 (progn (goto-char (point-min))
