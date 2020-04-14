@@ -777,6 +777,23 @@ Returns nil if no PDF is found."
   (or (bibtex-completion-find-pdf-in-field key-or-entry)
       (bibtex-completion-find-pdf-in-library key-or-entry find-additional)))
 
+(defun bibtex-completion-find-note-file (entry-key)
+  "Find note file associated from BibTeX’s ENTRY-KEY.
+If the note file doesn’t exist, return nil."
+  (and bibtex-completion-notes-path
+       (f-directory? bibtex-completion-notes-path)
+       (f-file? (f-join bibtex-completion-notes-path
+                        (s-concat entry-key
+                                  bibtex-completion-notes-extension)))))
+
+(defcustom bibtex-completion-find-note-file-fn
+  #'bibtex-completion-find-note-file
+  "Function to use to find note files.
+The function should accept one argument: the entry-key of the
+BibTeX entry."
+  :group 'bibtex-completion
+  :type 'function)
+
 (defun bibtex-completion-prepare-entry (entry &optional fields do-not-find-pdf)
   "Prepare ENTRY for display.
 ENTRY is an alist representing an entry as returned by
@@ -796,11 +813,7 @@ find a PDF file."
            ; Check for notes:
            (entry (if (or
                        ;; One note file per entry:
-                       (and bibtex-completion-notes-path
-                            (f-directory? bibtex-completion-notes-path)
-                            (f-file? (f-join bibtex-completion-notes-path
-                                             (s-concat entry-key
-                                                       bibtex-completion-notes-extension))))
+                       (funcall bibtex-completion-find-note-file-fn entry-key)
                        ;; All notes in one file:
                        (and bibtex-completion-notes-path
                             (f-file? bibtex-completion-notes-path)
