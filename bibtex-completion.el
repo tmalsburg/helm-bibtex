@@ -1340,8 +1340,7 @@ according to `org-capture-templates'."
          (replace-regexp-in-string "\\\\n" "
 " it)
          ;; Delete trailing newline inserted by `org-capture-fill-template'
-         (substring it 0 -1)
-         )))
+         (substring it 0 -1))))
 
 (defun bibtex-completion-edit-notes (keys)
   "Open the notes associated with the selected entries using `find-file'."
