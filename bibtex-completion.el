@@ -1341,7 +1341,15 @@ according to `org-capture-templates'."
           (replace-regexp-in-string "\\\\n" "\n"))
      0 -1)))
 
-(defun bibtex-completion-edit-notes (keys)
+(defcustom bibtex-completion-edit-notes-fn
+  #'bibtex-completion-edit-notes-default
+  "Function to use to edit notes.
+The function should accept one argument, a list of BibTeX
+entry-keys."
+  :group 'helm-bibtex
+  :type 'function)
+
+(defun bibtex-completion-edit-notes-default (keys)
   "Open the notes associated with the selected entries using `find-file'."
   (dolist (key keys)
     (let* ((entry (bibtex-completion-get-entry key))
@@ -1393,6 +1401,10 @@ according to `org-capture-templates'."
                 (end (match-end 0)))
             (delete-region beginning end)
             (goto-char beginning)))))))
+
+(defun bibtex-completion-edit-notes (keys)
+  "Open the notes associated with `bibtex-completion-edit-notes-fn'."
+  (funcall bibtex-completion-edit-notes-fn keys))
 
 (defun bibtex-completion-buffer-visiting (file)
   (or (get-file-buffer file)
