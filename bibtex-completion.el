@@ -777,22 +777,23 @@ Returns nil if no PDF is found."
   (or (bibtex-completion-find-pdf-in-field key-or-entry)
       (bibtex-completion-find-pdf-in-library key-or-entry find-additional)))
 
-(defun bibtex-completion-find-note-file (entry-key)
-  "Find note file associated from BibTeX’s ENTRY-KEY.
-If the note file doesn’t exist, return nil."
+(defun bibtex-completion-find-note-file-default (entry-key)
+  "Find note file associated from BibTeX’s ENTRY-KEY in the default directory.
+The default directory is `bibtex-completion-notes-path'.  If the
+note file doesn’t exist, return nil."
   (and bibtex-completion-notes-path
        (f-directory? bibtex-completion-notes-path)
        (f-file? (f-join bibtex-completion-notes-path
                         (s-concat entry-key
                                   bibtex-completion-notes-extension)))))
 
-(defcustom bibtex-completion-find-note-file-fn
-  #'bibtex-completion-find-note-file
-  "Function to use to find note files.
-The function should accept one argument: the entry-key of the
+(defcustom bibtex-completion-find-note-file-fns
+  (list #'bibtex-completion-find-note-file-default)
+  "List of functions to use to find note files.
+The functions should accept one argument: the entry-key of the
 BibTeX entry."
   :group 'bibtex-completion
-  :type 'function)
+  :type 'list)
 
 (defun bibtex-completion-prepare-entry (entry &optional fields do-not-find-pdf)
   "Prepare ENTRY for display.
@@ -813,7 +814,10 @@ find a PDF file."
            ; Check for notes:
            (entry (if (or
                        ;; One note file per entry:
-                       (funcall bibtex-completion-find-note-file-fn entry-key)
+                       (cl-some #'identity
+                                (mapcar (lambda (fn)
+                                          (funcall fn entry-key))
+                                        bibtex-completion-find-note-file-fns))
                        ;; All notes in one file:
                        (and bibtex-completion-notes-path
                             (f-file? bibtex-completion-notes-path)
