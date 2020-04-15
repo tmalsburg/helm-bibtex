@@ -59,11 +59,11 @@
   :group 'completion)
 
 (defcustom bibtex-completion-bibliography nil
-  "The BibTeX file or list of BibTeX files. Org-bibtex users can
-also specify org-mode bibliography files, in which case it will
-be assumed that a BibTeX file exists with the same name and
-extension bib instead of org. If the bib file has a different
-name, use a cons cell (\"orgfile.org\" . \"bibfile.bib\") instead."
+  "The BibTeX file or list of BibTeX files.
+Org-bibtex users can also specify org mode bibliography files, in
+which case it will be assumed that a BibTeX file exists with the
+same name and extension bib instead of org.  If the bib file has a
+different name, use a cons cell `(\"orgfile.org\" . \"bibfile.bib\")' instead."
   :group 'bibtex-completion
   :type '(choice file (repeat file)))
 
@@ -75,37 +75,36 @@ composed of the BibTeX-key plus a \".pdf\" suffix."
   :type '(choice directory (repeat directory)))
 
 (defcustom bibtex-completion-pdf-open-function 'find-file
-  "The function used for opening PDF files.  This can be an
-arbitrary function that takes one argument: the path to the PDF
-file.  The default is `find-file' which opens the PDF in
-Emacs (either with docview or, if installed, the much superior
-pdf-tools.  When set to `helm-open-file-with-default-tool', the
-systems default viewer for PDFs is used."
+  "The function used for opening PDF files.
+This can be an arbitrary function that takes one argument: the
+path to the PDF file.  The default is `find-file' which opens the
+PDF in Emacs (either with docview or, if installed, the much
+superior pdf-tools.  When set to
+`helm-open-file-with-default-tool', the systems default viewer
+for PDFs is used."
   :group 'bibtex-completion
   :type 'function)
 
 (defcustom bibtex-completion-pdf-extension ".pdf"
-  "The extension of a BibTeX entry's \"PDF\" file. This makes it
-  possible to use another file type. It can also be a list of
-  file types, which are then tried sequentially until a file is
-  found. Beware that adding file types can reduce performance for
-  large bibliographies.  This variable has no effect if PDFs are
-  referenced via the file field."
+  "The extension of a BibTeX entry's \"PDF\" file.
+This makes it possible to use another file type.  It can also be a
+list of file types, which are then tried sequentially until a
+file is found.  Beware that adding file types can reduce
+performance for large bibliographies.  This variable has no
+effect if PDFs are referenced via the file field."
   :group 'bibtex-completion
   :type 'string)
 
 (defcustom bibtex-completion-find-additional-pdfs nil
-  "If non-nil, all files whose base name starts with the BibTeX
-  key and ends with `bibtex-completion-pdf-extension' are
-  considered as PDFs, not only \"<key>.<extension>\". Note that
-  for performance reasons, an entry is only marked as having a
-  PDF if \"<key>.<extension\" exists."
+  "If non-nil, all files whose base name starts with the BibTeX key and ends with `bibtex-completion-pdf-extension' are considered as PDFs, not only \"<key>.<extension>\".
+Note that for performance reasons, an entry is only marked as
+having a PDF if \"<key>.<extension\" exists."
   :group 'bibtex-completion
   :type 'boolean)
 
 (defcustom bibtex-completion-pdf-symbol "⌘"
-  "Symbol used to indicate that a PDF file is available for a
-publication.  This should be a single character."
+  "Symbol used to indicate that a PDF file is available for a publication.
+This should be a single character."
   :group 'bibtex-completion
   :type 'string)
 
@@ -114,68 +113,70 @@ publication.  This should be a single character."
     (latex-mode    . bibtex-completion-format-citation-cite)
     (markdown-mode . bibtex-completion-format-citation-pandoc-citeproc)
     (default       . bibtex-completion-format-citation-default))
-  "The functions used for formatting citations.  The publication
-can be cited, for example, as \cite{key} or ebib:key depending on
-the major mode of the current buffer.  Note that the functions
-should accept a list of keys as input.  With multiple marked
-entries one can insert multiple keys at once,
-e.g. \cite{key1,key2}. See the functions
+  "The functions used for formatting citations.
+The publication can be cited, for example, as \cite{key} or
+ebib:key depending on the major mode of the current buffer.  Note
+that the functions should accept a list of keys as input.  With
+multiple marked entries one can insert multiple keys at once,
+e.g. \cite{key1,key2}.  See the functions
 `bibtex-completion-format-citation-ebib' and
 `bibtex-completion-format-citation-cite' as examples."
   :group 'bibtex-completion
   :type '(alist :key-type symbol :value-type function))
 
 (defcustom bibtex-completion-notes-path nil
-  "The place where notes are stored.  This is either a file, in
-which case all notes are stored in that file, or a directory, in
-which case each publication gets its own notes file in that
-directory.  In the latter case, bibtex-completion assumes that the
-names of the note files are composed of the BibTeX-key plus a
-suffix that is specified in `bibtex-completion-notes-extension'."
+  "The place where notes are stored.
+This is either a file, in which case all notes are stored in that
+file, or a directory, in which case each publication gets its own
+notes file in that directory.  In the latter case,
+bibtex-completion assumes that the names of the note files are
+composed of the BibTeX-key plus a suffix that is specified in
+`bibtex-completion-notes-extension'."
   :group 'bibtex-completion
   :type '(choice file directory (const nil)))
 
 (defcustom bibtex-completion-notes-template-multiple-files
   "#+TITLE: Notes on: ${author-or-editor} (${year}): ${title}\n\n"
-  "Template used to create a new note when each note is stored in a
-separate file. '${field-name}' can be used to insert the value of a
-BibTeX field into the template. Apart from the fields defined in the
-entry, one can also use the virtual fields `author-or-editor` -- which
-contains the author names if defined and otherwise the names of the
-editors -- and `author-abbrev` -- which abbreviates to 'First author
-et al.' when there are three or more authors."
+  "Template used to create a new note when each note is stored in a separate file.
+'${field-name}' can be used to insert the value of a BibTeX field
+into the template.  Apart from the fields defined in the entry,
+one can also use the virtual fields `author-or-editor` -- which
+contains the author names if defined and otherwise the names of
+the editors -- and `author-abbrev` -- which abbreviates to 'First
+author et al.' when there are three or more authors."
   :group 'bibtex-completion
   :type 'string)
 
 (defcustom bibtex-completion-notes-template-one-file
   "\n* ${author-or-editor} (${year}): ${title}\n  :PROPERTIES:\n  :Custom_ID: ${=key=}\n  :END:\n\n"
-  "Template used to create a new note when all notes are stored
-in one file.  '${field-name}' can be used to insert the value of
-a BibTeX field into the template.  Apart from the fields defined in
-the entry, one can also use the virtual field `author-or-editor` -- which
-contains the author names if defined and otherwise the names of the
-editors -- and `author-abbrev` -- which abbreviates to 'First author
-et al.' when there are three or more authors."
+  "Template used to create a new note when all notes are stored in one file.
+'${field-name}' can be used to insert the value of a BibTeX field
+into the template.  Apart from the fields defined in the entry,
+one can also use the virtual field `author-or-editor` -- which
+contains the author names if defined and otherwise the names of
+the editors -- and `author-abbrev` -- which abbreviates to 'First
+author et al.' when there are three or more authors."
   :group 'bibtex-completion
   :type 'string)
 
 (defcustom bibtex-completion-notes-key-pattern
   ":Custom_ID: +%s\\( \\|$\\)"
-  "The pattern used to find entries in the notes file.  Only
-relevant when all notes are stored in one file.  The key can be
-inserted into the pattern using the `format` function."
+  "The pattern used to find entries in the notes file.
+Only relevant when all notes are stored in one file.  The key can
+be inserted into the pattern using the `format` function."
   :group 'bibtex-completion
   :type 'string)
 
 (defcustom bibtex-completion-notes-extension ".org"
-  "The extension of the files containing notes.  This is only
-used when `bibtex-completion-notes-path' is a directory (not a file)."
+  "The extension of the files containing notes.
+This is only used when `bibtex-completion-notes-path' is a
+directory (not a file)."
   :group 'bibtex-completion
   :type 'string)
 
 (defcustom bibtex-completion-notes-symbol "✎"
-  "Symbol used to indicate that a publication has notes.  This
-should be a single character."
+  "Symbol used to indicate that a publication has notes.
+This should be a single character."
   :group 'bibtex-completion
   :type 'string)
 
@@ -206,20 +207,20 @@ should be a single character."
      . "http://catalogue.bnf.fr/servlet/RechercheEquation?host=catalogue?historique1=Recherche+par+mots+de+la+notice&niveau1=1&url1=/jsp/recherchemots_simple.jsp?host=catalogue&maxNiveau=1&categorieRecherche=RechercheMotsSimple&NomPageJSP=/jsp/recherchemots_simple.jsp?host=catalogue&RechercheMotsSimpleAsauvegarder=0&ecranRechercheMot=/jsp/recherchemots_simple.jsp&resultatsParPage=20&x=40&y=22&nbElementsHDJ=6&nbElementsRDJ=7&nbElementsRCL=12&FondsNumerise=M&CollectionHautdejardin=TVXZROM&HDJ_DAV=R&HDJ_D2=V&HDJ_D1=T&HDJ_D3=X&HDJ_D4=Z&HDJ_SRB=O&CollectionRezdejardin=UWY1SPQM&RDJ_DAV=S&RDJ_D2=W&RDJ_D1=U&RDJ_D3=Y&RDJ_D4=1&RDJ_SRB=P&RDJ_RLR=Q&RICHELIEU_AUTRE=ABCDEEGIKLJ&RCL_D1=A&RCL_D2=K&RCL_D3=D&RCL_D4=E&RCL_D5=E&RCL_D6=C&RCL_D7=B&RCL_D8=J&RCL_D9=G&RCL_D10=I&RCL_D11=L&ARSENAL=H&LivrePeriodique=IP&partitions=C&images_fixes=F&son=S&images_animees=N&Disquette_cederoms=E&multimedia=M&cartes_plans=D&manuscrits=BT&monnaies_medailles_objets=JO&salle_spectacle=V&Monographie_TN=M&Periodique_TN=S&Recueil_TN=R&CollectionEditorial_TN=C&Ensemble_TN=E&Spectacle_TN=A&NoticeB=%s")
     ("Gallica Bibliothèque Numérique            (web)"
      . "http://gallica.bnf.fr/Search?q=%s"))
-  "Alist of online sources that can be used to search for
-publications.  The key of each entry is the name of the online
-source.  The value is the URL used for retrieving results.  This
-URL must contain a %s in the position where the search term
-should be inserted.  Alternatively, the value can be a function
-that will be called when the entry is selected."
+  "Alist of online sources that can be used to search for publications.
+The key of each entry is the name of the online source.  The
+value is the URL used for retrieving results.  This URL must
+contain a %s in the position where the search term should be
+inserted.  Alternatively, the value can be a function that will
+be called when the entry is selected."
   :group 'bibtex-completion
   :type '(alist :key-type string
                 :value-type (choice (string :tag "URL")
                             (function :tag "Function"))))
 
 (defcustom bibtex-completion-browser-function nil
-  "The browser that is used to access online resources.  If
-nil (default), the value of `browse-url-browser-function' is
+  "The browser that is used to access online resources.
+If nil (default), the value of `browse-url-browser-function' is
 used.  If that value is nil, Helm uses the first available
 browser in `helm-browse-url-default-browser-alist'"
   :group 'bibtex-completion
@@ -259,14 +260,12 @@ browser in `helm-browse-url-default-browser-alist'"
                          :key-type regexp :value-type function)))
 
 (defcustom bibtex-completion-additional-search-fields nil
-  "The fields that are used for searching in addition to author,
-editor, title, year, BibTeX key, and entry type."
+  "The fields that are used for searching in addition to author, editor, title, year, BibTeX key, and entry type."
   :group 'bibtex-completion
   :type '(repeat string))
 
 (defcustom bibtex-completion-no-export-fields nil
-  "A list of fields that should be ignored when exporting BibTeX
-entries."
+  "A list of fields that should be ignored when exporting BibTeX entries."
   :group 'bibtex-completion
   :type '(repeat string))
 
@@ -278,42 +277,41 @@ entries."
 "citeyear*" "citedate" "citedate*" "citeurl" "nocite" "fullcite"
 "footfullcite" "notecite" "Notecite" "pnotecite" "Pnotecite"
 "fnotecite")
-  "The list of LaTeX cite commands.  When creating LaTeX
-citations, these can be accessed as future entries in the
-minibuffer history, i.e. by pressing the arrow down key.  The
-default entries are taken from biblatex.  There is currently no
-special support for multicite commands and volcite et al.  These
-commands can be used but bibtex-completion does not prompt for their
-extra arguments."
+  "The list of LaTeX cite commands.
+When creating LaTeX citations, these can be accessed as future
+entries in the minibuffer history, i.e. by pressing the arrow
+down key.  The default entries are taken from biblatex.  There is
+currently no special support for multicite commands and volcite
+et al.  These commands can be used but bibtex-completion does not
+prompt for their extra arguments."
   :group 'bibtex-completion
   :type '(choice string (repeat string)))
 
 (defcustom bibtex-completion-cite-default-command "cite"
-  "The LaTeX cite command that is used if the user doesn't enter
-anything when prompted for such a command."
+  "The LaTeX cite command that is used if the user doesn't enter anything when prompted for such a command."
   :group 'bibtex-completion
   :type 'string)
 
 (defcustom bibtex-completion-cite-prompt-for-optional-arguments t
-  "If t, bibtex-completion prompts for pre- and postnotes for
-LaTeX cite commands.  Choose nil for no prompts."
+  "If t, bibtex-completion prompts for pre- and postnotes for LaTeX cite commands.
+Choose `nil' for no prompts."
   :group 'bibtex-completion
   :type 'boolean)
 
 (defcustom bibtex-completion-cite-default-as-initial-input nil
-  "This variable controls how the default command defined in
-`bibtex-completion-cite-default-command' is used.  If t, it is inserted
-into the minibuffer before reading input from the user.  If nil,
-it is used as the default if the user doesn't enter anything."
+  "This variable controls how the default command defined in `bibtex-completion-cite-default-command' is used.
+If t, it is inserted into the minibuffer before reading input
+from the user.  If nil, it is used as the default if the user
+doesn't enter anything."
   :group 'bibtex-completion
   :type 'boolean)
 
 (defcustom bibtex-completion-pdf-field nil
-  "The name of the BibTeX field in which the path to PDF files is
-stored or nil if no such field should be used.  If an entry has
-no value for this field, or if the specified file does not exist,
-or if this variable is nil, bibtex-completion will look up the PDF in
-the directories listed in `bibtex-completion-library-path'."
+  "The name of the BibTeX field in which the path to PDF files is stored or `nil' if no such field should be used.
+If an entry has no value for this field, or if the specified file
+does not exist, or if this variable is nil, bibtex-completion
+will look up the PDF in the directories listed in
+`bibtex-completion-library-path'."
   :group 'bibtex-completion
   :type 'string)
 
@@ -323,18 +321,18 @@ the directories listed in `bibtex-completion-library-path'."
 The key of each element of this list is either a BibTeX entry
 type (in which case the format string applies to entries of this
 type only) or t (in which case the format string applies to all
-other entry types). The value is the format string.
+other entry types).  The value is the format string.
 
 In the format string, expressions like \"${author:36}\",
 \"${title:*}\", etc, are expanded to the value of the
-corresponding field. An expression like \"${author:N}\" is
+corresponding field.  An expression like \"${author:N}\" is
 truncated to a width of N characters, whereas an expression like
 \"${title:*}\" is truncated to the remaining width in the results
-window. Three special fields are available: \"=type=\" holds the
+window.  Three special fields are available: \"=type=\" holds the
 BibTeX entry type, \"=has-pdf=\" holds
 `bibtex-completion-pdf-symbol' if the entry has a PDF file, and
 \"=has-notes=\" holds `bibtex-completion-notes-symbol' if the
-entry has a notes file. The \"author\" field is expanded to
+entry has a notes file.  The \"author\" field is expanded to
 either the author names or, if the entry has no author field, the
 editor names."
   :group 'bibtex-completion
@@ -342,23 +340,20 @@ editor names."
 
 (defvar bibtex-completion-cross-referenced-entry-types
   '("proceedings" "mvproceedings" "book" "mvbook" "collection" "mvcollection")
-  "The list of potentially cross-referenced entry types (in
-  lowercase). Only entries of these types are checked in
-  order to resolve cross-references. The default list is usually
-  sufficient; adding more types can slow down resolution for
-  large biblioraphies.")
+  "The list of potentially cross-referenced entry types (in lowercase).
+Only entries of these types are checked in order to resolve
+cross-references.  The default list is usually sufficient; adding
+more types can slow down resolution for large biblioraphies.")
 
 (defvar bibtex-completion-display-formats-internal nil
-  "Stores `bibtex-completion-display-formats' together with the
-\"used width\" of each format string. This is set internally.")
+  "Stores `bibtex-completion-display-formats' together with the \"used width\" of each format string.
+This is set internally.")
 
 (defvar bibtex-completion-cache nil
-  "A cache storing the hash of the bibliography content and the
-corresponding list of entries, for each bibliography file,
-obtained when the bibliography was last parsed. When the
-current bibliography hash is identical to the cached hash, the
-cached list of candidates is reused, otherwise the bibliography
-file is reparsed.")
+  "A cache storing the hash of the bibliography content and the corresponding list of entries, for each bibliography file, obtained when the bibliography was last parsed.
+When the current bibliography hash is identical to the cached
+hash, the cached list of candidates is reused, otherwise the
+bibliography file is reparsed.")
 
 (defvar bibtex-completion-string-cache nil
   "A cache storing bibtex strings, for each bibliography file, obtained when the bibliography was last parsed.")
@@ -368,12 +363,11 @@ file is reparsed.")
 
 
 (defun bibtex-completion-normalize-bibliography (&optional type)
-  "Returns a list of bibliography file(s) in
-`bibtex-completion-bibliography'. If there are org-mode
-bibliography-files, their corresponding bibtex files are listed
-as well, unless TYPE is 'main. If TYPE is 'bibtex, org-mode
-bibliography-files are instead replaced with their associated
-bibtex files."
+  "Return a list of bibliography file(s) in `bibtex-completion-bibliography'.
+If there are org mode bibliography-files, their corresponding
+bibtex files are listed as well, unless TYPE is 'main.  If TYPE is
+'bibtex, org mode bibliography-files are instead replaced with
+their associated bibtex files."
   (delete-dups
    (cl-loop
     for bib-file in (-flatten (list bibtex-completion-bibliography))
@@ -392,8 +386,8 @@ bibtex files."
   "List of file watches monitoring bibliography files for changes.")
 
 (defun bibtex-completion-init ()
-  "Checks that the files and directories specified by the user
-actually exist. Also sets `bibtex-completion-display-formats-internal'."
+  "Check that the files and directories specified by the user actually exist.
+Also sets `bibtex-completion-display-formats-internal'."
 
   ;; Remove current watch-descriptors for bibliography files:
   (mapc (lambda (watch-descriptor)
@@ -412,7 +406,7 @@ actually exist. Also sets `bibtex-completion-display-formats-internal'."
                                             (lambda (event) (bibtex-completion-candidates)))))
                 (setq bibtex-completion-file-watch-descriptors
                       (cons watch-descriptor bibtex-completion-file-watch-descriptors)))
-            (user-error "Bibliography file %s could not be found." file)))
+            (user-error "Bibliography file %s could not be found" file)))
             (bibtex-completion-normalize-bibliography))
 
   ;; Pre-calculate minimal widths needed by the format strings for
@@ -435,7 +429,9 @@ actually exist. Also sets `bibtex-completion-display-formats-internal'."
                 bibtex-completion-display-formats)))
 
 (defun bibtex-completion-clear-cache (&optional files)
-  "Clears FILES from cache. If FILES is omitted, all files in `bibtex-completion-biblography' are cleared."
+  "Clears FILES from cache.
+If FILES is omitted, all files in `bibtex-completion-biblography'
+are cleared."
   (setq bibtex-completion-cache
         (cl-remove-if
          (lambda (x)
@@ -445,7 +441,9 @@ actually exist. Also sets `bibtex-completion-display-formats-internal'."
          bibtex-completion-cache)))
 
 (defun bibtex-completion-clear-string-cache (&optional files)
-  "Clears FILES from cache. If FILES is omitted, all files in `bibtex-completion-bibliography' are cleared."
+  "Clears FILES from cache.
+If FILES is omitted, all files in
+`bibtex-completion-bibliography' are cleared."
   (setq bibtex-completion-string-cache
         (cl-remove-if
          (lambda (x)
@@ -455,10 +453,7 @@ actually exist. Also sets `bibtex-completion-display-formats-internal'."
          bibtex-completion-string-cache)))
 
 (defun bibtex-completion-parse-strings (&optional ht-strings)
-  "Parse the BibTeX strings listed in the current buffer and
-return a list of entries in the order in which they appeared in
-the BibTeX file.
-
+  "Parse the BibTeX strings listed in the current buffer and return a list of entries in the order in which they appeared in the BibTeX file.
 If HT-STRINGS is provided it is assumed to be a hash table used
 for string replacement."
   (goto-char (point-min))
@@ -481,11 +476,11 @@ for string replacement."
   "A cache storing notes keys obtained when the bibliography was last parsed.")
 
 (defun bibtex-completion-candidates ()
-  "Reads the BibTeX files and returns a list of conses, one for
-each entry.  The first element of these conses is a string
-containing authors, editors, title, year, type, and key of the
-entry.  This is string is used for matching.  The second element
-is the entry (only the fields listed above) as an alist."
+  "Read the BibTeX files and return a list of conses, one for each entry.
+The first element of these conses is a string containing authors,
+editors, title, year, type, and key of the entry.  This is string
+is used for matching.  The second element is the entry (only the
+fields listed above) as an alist."
   (let ((files (nreverse (bibtex-completion-normalize-bibliography 'bibtex)))
         (ht-strings (make-hash-table :test #'equal))
         reparsed-files)
@@ -556,9 +551,7 @@ is the entry (only the fields listed above) as an alist."
       append (cddr (assoc file bibtex-completion-cache))))))
 
 (defun bibtex-completion-resolve-crossrefs (files reparsed-files)
-  "Expand all entries with fields from cross-referenced entries
-in FILES, assuming that only those files in REPARSED-FILES were
-reparsed whereas the other files in FILES were up-to-date."
+  "Expand all entries with fields from cross-referenced entries in FILES, assuming that only those files in REPARSED-FILES were reparsed whereas the other files in FILES were up-to-date."
   (cl-loop
    with entry-hash = (bibtex-completion-make-entry-hash files reparsed-files)
    for file in files
@@ -600,10 +593,8 @@ reparsed whereas the other files in FILES were up-to-date."
                   entry)))))
 
 (defun bibtex-completion-make-entry-hash (files reparsed-files)
-  "Return a hash table of all potentially cross-referenced bibliography entries in FILES,
-assuming that only those files in REPARSED-FILES were reparsed
-whereas the other files in FILES were up-to-date. Only entries
-whose type belongs to
+  "Return a hash table of all potentially cross-referenced bibliography entries in FILES, assuming that only those files in REPARSED-FILES were reparsed whereas the other files in FILES were up-to-date.
+Only entries whose type belongs to
 `bibtex-completion-cross-referenced-entry-types' are included in
 the hash table."
   (cl-loop
@@ -632,9 +623,8 @@ the hash table."
         entry))
 
 (defun bibtex-completion-parse-bibliography (&optional ht-strings)
-  "Parse the BibTeX entries listed in the current buffer and
-return a list of entries in the order in which they appeared in
-the BibTeX file. Also do some preprocessing of the entries.
+  "Parse the BibTeX entries listed in the current buffer and return a list of entries in the order in which they appeared in the BibTeX file.
+Also do some preprocessing of the entries.
 
 If HT-STRINGS is provided it is assumed to be a hash table."
   (goto-char (point-min))
@@ -659,10 +649,8 @@ If HT-STRINGS is provided it is assumed to be a hash table."
                    (bibtex-completion-prepare-entry entry fields)))))
 
 (defun bibtex-completion-get-entry (entry-key)
-  "Given a BibTeX key this function scans all bibliographies
-listed in `bibtex-completion-bibliography' and returns an alist of the
-record with that key.  Fields from crossreferenced entries are
-appended to the requested entry."
+  "Given a BibTeX key this function scans all bibliographies listed in `bibtex-completion-bibliography' and returns an alist of the record with that key.
+Fields from crossreferenced entries are appended to the requested entry."
   (let* ((entry (bibtex-completion-get-entry1 entry-key))
          (crossref (bibtex-completion-get-value "crossref" entry))
          (crossref (when crossref (bibtex-completion-get-entry1 crossref))))
@@ -685,10 +673,9 @@ appended to the requested entry."
           nil)))))
 
 (defun bibtex-completion-find-pdf-in-field (key-or-entry)
-  "Returns the path of the PDF specified in the field
-`bibtex-completion-pdf-field' if that file exists.  Returns nil if no
-file is specified, or if the specified file does not exist, or if
-`bibtex-completion-pdf-field' is nil."
+  "Return the path of the PDF specified in the field `bibtex-completion-pdf-field' if that file exists.
+Returns nil if no file is specified, or if the specified file
+does not exist, or if `bibtex-completion-pdf-field' is nil."
   (when bibtex-completion-pdf-field
     (let* ((entry (if (stringp key-or-entry)
                       (bibtex-completion-get-entry1 key-or-entry t)
@@ -731,10 +718,8 @@ file is specified, or if the specified file does not exist, or if
 
 
 (defun bibtex-completion-find-pdf-in-library (key-or-entry &optional find-additional)
-  "Searches the directories in `bibtex-completion-library-path'
-for a PDF whose name is composed of the BibTeX key plus
-`bibtex-completion-pdf-extension'.  The path of the first matching
-PDF is returned.
+  "Searches the directories in `bibtex-completion-library-path' for a PDF whose name is composed of the BibTeX key plus `bibtex-completion-pdf-extension'.
+The path of the first matching PDF is returned.
 
 If FIND-ADDITIONAL is non-nil, the paths of all PDFs whose name
 starts with the BibTeX key and ends with
@@ -764,8 +749,8 @@ starts with the BibTeX key and ends with
       (-flatten (-first 'f-file? main-pdf)))))
 
 (defun bibtex-completion-find-pdf (key-or-entry &optional find-additional)
-  "Returns the path of the PDF associated with the specified
-entry.  This is either the path(s) specified in the field
+  "Return the path of the PDF associated with the specified entry KEY-OR-ENTRY.
+This is either the path(s) specified in the field
 `bibtex-completion-pdf-field' or, if that does not exist, the
 first PDF in any of the directories in
 `bibtex-completion-library-path' whose name is composed of the
@@ -798,9 +783,9 @@ BibTeX entry."
 (defun bibtex-completion-prepare-entry (entry &optional fields do-not-find-pdf)
   "Prepare ENTRY for display.
 ENTRY is an alist representing an entry as returned by
-parsebib-read-entry. All the fields not in FIELDS are removed
+`parsebib-read-entry'.  All the fields not in FIELDS are removed
 from ENTRY, with the exception of the \"=type=\" and \"=key=\"
-fields. If FIELDS is empty, all fields are kept. Also add a
+fields.  If FIELDS is empty, all fields are kept.  Also add a
 =has-pdf= and/or =has-note= field, if they exist for ENTRY.  If
 DO-NOT-FIND-PDF is non-nil, this function does not attempt to
 find a PDF file."
@@ -841,9 +826,9 @@ find a PDF file."
 
 
 (defun bibtex-completion-format-entry (entry width)
-  "Formats a BibTeX ENTRY for display in results list. WIDTH is
-the width of the results list. The display format is governed by
-the variable `bibtex-completion-display-formats'."
+  "Formats a BibTeX ENTRY for display in results list.
+WIDTH is the width of the results list.  The display format is
+governed by the variable `bibtex-completion-display-formats'."
   (let* ((format
           (or (assoc-string (bibtex-completion-get-value "=type=" entry)
                             bibtex-completion-display-formats-internal
@@ -878,14 +863,13 @@ the variable `bibtex-completion-display-formats'."
 
 
 (defun bibtex-completion-clean-string (s)
-  "Removes quoting and superfluous white space from BibTeX field
-values."
+  "Remove quoting and superfluous white space from BibTeX field value in S."
   (if s (replace-regexp-in-string "[\n\t ]+" " "
          (replace-regexp-in-string "[\"{}]+" "" s))
     nil))
 
 (defun bibtex-completion-shorten-authors (authors)
-  "Returns a comma-separated list of the surnames in authors."
+  "Return a comma-separated list of the surnames in authors."
   (if authors
       (cl-loop for a in (s-split " and " authors)
                for p = (s-split "," a t)
@@ -899,11 +883,10 @@ values."
 
 
 (defun bibtex-completion-open-pdf (keys &optional fallback-action)
-  "Open the PDFs associated with the marked entries using the
-function specified in `bibtex-completion-pdf-open-function'.
-If multiple PDFs are found for an entry, ask for the one to
-open using `completion-read'.  If FALLBACK-ACTION is non-nil, it is called in
-case no PDF is found."
+  "Open the PDFs associated with the marked entries using the function specified in `bibtex-completion-pdf-open-function'.
+If multiple PDFs are found for an entry, ask for the one to open
+using `completion-read'.  If FALLBACK-ACTION is non-nil, it is
+called in case no PDF is found."
   (dolist (key keys)
     (let ((pdf (bibtex-completion-find-pdf key bibtex-completion-find-additional-pdfs)))
       (cond
@@ -921,7 +904,7 @@ case no PDF is found."
                  key))))))
 
 (defun bibtex-completion-open-url-or-doi (keys)
-  "Open the associated URL or DOI in a browser."
+  "Open the URL or DOI associated with entries in KEYS in a browser."
   (dolist (key keys)
     (let* ((entry (bibtex-completion-get-entry key))
            (url (bibtex-completion-get-value "url" entry))
@@ -937,31 +920,31 @@ case no PDF is found."
                    key))))))
 
 (defun bibtex-completion-open-any (keys)
-  "Open the PDFs associated with the marked entries using the
-function specified in `bibtex-completion-pdf-open-function'.
-If multiple PDFs are found for an entry, ask for the one to
-open using `completion-read'.  If no PDF is found, try to open a URL
+  "Open the PDFs associated with the marked entries using the function specified in `bibtex-completion-pdf-open-function'.
+If multiple PDFs are found for an entry, ask for the one to open
+using `completion-read'.  If no PDF is found, try to open a URL
 or DOI in the browser instead."
   (bibtex-completion-open-pdf keys 'bibtex-completion-open-url-or-doi))
 
 (defun bibtex-completion-format-citation-default (keys)
-  "Default formatter for keys, separates multiple keys with commas."
+  "Default formatter for keys, separates multiple keys in KEYS with commas."
   (s-join ", " keys))
 
 (defvar bibtex-completion-cite-command-history nil
   "History list for LaTeX citation commands.")
 
 (defun bibtex-completion-format-citation-cite (keys)
-  "Formatter for LaTeX citation commands. Prompts for the command
-and for arguments if the commands can take any. If point is
-inside or just after a citation command, only adds KEYS to it."
+  "Formatter for LaTeX citation commands.
+Prompts for the command and for arguments if the commands can
+take any.  If point is inside or just after a citation command,
+only adds KEYS to it."
   (let (macro)
     (cond
      ((and (require 'reftex-parse nil t)
            (setq macro (reftex-what-macro 1))
            (stringp (car macro))
            (string-match "\\`\\\\cite\\|cite\\'" (car macro)))
-      ;; We are inside a cite macro. Insert key at point, with appropriate delimiters.
+      ;; We are inside a cite macro.  Insert key at point, with appropriate delimiters.
       (delete-horizontal-space)
       (concat (pcase (preceding-char)
                 (?\{ "")
@@ -978,7 +961,7 @@ inside or just after a citation command, only adds KEYS to it."
              (setq macro (reftex-what-macro 1)))
            (stringp (car macro))
            (string-match "\\`\\\\cite\\|cite\\'" (car macro)))
-      ;; We are right after a cite macro. Append key and leave point at the end.
+      ;; We are right after a cite macro.  Append key and leave point at the end.
       (delete-char -1)
       (delete-horizontal-space t)
       (concat (pcase (preceding-char)
@@ -988,7 +971,7 @@ inside or just after a citation command, only adds KEYS to it."
               (s-join ", " keys)
               "}"))
      (t
-      ;; We are not inside or right after a cite macro. Insert a full citation.
+      ;; We are not inside or right after a cite macro.  Insert a full citation.
       (let* ((initial (when bibtex-completion-cite-default-as-initial-input
                         bibtex-completion-cite-default-command))
              (default (unless bibtex-completion-cite-default-as-initial-input
@@ -1022,22 +1005,23 @@ inside or just after a citation command, only adds KEYS to it."
     (format "[%s%s%s]" prenote (s-join "; " (--map (concat "@" it) keys)) postnote)))
 
 (defun bibtex-completion-format-citation-ebib (keys)
-  "Formatter for ebib references."
+  "Format ebib references for keys in KEYS."
   (s-join ", "
           (--map (format "ebib:%s" it) keys)))
 
 (defun bibtex-completion-format-citation-org-link-to-PDF (keys)
-  "Formatter for org-links to PDF.  Uses first matching PDF if
-several are available.  Entries for which no PDF is available are
-omitted."
+  "Formatter for org-links to PDF.
+Uses first matching PDF if several are available.  Entries for
+which no PDF is available are omitted."
   (s-join ", " (cl-loop
                 for key in keys
                 for pdfs = (bibtex-completion-find-pdf key bibtex-completion-find-additional-pdfs)
                 append (--map (format "[[%s][%s]]" it key) pdfs))))
 
 (defun bibtex-completion-format-citation-org-apa-link-to-PDF (keys)
-  "Formatter for org-links to PDF.  Link text loosely follows APA
-format.  Uses first matching PDF if several are available."
+  "Format org-links to PDF for entries in KEYS.
+Link text loosely follows APA format.  Uses first matching PDF if
+several are available."
   (s-join ", " (cl-loop
                 for key in keys
                 for entry = (bibtex-completion-get-entry key)
@@ -1055,8 +1039,9 @@ format.  Uses first matching PDF if several are available."
 ;; When you want to create a todo list about reading, I think using
 ;; PDF's title is more intuitive.
 (defun bibtex-completion-format-citation-org-title-link-to-PDF (keys)
-  "Formatter for org-links to PDF. Link text follows file title format.
-Uses first matching PDF if several are available."
+  "Formatter for org-links to PDF.
+Link text follows file title format.  Uses first matching PDF if
+several are available."
   (s-join ", " (cl-loop
                 for key in keys
                 for entry = (bibtex-completion-get-entry key)
@@ -1069,7 +1054,8 @@ Uses first matching PDF if several are available."
                   collect (format "%s" title))))
 
 (defun bibtex-completion-insert-citation (keys)
-  "Insert citation at point.  The format depends on
+  "Insert citations for entries in KEYS at point.
+The format depends on
 `bibtex-completion-format-citation-functions'."
   (let ((format-function
          (cdr (or (assoc major-mode bibtex-completion-format-citation-functions)
@@ -1078,7 +1064,7 @@ Uses first matching PDF if several are available."
      (funcall format-function keys))))
 
 (defun bibtex-completion-insert-reference (keys)
-  "Insert a reference for each selected entry."
+  "Insert references for entries in KEYS."
   (let* ((refs (--map
                 (s-word-wrap fill-column
                              (concat "\n- " (bibtex-completion-apa-format-reference it)))
@@ -1086,8 +1072,7 @@ Uses first matching PDF if several are available."
     (insert "\n" (s-join "\n" refs) "\n")))
 
 (defun bibtex-completion-apa-format-reference (key)
-  "Returns a plain text reference in APA format for the
-publication specified by KEY."
+  "Return a plain text reference in APA format for the publication specified by KEY."
   (let*
    ((entry (bibtex-completion-get-entry key))
     (ref (pcase (downcase (bibtex-completion-get-value "=type=" entry))
@@ -1130,8 +1115,8 @@ publication specified by KEY."
    (replace-regexp-in-string "\\([.?!]\\)\\." "\\1" ref))) ; Avoid sequences of punctuation marks.
 
 (defun bibtex-completion-apa-get-value (field entry &optional default)
-  "Return FIELD or ENTRY formatted following the APA
-guidelines.  Return DEFAULT if FIELD is not present in ENTRY."
+  "Return FIELD or ENTRY formatted following the APA guidelines.
+Return DEFAULT if FIELD is not present in ENTRY."
   ;; Virtual fields:
   (cond
     ((string= field "author-or-editor")
@@ -1154,7 +1139,7 @@ guidelines.  Return DEFAULT if FIELD is not present in ENTRY."
              ;; When referring to books, chapters, articles, or Web pages,
              ;; capitalize only the first letter of the first word of a
              ;; title and subtitle, the first word after a colon or a dash
-             ;; in the title, and proper nouns. Do not capitalize the first
+             ;; in the title, and proper nouns.  Do not capitalize the first
              ;; letter of the second word in a hyphenated compound word.
              ("title" (replace-regexp-in-string ; remove braces
                        "[{}]"
@@ -1180,6 +1165,7 @@ guidelines.  Return DEFAULT if FIELD is not present in ENTRY."
          "")))))
 
 (defun bibtex-completion-apa-format-authors (value)
+  "Format author list in VALUE in APA style."
   (cl-loop for a in (s-split " and " value t)
            if (s-index-of "{" a)
              collect
@@ -1210,6 +1196,7 @@ guidelines.  Return DEFAULT if FIELD is not present in ENTRY."
                  (t (concat (s-join ", " (-slice authors 0 7)) ", …"))))))
 
 (defun bibtex-completion-apa-format-authors-abbrev (value)
+  "Format author list in VALUE in abbreviated APA style."
   (cl-loop for a in (s-split " and " value t)
            if (s-index-of "{" a)
              collect
@@ -1239,6 +1226,7 @@ guidelines.  Return DEFAULT if FIELD is not present in ENTRY."
                  (t (format "%s et al." (car authors)))))))
 
 (defun bibtex-completion-apa-format-editors (value)
+  "Format editors in VALUE in APA style."
   (cl-loop for a in (s-split " and " value t)
            if (s-index-of "," a)
              collect
@@ -1265,8 +1253,8 @@ guidelines.  Return DEFAULT if FIELD is not present in ENTRY."
                  (t (concat (s-join ", " authors) ", ..."))))))
 
 (defun bibtex-completion-get-value (field entry &optional default)
-  "Return the requested value or `default' if the value is not
-defined.  Surrounding curly braces are stripped."
+  "Return the value for FIELD in ENTRY or DEFAULT if the value is not defined.
+Surrounding curly braces are stripped."
   (let ((value (cdr (assoc-string field entry 'case-fold))))
     (if value
         (replace-regexp-in-string
@@ -1276,15 +1264,17 @@ defined.  Surrounding curly braces are stripped."
       default)))
 
 (defun bibtex-completion-insert-key (keys)
-  "Insert BibTeX key at point."
+  "Insert BibTeX KEYS at point."
   (insert
    (funcall 'bibtex-completion-format-citation-default keys)))
 
 (defun bibtex-completion-insert-bibtex (keys)
-  "Insert BibTeX key at point."
+  "Insert BibTeX entries for entries in KEYS at point."
   (insert (s-join "\n" (--map (bibtex-completion-make-bibtex it) keys))))
 
 (defun bibtex-completion-make-bibtex (key)
+  "Create a self-contained BibTeX entry KEY.
+Self-contained means that cross-referenced entries are merged."
   (let* ((entry (bibtex-completion-get-entry key))
          (entry-type (bibtex-completion-get-value "=type=" entry)))
     (format "@%s{%s,\n%s}\n"
@@ -1301,7 +1291,7 @@ defined.  Surrounding curly braces are stripped."
              (format "  %s = {%s},\n" name value)))))
 
 (defun bibtex-completion-add-PDF-attachment (keys)
-  "Attach the PDFs of the selected entries where available."
+  "Attach the PDFs of the entries with the given KEYS where available."
   (dolist (key keys)
     (let ((pdf (bibtex-completion-find-pdf key bibtex-completion-find-additional-pdfs)))
       (if pdf
@@ -1320,14 +1310,14 @@ defined.  Surrounding curly braces are stripped."
    (substitute-command-keys
     " Finish \\[bibtex-completion-exit-notes-buffer], refile \\[org-refile]")))
 
-;; Define global minor mode. This is needed to the toggle minor mode.
+;; Define global minor mode.  This is needed to the toggle minor mode.
 ;;;###autoload
 (define-globalized-minor-mode bibtex-completion-notes-global-mode bibtex-completion-notes-mode bibtex-completion-notes-mode)
 
 (defun bibtex-completion-exit-notes-buffer ()
   "Exit notes buffer and delete its window.
-This will also disable `bibtex-completion-notes-mode' and remove the header
-line."
+This will also disable `bibtex-completion-notes-mode' and remove
+the header line."
   (interactive)
   (widen)
   (bibtex-completion-notes-global-mode -1)
@@ -1359,16 +1349,13 @@ according to `org-capture-templates'."
           (replace-regexp-in-string "\\\\n" "\n"))
      0 -1)))
 
-(defcustom bibtex-completion-edit-notes-fn
+(defvar bibtex-completion-edit-notes-function
   #'bibtex-completion-edit-notes-default
-  "Function to use to edit notes.
-The function should accept one argument, a list of BibTeX
-entry-keys."
-  :group 'helm-bibtex
-  :type 'function)
+  "Function used to edit notes.
+The function should accept one argument, a list of BibTeX keys.")
 
 (defun bibtex-completion-edit-notes-default (keys)
-  "Open the notes associated with the selected entries using `find-file'."
+  "Open the notes associated with the entries in KEYS using `find-file'."
   (dolist (key keys)
     (let* ((entry (bibtex-completion-get-entry key))
            (year (or (bibtex-completion-get-value "year" entry)
@@ -1421,15 +1408,15 @@ entry-keys."
             (goto-char beginning)))))))
 
 (defun bibtex-completion-edit-notes (keys)
-  "Open the notes associated with `bibtex-completion-edit-notes-fn'."
-  (funcall bibtex-completion-edit-notes-fn keys))
+  "Open the notes associated with KEYS using `bibtex-completion-edit-notes-function'."
+  (funcall bibtex-completion-edit-notes-function keys))
 
 (defun bibtex-completion-buffer-visiting (file)
   (or (get-file-buffer file)
       (find-buffer-visiting file)))
 
 (defun bibtex-completion-show-entry (keys)
-  "Show the first selected entry in the BibTeX file."
+  "Show the first entry in KEYS in the relevant BibTeX file."
   (catch 'break
     (dolist (bib-file (bibtex-completion-normalize-bibliography 'main))
       (let ((key (car keys))
@@ -1455,8 +1442,9 @@ entry-keys."
           (kill-buffer))))))
 
 (defun bibtex-completion-add-pdf-to-library (keys)
-  "Add a PDF to the library for the first selected entry. The PDF
-can be added either from an open buffer, a file, or a URL."
+  "Add a PDF to the library for the first entry in KEYS.
+The PDF can be added either from an open buffer, a file, or a
+URL."
   (let* ((key (car keys))
          (source (char-to-string
                   (read-char-choice "Add pdf from [b]uffer, [f]ile, or [u]rl? " '(?b ?f ?u))))
@@ -1485,6 +1473,12 @@ can be added either from an open buffer, a file, or a URL."
       (url-copy-file url pdf 1)))))
 
 (defun bibtex-completion-fallback-action (url-or-function search-expression)
+  "Execute fallback option.
+Could consist of opening an URL or executing a function,
+depending of type of URL-OR-FUNCTION (`stringp' or `function').
+If string, SEARCH-EXPRESSION will be inserted at %s in string.
+If function, it will be called with SEARCH-EXPRESSION as
+argument."
   (let ((browse-url-browser-function
           (or bibtex-completion-browser-function
               browse-url-browser-function)))
@@ -1496,10 +1490,10 @@ can be added either from an open buffer, a file, or a URL."
       (t (error "Don't know how to interpret this: %s" url-or-function)))))
 
 (defun bibtex-completion-fallback-candidates ()
-  "Compile list of fallback options.  These consist of the online
-resources defined in `bibtex-completion-fallback-options' plus
-one entry for each bibliography file that will open that file for
-editing."
+  "Compile list of fallback options.
+These consist of the online resources defined in
+`bibtex-completion-fallback-options' plus one entry for each
+bibliography file that will open that file for editing."
   (let ((bib-files (bibtex-completion-normalize-bibliography 'main)))
     (-concat
       (--map (cons (s-concat "Create new entry in " (f-filename it))
@@ -1508,10 +1502,10 @@ editing."
       bibtex-completion-fallback-options)))
 
 (defun bibtex-completion-find-local-bibliography ()
-  "Return a list of BibTeX files associated with the current
-file. If the current file is a BibTeX file, return this
-file. Otherwise, try to use `reftex' to find the associated
-BibTeX files. If this fails, return nil."
+  "Return a list of BibTeX files associated with the current file.
+If the current file is a BibTeX file, return this
+file.  Otherwise, try to use `reftex' to find the associated
+BibTeX files.  If this fails, return nil."
   (or (and (buffer-file-name)
            (string= (or (f-ext (buffer-file-name)) "") "bib")
            (list (buffer-file-name)))
@@ -1520,13 +1514,13 @@ BibTeX files. If this fails, return nil."
            (ignore-errors (reftex-get-bibfile-list)))))
 
 (defun bibtex-completion-key-at-point ()
-  "Return the key of the BibTeX entry at point. If the current
-file is a BibTeX file, return the key of the entry at
-point. Otherwise, try to use `reftex' to check whether point is
-at a citation macro, and if so return the key at
-point. Otherwise, if the current file is an org-mode file, return
-the value of `org-bibtex-key-property' (or
-default to \"CUSTOM_ID\"). Otherwise, return nil."
+  "Return the key of the BibTeX entry at point.
+If the current file is a BibTeX file, return the key of the entry
+at point.  Otherwise, try to use `reftex' to check whether point
+is at a citation macro, and if so return the key at
+point.  Otherwise, if the current file is an org mode file, return
+the value of `org-bibtex-key-property' (or default to
+\"CUSTOM_ID\").  Otherwise, return nil."
   (or (and (eq major-mode 'bibtex-mode)
            (save-excursion
              (bibtex-beginning-of-entry)

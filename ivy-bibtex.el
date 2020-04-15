@@ -88,15 +88,14 @@
   :type 'function)
   
 (defun ivy-bibtex-display-transformer (candidate)
+  "Prepare bib entry CANDIDATE for display."
   (let* ((width (1- (frame-width)))
          (idx (get-text-property 0 'idx candidate))
          (entry (cdr (nth idx (ivy-state-collection ivy-last)))))
     (bibtex-completion-format-entry entry width)))
 
 (defmacro ivy-bibtex-ivify-action (action name)
-  "Wraps the function ACTION in another function named NAME which
-extracts the key from the candidate selected in ivy and passes it
-to ACTION."
+  "Wraps the function ACTION in another function named NAME which extracts the key from the candidate selected in ivy and passes it to ACTION."
   `(defun ,name (candidate)
      (let ((key (cdr (assoc "=key=" (cdr candidate)))))
        (,action (list key)))))
@@ -114,9 +113,9 @@ to ACTION."
 (ivy-bibtex-ivify-action bibtex-completion-add-pdf-to-library ivy-bibtex-add-pdf-to-library)
 
 (defun ivy-bibtex-fallback (search-expression)
-  "Select a fallback option for SEARCH-EXPRESSION. This is meant
-to be used as an action in `ivy-read`, with `ivy-text` as search
-expression."
+  "Select a fallback option for SEARCH-EXPRESSION.
+This is meant to be used as an action in `ivy-read`, with
+`ivy-text` as search expression."
   (ivy-read "Fallback options: "
             (bibtex-completion-fallback-candidates)
             :caller 'ivy-bibtex-fallback
@@ -130,7 +129,7 @@ With a prefix ARG the cache is invalidated and the bibliography
 reread.
 
 If LOCAL-BIB is non-nil, display that the BibTeX entries are read
-from the local bibliography. This is set internally by
+from the local bibliography.  This is set internally by
 `ivy-bibtex-with-local-bibliography'."
   (interactive "P")
   (when arg
@@ -177,7 +176,7 @@ reread."
    ("e" ivy-bibtex-edit-notes "Edit notes")
    ("s" ivy-bibtex-show-entry "Show entry")
    ("l" ivy-bibtex-add-pdf-to-library "Add PDF to library")
-   ("f" (lambda (_candidate) (ivy-bibtex-fallback ivy-text)) "Fallback options"))) 
+   ("f" (lambda (_candidate) (ivy-bibtex-fallback ivy-text)) "Fallback options")))
 
 (provide 'ivy-bibtex)
 
