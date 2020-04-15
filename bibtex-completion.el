@@ -1356,16 +1356,13 @@ the header line."
           (goto-char (point-max))
           (bibtex-completion-notes-mode 1))))))
 
-(defun bibtex-completion-buffer-visiting (file)
-  (or (get-file-buffer file)
-      (find-buffer-visiting file)))
-
 (defun bibtex-completion-show-entry (keys)
   "Show the first entry in KEYS in the relevant BibTeX file."
   (catch 'break
     (dolist (bib-file (bibtex-completion-normalize-bibliography 'main))
       (let ((key (car keys))
-            (buf (bibtex-completion-buffer-visiting bib-file)))
+            (buf (or (get-file-buffer bib-file)
+                     (find-buffer-visiting bib-file))))
         (find-file bib-file)
         (widen)
         (if (eq major-mode 'org-mode)
