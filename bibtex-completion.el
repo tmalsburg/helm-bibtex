@@ -823,7 +823,7 @@ find a PDF file."
            ; Remove unwanted fields:
            (entry (if fields
                        (--filter (member-ignore-case (car it) fields) entry)
-                     entry)))
+                    entry)))
       ;; Normalize case of entry type:
       (setcdr (assoc "=type=" entry) (downcase (cdr (assoc "=type=" entry))))
       ;; Remove duplicated fields:
