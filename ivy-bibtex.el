@@ -2,6 +2,7 @@
 
 ;; Author: Justin Burkett <justin@burkett.cc>
 ;; Maintainer: Titus von der Malsburg <malsburg@posteo.de>
+;; URL: https://github.com/tmalsburg/helm-bibtex
 ;; Version: 1.0.1
 ;; Package-Requires: ((bibtex-completion "1.0.0") (swiper "0.7.0") (cl-lib "0.5"))
 

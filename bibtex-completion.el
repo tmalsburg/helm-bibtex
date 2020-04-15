@@ -3,8 +3,9 @@
 ;; Author: Titus von der Malsburg <malsburg@posteo.de>
 ;;         Justin Burkett <justin@burkett.cc>
 ;; Maintainer: Titus von der Malsburg <malsburg@posteo.de>
+;; URL: https://github.com/tmalsburg/helm-bibtex
 ;; Version: 1.0.0
-;; Package-Requires: ((parsebib "1.0") (s "1.9.0") (dash "2.6.0") (f "0.16.2") (cl-lib "0.5"))
+;; Package-Requires: ((parsebib "1.0") (s "1.9.0") (dash "2.6.0") (f "0.16.2") (cl-lib "0.5") (emacs "26.1"))
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -468,8 +469,7 @@ for string replacement."
                    if (string= (downcase entry-type) "string")
                    collect (let ((entry (parsebib-read-string (point) ht)))
                              (puthash (car entry) (cdr entry) ht)
-                             entry)
-                   )))
+                             entry))))
     (-filter (lambda (x) x) strings)))
 
 (defun bibtex-completion-update-strings-ht (ht strings)
@@ -1304,6 +1304,7 @@ defined.  Surrounding curly braces are stripped."
     " Finish \\[bibtex-completion-exit-notes-buffer], refile \\[org-refile]")))
 
 ;; Define global minor mode. This is needed to the toggle minor mode.
+;;;###autoload
 (define-globalized-minor-mode bibtex-completion-notes-global-mode bibtex-completion-notes-mode bibtex-completion-notes-mode)
 
 (defun bibtex-completion-exit-notes-buffer ()
