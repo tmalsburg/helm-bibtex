@@ -1330,8 +1330,36 @@ the header line."
         (delete-window window)
       (switch-to-buffer (other-buffer)))))
 
-(defun bibtex-completion-edit-notes (keys)
-  "Open the notes associated with the entries in KEYS using `find-file'."
+(defun bibtex-completion-fill-template (entry template)
+  "Fill TEMPLATE according to info from ENTRY.
+
+First, the BibTeX fields are expanded (e.g. ${field-name}).
+Then, the `org-capture' %-escapes are replaced with their values
+according to `org-capture-templates'."
+  (let ((bibtex-exp (s-format template
+                              'bibtex-completion-apa-get-value
+                              entry)))
+    ;; Delete trailing newline inserted by `org-capture-fill-template'
+    (substring
+     (->> bibtex-exp
+          ;; Escape newlines to prevent `org-capture-fill-template' from
+          ;; gobbling them
+          (replace-regexp-in-string "\n" "\\\\n")
+          (org-capture-fill-template)
+          ;; Restore newlines
+          (replace-regexp-in-string "\\\\n" "\n"))
+     0 -1)))
+
+(defvar bibtex-completion-edit-notes-function
+  #'bibtex-completion-edit-notes-default
+  "Function used to edit notes.
+The function should accept one argument, a list of BibTeX keys.")
+
+;; TODO Split this function into two, one for one file per note and
+;; the other for one file for all notes.
+(defun bibtex-completion-edit-notes-default (keys)
+  "Open the notes associated with the entries in KEYS.
+Creates new notes where none exist yet."
   (dolist (key keys)
     (let* ((entry (bibtex-completion-get-entry key))
            (year (or (bibtex-completion-get-value "year" entry)
@@ -1344,9 +1372,10 @@ the header line."
                                (s-concat key bibtex-completion-notes-extension))))
             (find-file path)
             (unless (f-exists? path)
-              (insert (s-format bibtex-completion-notes-template-multiple-files
-                                'bibtex-completion-apa-get-value
-                                entry))))
+              ;; First expand BibTeX variables, then org-capture template vars:
+              (insert (bibtex-completion-fill-template
+                       entry
+                       bibtex-completion-notes-template-multiple-files))))
                                         ; One file for all notes:
         (unless (and buffer-file-name
                      (f-same? bibtex-completion-notes-path buffer-file-name))
@@ -1362,17 +1391,29 @@ the header line."
               (org-cycle-hide-drawers nil)
               (bibtex-completion-notes-mode 1))
                                         ; Create a new entry:
-            (goto-char (point-max))
-            (save-excursion (insert (s-format bibtex-completion-notes-template-one-file
-                                              'bibtex-completion-apa-get-value
-                                              entry)))
-            (re-search-forward "^*+ " nil t))
+          (goto-char (point-max))
+          (save-excursion (insert (bibtex-completion-fill-template
+                                   entry
+                                   bibtex-completion-notes-template-one-file)))
+          (re-search-forward "^*+ " nil t))
         (when (eq major-mode 'org-mode)
           (org-narrow-to-subtree)
           (re-search-backward "^\*+ " nil t)
           (org-cycle-hide-drawers nil)
           (goto-char (point-max))
-          (bibtex-completion-notes-mode 1))))))
+          (bibtex-completion-notes-mode 1))
+        ;; Move point to ‘%?’ if it’s included in the pattern
+        (when (save-excursion
+                (progn (goto-char (point-min))
+                       (re-search-forward "%\\?" nil t)))
+          (let ((beginning (match-beginning 0))
+                (end (match-end 0)))
+            (delete-region beginning end)
+            (goto-char beginning)))))))
+
+(defun bibtex-completion-edit-notes (keys)
+  "Open the notes associated with KEYS using `bibtex-completion-edit-notes-function'."
+  (funcall bibtex-completion-edit-notes-function keys))
 
 (defun bibtex-completion-show-entry (keys)
   "Show the first entry in KEYS in the relevant BibTeX file."
