@@ -762,8 +762,8 @@ Returns nil if no PDF is found."
   (or (bibtex-completion-find-pdf-in-field key-or-entry)
       (bibtex-completion-find-pdf-in-library key-or-entry find-additional)))
 
-(defun bibtex-completion-find-note-file-default (entry-key)
-  "Find note file associated from BibTeX’s ENTRY-KEY in the default directory.
+(defun bibtex-completion-find-note-multiple-files (entry-key)
+  "Find note file associated with entry ENTRY-KEY in the default directory.
 The default directory is `bibtex-completion-notes-path'.  If the
 note file doesn’t exist, return nil."
   (and bibtex-completion-notes-path
@@ -772,13 +772,20 @@ note file doesn’t exist, return nil."
                         (s-concat entry-key
                                   bibtex-completion-notes-extension)))))
 
-(defcustom bibtex-completion-find-note-file-fns
-  (list #'bibtex-completion-find-note-file-default)
+(defun bibtex-completion-find-note-one-file (entry-key)
+  "Find notes associated with entry ENTRY-KEY in the single notes file.
+The single notes file is the one specified in
+`bibtex-completion-notes-path'.  If no note exists, return nil."
+  (and bibtex-completion-notes-path
+       (f-file? bibtex-completion-notes-path)
+       (member entry-key bibtex-completion-cached-notes-keys)))
+
+(defvar bibtex-completion-find-note-functions
+  (list #'bibtex-completion-find-note-multiple-files
+        #'bibtex-completion-find-note-one-file)
   "List of functions to use to find note files.
 The functions should accept one argument: the entry-key of the
-BibTeX entry."
-  :group 'bibtex-completion
-  :type 'list)
+BibTeX entry and return non-nil if notes exist for that entry.")
 
 (defun bibtex-completion-prepare-entry (entry &optional fields do-not-find-pdf)
   "Prepare ENTRY for display.
@@ -797,16 +804,10 @@ find a PDF file."
                     entry))
            (entry-key (cdr (assoc "=key=" entry)))
            ; Check for notes:
-           (entry (if (or
-                       ;; One note file per entry:
-                       (cl-some #'identity
-                                (mapcar (lambda (fn)
-                                          (funcall fn entry-key))
-                                        bibtex-completion-find-note-file-fns))
-                       ;; All notes in one file:
-                       (and bibtex-completion-notes-path
-                            (f-file? bibtex-completion-notes-path)
-			    (member entry-key bibtex-completion-cached-notes-keys)))
+           (entry (if (cl-some #'identity
+                               (mapcar (lambda (fn)
+                                         (funcall fn entry-key))
+                                       bibtex-completion-find-note-functions))
                       (cons (cons "=has-note=" bibtex-completion-notes-symbol) entry)
                     entry))
            ; Remove unwanted fields:
