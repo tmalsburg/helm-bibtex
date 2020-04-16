@@ -1355,8 +1355,11 @@ according to `org-capture-templates'."
   "Function used to edit notes.
 The function should accept one argument, a list of BibTeX keys.")
 
+;; TODO Split this function into two, one for one file per note and
+;; the other for one file for all notes.
 (defun bibtex-completion-edit-notes-default (keys)
-  "Open the notes associated with the entries in KEYS using `find-file'."
+  "Open the notes associated with the entries in KEYS.
+Creates new notes where none exist yet."
   (dolist (key keys)
     (let* ((entry (bibtex-completion-get-entry key))
            (year (or (bibtex-completion-get-value "year" entry)
@@ -1369,7 +1372,7 @@ The function should accept one argument, a list of BibTeX keys.")
                                (s-concat key bibtex-completion-notes-extension))))
             (find-file path)
             (unless (f-exists? path)
-              ;; First expend bibtex variables, then org-capture template
+              ;; First expand BibTeX variables, then org-capture template vars:
               (insert (bibtex-completion-fill-template
                        entry
                        bibtex-completion-notes-template-multiple-files))))
