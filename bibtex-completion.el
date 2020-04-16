@@ -784,8 +784,8 @@ The single notes file is the one specified in
   (list #'bibtex-completion-find-note-multiple-files
         #'bibtex-completion-find-note-one-file)
   "List of functions to use to find note files.
-The functions should accept one argument: the entry-key of the
-BibTeX entry and return non-nil if notes exist for that entry.")
+The functions should accept one argument: the key of the BibTeX
+entry and return non-nil if notes exist for that entry.")
 
 (defun bibtex-completion-prepare-entry (entry &optional fields do-not-find-pdf)
   "Prepare ENTRY for display.
@@ -870,7 +870,7 @@ governed by the variable `bibtex-completion-display-formats'."
     nil))
 
 (defun bibtex-completion-shorten-authors (authors)
-  "Return a comma-separated list of the surnames in authors."
+  "Return a comma-separated list of the surnames in AUTHORS."
   (if authors
       (cl-loop for a in (s-split " and " authors)
                for p = (s-split "," a t)
@@ -998,7 +998,7 @@ only adds KEYS to it."
                    (format "\\%s{%s}" cite-command (s-join ", " keys)))))))))))
 
 (defun bibtex-completion-format-citation-pandoc-citeproc (keys)
-  "Formatter for pandoc-citeproc citations."
+  "Format pandoc-citeproc citations for the entries in KEYS."
   (let* ((prenote  (if bibtex-completion-cite-prompt-for-optional-arguments (read-from-minibuffer "Prenote: ") ""))
          (postnote (if bibtex-completion-cite-prompt-for-optional-arguments (read-from-minibuffer "Postnote: ") ""))
          (prenote  (if (string= "" prenote)  "" (concat prenote  " ")))
@@ -1011,7 +1011,7 @@ only adds KEYS to it."
           (--map (format "ebib:%s" it) keys)))
 
 (defun bibtex-completion-format-citation-org-link-to-PDF (keys)
-  "Formatter for org-links to PDF.
+  "Format org-links to PDFs associated with entries in KEYS.
 Uses first matching PDF if several are available.  Entries for
 which no PDF is available are omitted."
   (s-join ", " (cl-loop
@@ -1040,7 +1040,7 @@ several are available."
 ;; When you want to create a todo list about reading, I think using
 ;; PDF's title is more intuitive.
 (defun bibtex-completion-format-citation-org-title-link-to-PDF (keys)
-  "Formatter for org-links to PDF.
+  "Formatter org-links to PDFs associated with entries in KEYS.
 Link text follows file title format.  Uses first matching PDF if
 several are available."
   (s-join ", " (cl-loop
