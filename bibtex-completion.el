@@ -40,6 +40,7 @@
 (require 'f)
 (require 'biblio)
 (require 'filenotify)
+(require 'org-capture)
 
 ;; Silence byte-compiler
 (declare-function reftex-what-macro "reftex-parse")
