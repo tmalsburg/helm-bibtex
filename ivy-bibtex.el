@@ -164,6 +164,16 @@ reread."
                                              bibtex-completion-bibliography)))
     (ivy-bibtex arg local-bib)))
 
+;;;###autoload
+(defun ivy-bibtex-with-notes (&optional arg)
+  "Search BibTeX entries with notes.
+
+With a prefix ARG the cache is invalidated and the bibliography
+reread."
+  (interactive "P")
+  (let ((candidates (bibtex-completion-candidates-with-notes)))
+    (ivy-bibtex arg nil candidates)))
+
 (ivy-set-display-transformer
  'ivy-bibtex
  'ivy-bibtex-display-transformer)
