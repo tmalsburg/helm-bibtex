@@ -562,25 +562,6 @@ See `bibtex-completion-candidates' for details."
               ;; nconc instead of push to avoid reversing
               (nconc candidates-with-notes (list candidate)))))))
 
-(defun bibtex-completion-get-candidates (&optional candidates)
-  "Retrieve the candidates to be used by the completion engine.
-
-By default, the candidates are retrieved with
-`bibtex-completion-candidates'.  If CANDIDATES is non-nil, it can
-either be a list of candidates as formatted by
-`bibtex-completion-candidates', or a function without any
-argument that returns such a list.
-
-See `bibtex-completion-candidates' for details."
-  (pcase candidates
-    ;; Default to `bibtex-completion-candidates'
-    ('() (bibtex-completion-candidates))
-    ((pred functionp) (funcall candidates))
-    ((pred listp) candidates)
-    (wrong-type (signal 'wrong-type-argument
-                        `((functionp listp)
-                          ,wrong-type)))))
-
 (defun bibtex-completion-resolve-crossrefs (files reparsed-files)
   "Expand all entries with fields from cross-referenced entries in FILES, assuming that only those files in REPARSED-FILES were reparsed whereas the other files in FILES were up-to-date."
   (cl-loop
