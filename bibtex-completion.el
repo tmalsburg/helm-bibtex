@@ -551,11 +551,10 @@ fields listed above) as an alist."
       for file in files
       append (cddr (assoc file bibtex-completion-cache))))))
 
-(defun bibtex-completion-candidates-with-notes ()
-  "Read the BibTeX files and return a list of candidates with notes.
+(defun bibtex-completion-candidates-with-notes (candidates)
+  "Return a filtered list of CANDIDATES without notes.
 See `bibtex-completion-candidates' for details."
-  (let ((candidates (bibtex-completion-candidates))
-        candidates-with-notes)
+  (let (candidates-with-notes)
     (dolist (candidate candidates candidates-with-notes)
       (when (assoc "=has-note=" candidate)
         (setq candidates-with-notes
