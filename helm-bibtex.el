@@ -256,16 +256,6 @@ reread."
                                              bibtex-completion-bibliography)))
     (helm-bibtex arg local-bib)))
 
-;;;###autoload
-(defun helm-bibtex-with-notes (&optional arg)
-  "Search BibTeX entries with notes.
-
-With a prefix ARG the cache is invalidated and the bibliography
-reread."
-  (interactive "P")
-  (let ((candidates (bibtex-completion-candidates-with-notes)))
-    (helm-bibtex arg nil nil candidates)))
-
 (provide 'helm-bibtex)
 
 ;; Local Variables:
