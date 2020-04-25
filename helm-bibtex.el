@@ -204,7 +204,7 @@ comes out in the right buffer."
 ;; Helm-bibtex command:
 
 ;;;###autoload
-(defun helm-bibtex (&optional arg local-bib input)
+(defun helm-bibtex (&optional arg local-bib input candidates)
   "Search BibTeX entries.
 
 With a prefix ARG, the cache is invalidated and the bibliography
@@ -216,12 +216,16 @@ from the local bibliography.  This is set internally by
 
 If INPUT is non-nil and a string, that value is going to be used
 as a predefined search term.  Can be used to define functions for
-frequent searches (e.g. your own publications)."
+frequent searches (e.g. your own publications).
+
+If CANDIDATES is non-nil, it can either be a list of candidates
+as formatted by `bibtex-completion-candidates', or a function
+without any argument that returns such a list."
   (interactive "P")
   (when arg
     (bibtex-completion-clear-cache))
   (bibtex-completion-init)
-  (let* ((candidates (bibtex-completion-candidates))
+  (let* ((candidates (bibtex-completion-get-candidates candidates))
          (key (bibtex-completion-key-at-point))
          (preselect (and key
                          (cl-position-if (lambda (cand)

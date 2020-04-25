@@ -122,7 +122,7 @@ This is meant to be used as an action in `ivy-read`, with
             :action (lambda (candidate) (bibtex-completion-fallback-action (cdr candidate) search-expression))))
 
 ;;;###autoload
-(defun ivy-bibtex (&optional arg local-bib)
+(defun ivy-bibtex (&optional arg local-bib candidates)
   "Search BibTeX entries using ivy.
 
 With a prefix ARG the cache is invalidated and the bibliography
@@ -130,12 +130,16 @@ reread.
 
 If LOCAL-BIB is non-nil, display that the BibTeX entries are read
 from the local bibliography.  This is set internally by
-`ivy-bibtex-with-local-bibliography'."
+`ivy-bibtex-with-local-bibliography'.
+
+If CANDIDATES is non-nil, it can either be a list of candidates
+as formatted by `bibtex-completion-candidates', or a function
+without any argument that returns such a list."
   (interactive "P")
   (when arg
     (bibtex-completion-clear-cache))
   (bibtex-completion-init)
-  (let* ((candidates (bibtex-completion-candidates))
+  (let* ((candidates (bibtex-completion-get-candidates candidates))
          (key (bibtex-completion-key-at-point))
          (preselect (and key
                          (cl-position-if (lambda (cand)
