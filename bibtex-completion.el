@@ -1047,7 +1047,7 @@ several are available."
   (s-join ", " (cl-loop
                 for key in keys
                 for entry = (bibtex-completion-get-entry key)
-                for title = (bibtex-completion-get-value "title" entry)
+                for title = (bibtex-completion-apa-get-value "title" entry)
                 for pdf = (or (car (bibtex-completion-find-pdf key))
                               (bibtex-completion-get-value "url" entry))
                 if pdf
