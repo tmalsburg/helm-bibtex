@@ -1018,7 +1018,7 @@ which no PDF is available are omitted."
   (s-join ", " (cl-loop
                 for key in keys
                 for pdfs = (bibtex-completion-find-pdf key bibtex-completion-find-additional-pdfs)
-                append (--map (format "[[%s][%s]]" it key) pdfs))))
+                append (--map (org-link-make-string it key) pdfs))))
 
 (defun bibtex-completion-format-citation-org-apa-link-to-PDF (keys)
   "Format org-links to PDF for entries in KEYS.
@@ -1034,7 +1034,7 @@ several are available."
                                (car (split-string (bibtex-completion-get-value "date" entry "") "-")))
                 for pdf = (car (bibtex-completion-find-pdf key))
                 if pdf
-                  collect (format "[[file:%s][%s (%s)]]" pdf author year)
+                  collect (org-link-make-string pdf (format "%s (%s)" author year))
                 else
                   collect (format "%s (%s)" author year))))
 
@@ -1051,7 +1051,7 @@ several are available."
                 for pdf = (or (car (bibtex-completion-find-pdf key))
                               (bibtex-completion-get-value "url" entry))
                 if pdf
-                  collect (format "[[file:%s][%s]]" pdf title)
+                  collect (org-link-make-string pdf title)
                 else
                   collect (format "%s" title))))
 
