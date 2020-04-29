@@ -263,7 +263,7 @@ reread."
              ((symbol-function 'bibtex-completion-candidates)
               (lambda ()
                 (seq-filter
-                 (lambda (entry) (assoc "=has-note=" entry))
+                 (lambda (candidate) (assoc "=has-note=" candidate))
                  candidates))))
     (helm-bibtex)))
 

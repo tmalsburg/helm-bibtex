@@ -7,6 +7,7 @@ Ivy-bibtex: [[http://melpa.org/#/ivy-bibtex][http://melpa.org/packages/ivy-bibte
 Helm-bibtex and ivy-bibtex allow you to search and manage your BibTeX bibliography.  They both share the same generic backend, bibtex-completion, but one uses the Helm completion framework and the other Ivy as a front-end.
 
 * News
+- 2020-04-29: New commands ~helm-bibtex-with-notes~ and ~ivy-bibtex-with-noted~ for searching just within the entries that have notes.
 - 2018-06-09: Added virtual APA field ~author-or-editor~ for use in notes templates.
 - 2018-06-02: Reload bibliography proactively when bib files are changed.
 - 2017-10-21: Added support for multiple PDFs or other file types.  See sections “Additional PDFs” and “Other file types than PDF”.
@@ -319,6 +320,7 @@ For quick access to the bibliography, bind the search command, ~helm-bibtex~ or 
 
 (define-key helm-command-map "b" 'helm-bibtex)
 (define-key helm-command-map "B" 'helm-bibtex-with-local-bibliography)
+(define-key helm-command-map "n" 'helm-bibtex-with-notes)
 (define-key helm-command-map (kbd "<menu>") 'helm-resume)
 #+END_SRC
 
@@ -545,6 +547,10 @@ article caplan !waters
 ** Search in the local bibliography
 
 Use ~helm-bibtex-with-local-bibliography~ or ~ivy-bibtex-with-local-bibliography~ to start a search in the current buffer's "local bibliography", instead of the "global bibliography" defined by ~bibtex-completion-bibliography~. These comands use the built-in reftex library to determine the local bibliography from the standard LaTeX bibliography commands ~\bibliography~ and ~\addbibresource~. They can be used not only in LaTeX buffers but also in org-mode buffers and in fact any buffer in which the LaTeX bibliography commands are used, and they take care of loading reftex if needed.
+
+** Search in entries with notes
+
+Use ~helm-bibtex-with-notes~ or ~ivy-bibtex-with-notes~ to search only among entries that have notes.  Particularly useful in combination with [[https://github.com/zaeph/org-roam-bibtex][~org-roam-bibtex.el~]].
 
 ** Search the word under the cursor
 
