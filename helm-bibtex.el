@@ -262,18 +262,6 @@ reread."
   (cl-letf* ((candidates (bibtex-completion-candidates))
              ((symbol-function 'bibtex-completion-candidates)
               (lambda ()
-                (bibtex-completion-candidates-with-notes candidates))))
-    (helm-bibtex arg)))
-
-(defun helm-bibtex-with-notes (&optional arg)
-  "Search BibTeX entries with notes.
-
-With a prefix ARG the cache is invalidated and the bibliography
-reread."
-  (interactive "P")
-  (cl-letf* ((candidates (bibtex-completion-candidates))
-             ((symbol-function 'bibtex-completion-candidates)
-              (lambda ()
                 (seq-filter
                  (lambda (entry) (assoc "=has-note=" entry))
                  candidates))))
