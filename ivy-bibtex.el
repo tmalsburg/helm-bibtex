@@ -170,7 +170,9 @@ reread."
   (cl-letf* ((candidates (bibtex-completion-candidates))
              ((symbol-function 'bibtex-completion-candidates)
               (lambda ()
-                (bibtex-completion-candidates-with-notes candidates))))
+                (seq-filter
+                 (lambda (entry) (assoc "=has-note=" entry))
+                 candidates))))
     (ivy-bibtex arg)))
 
 (ivy-set-display-transformer

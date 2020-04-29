@@ -551,16 +551,6 @@ fields listed above) as an alist."
       for file in files
       append (cddr (assoc file bibtex-completion-cache))))))
 
-(defun bibtex-completion-candidates-with-notes (candidates)
-  "Return a filtered list of CANDIDATES without notes.
-See `bibtex-completion-candidates' for details."
-  (let (candidates-with-notes)
-    (dolist (candidate candidates candidates-with-notes)
-      (when (assoc "=has-note=" candidate)
-        (setq candidates-with-notes
-              ;; nconc instead of push to avoid reversing
-              (nconc candidates-with-notes (list candidate)))))))
-
 (defun bibtex-completion-resolve-crossrefs (files reparsed-files)
   "Expand all entries with fields from cross-referenced entries in FILES, assuming that only those files in REPARSED-FILES were reparsed whereas the other files in FILES were up-to-date."
   (cl-loop
