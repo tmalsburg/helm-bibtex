@@ -1139,14 +1139,14 @@ The format depends on
   "Return FIELD or ENTRY formatted following the APA guidelines.
 Return DEFAULT if FIELD is not present in ENTRY."
   ;; Virtual fields:
-  (cond
-    ((string= field "author-or-editor")
+  (pcase field
+    ("author-or-editor"
      (let ((value (bibtex-completion-get-value "author" entry)))
        (if value
            (bibtex-completion-apa-format-authors value)
          (bibtex-completion-apa-format-editors
           (bibtex-completion-get-value "editor" entry)))))
-    ((string= field "author-abbrev")
+    ("author-abbrev"
      (when-let ((value (bibtex-completion-get-value "author" entry)))
        (bibtex-completion-apa-format-authors-abbrev value)))
     (t
