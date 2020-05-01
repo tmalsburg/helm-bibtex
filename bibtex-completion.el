@@ -1140,11 +1140,14 @@ The format depends on
 Return DEFAULT if FIELD is not present in ENTRY."
   ;; Virtual fields:
   (pcase field
-    ("author-or-editor"
-     (if-let ((value (bibtex-completion-get-value "author" entry)))
-         (bibtex-completion-apa-format-authors value)
-       (bibtex-completion-apa-format-editors
-        (bibtex-completion-get-value "editor" entry))))
+    ((or "author-or-editor"
+         "author-or-editor-abbrev")
+     (let ((value (cl-some (lambda (field)
+                             (bibtex-completion-get-value field entry))
+                           (list "author" "editor"))))
+       (if (string-match-p "abbrev$" field)
+           (bibtex-completion-apa-format-authors value)
+         (bibtex-completion-apa-format-authors-abbrev value))))
     ("author-abbrev"
      (when-let ((value (bibtex-completion-get-value "author" entry)))
        (bibtex-completion-apa-format-authors-abbrev value)))
