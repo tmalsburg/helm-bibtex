@@ -1147,7 +1147,7 @@ Return DEFAULT if FIELD is not present in ENTRY."
          (bibtex-completion-apa-format-editors
           (bibtex-completion-get-value "editor" entry)))))
     ((string= field "author-abbrev")
-     (let ((value (bibtex-completion-get-value "author" entry)))
+     (when-let ((value (bibtex-completion-get-value "author" entry)))
        (bibtex-completion-apa-format-authors-abbrev value)))
     (t
      ;; Real fields:
