@@ -1141,11 +1141,10 @@ Return DEFAULT if FIELD is not present in ENTRY."
   ;; Virtual fields:
   (pcase field
     ("author-or-editor"
-     (let ((value (bibtex-completion-get-value "author" entry)))
-       (if value
-           (bibtex-completion-apa-format-authors value)
-         (bibtex-completion-apa-format-editors
-          (bibtex-completion-get-value "editor" entry)))))
+     (if-let ((value (bibtex-completion-get-value "author" entry)))
+         (bibtex-completion-apa-format-authors value)
+       (bibtex-completion-apa-format-editors
+        (bibtex-completion-get-value "editor" entry))))
     ("author-abbrev"
      (when-let ((value (bibtex-completion-get-value "author" entry)))
        (bibtex-completion-apa-format-authors-abbrev value)))
