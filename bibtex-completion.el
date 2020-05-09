@@ -1143,11 +1143,19 @@ Return DEFAULT if FIELD is not present in ENTRY."
     ("author-or-editor"
      (if-let ((value (bibtex-completion-get-value "author" entry)))
          (bibtex-completion-apa-format-authors value)
-       (bibtex-completion-apa-format-editors
-        (bibtex-completion-get-value "editor" entry))))
+       (let ((value (bibtex-completion-get-value "editor" entry)))
+         (bibtex-completion-apa-format-editors value))))
+    ("author-or-editor-abbrev"
+     (if-let ((value (bibtex-completion-get-value "author" entry)))
+         (bibtex-completion-apa-format-authors-abbrev value)
+       (let ((value (bibtex-completion-get-value "editor" entry)))
+         (bibtex-completion-apa-format-editors-abbrev value))))
     ("author-abbrev"
      (when-let ((value (bibtex-completion-get-value "author" entry)))
        (bibtex-completion-apa-format-authors-abbrev value)))
+    ("editor-abbrev"
+     (when-let ((value (bibtex-completion-get-value "editor" entry)))
+       (bibtex-completion-apa-format-editors-abbrev value)))
     (t
      ;; Real fields:
      (let ((value (bibtex-completion-get-value field entry)))
@@ -1271,6 +1279,32 @@ Return DEFAULT if FIELD is not present in ENTRY."
                  ((< l 8) (concat (s-join ", " (-butlast authors))
                                   ", & " (-last-item authors)))
                  (t (concat (s-join ", " authors) ", ..."))))))
+
+(defun bibtex-completion-apa-format-editors-abbrev (value)
+  "Format editor list in VALUE in abbreviated APA style."
+  (cl-loop for a in (s-split " and " value t)
+           if (s-index-of "," a)
+             collect
+             (let ((p (s-split " *, *" a t)))
+               (concat
+                (s-join " " (-map (lambda (it) (concat (s-left 1 it) "."))
+                                  (s-split " " (cadr p))))
+                " " (car p)))
+             into editors
+           else
+             collect
+             (let ((p (s-split " " a t)))
+               (concat
+                (s-join " " (-map (lambda (it) (concat (s-left 1 it) "."))
+                                  (-butlast p)))
+                " " (-last-item p)))
+             into editors
+           finally return
+             (let ((l (length editors)))
+               (cond
+                 ((= l 1) (car editors))
+                 ((= l 2) (concat (s-join " & " editors)))
+                 (t (format "%s et al." (car editors)))))))
 
 (defun bibtex-completion-get-value (field entry &optional default)
   "Return the value for FIELD in ENTRY or DEFAULT if the value is not defined.
