@@ -1141,22 +1141,27 @@ Return DEFAULT if FIELD is not present in ENTRY."
   ;; Virtual fields:
   (pcase field
     ("author-or-editor"
-     (if-let ((value (bibtex-completion-get-value "author" entry)))
-         (bibtex-completion-apa-format-authors value)
-       (let ((value (bibtex-completion-get-value "editor" entry)))
-         (bibtex-completion-apa-format-editors value))))
+     ;; Avoid if-let and when-let because they're not working reliably
+     ;; in all versions of Emacs that we currently support:
+     (let ((value (bibtex-completion-get-value "author" entry)))
+       (if value
+           (bibtex-completion-apa-format-authors value)
+         (bibtex-completion-apa-format-editors
+          (bibtex-completion-get-value "editor" entry)))))
     ("author-or-editor-abbrev"
-     (if-let ((value (bibtex-completion-get-value "author" entry)))
-         (bibtex-completion-apa-format-authors-abbrev value)
-       (let ((value (bibtex-completion-get-value "editor" entry)))
-         (bibtex-completion-apa-format-editors-abbrev value))))
+     (let* ((value (bibtex-completion-get-value "author" entry)))
+       (if value
+           (bibtex-completion-apa-format-authors-abbrev value)
+         (bibtex-completion-apa-format-editors-abbrev
+          (bibtex-completion-get-value "editor" entry)))))
     ("author-abbrev"
-     (when-let ((value (bibtex-completion-get-value "author" entry)))
-       (bibtex-completion-apa-format-authors-abbrev value)))
+     (let ((value (bibtex-completion-get-value "author" entry)))
+       (when value
+         (bibtex-completion-apa-format-authors-abbrev value))))
     ("editor-abbrev"
-     (when-let ((value (bibtex-completion-get-value "editor" entry)))
-       (bibtex-completion-apa-format-editors-abbrev value)))
-
+     (let ((value (bibtex-completion-get-value "editor" entry)))
+       (when value
+         (bibtex-completion-apa-format-editors-abbrev value))))
     (_
      ;; Real fields:
      (let ((value (bibtex-completion-get-value field entry)))
