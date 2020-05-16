@@ -1580,21 +1580,10 @@ find the key of the BibTeX entry at point in an Org-mode buffer."
            (> (length key) 0)
            key))))
 
-(defun bibtex-completion-get-key-org-roam ()
-  "Return the key of the BibTeX entry at point, nil otherwise.
-This function can be used by `bibtex-completion-key-at-point' to
-find the key of the BibTeX entry at point in an Org-roam buffer."
-  (when (require 'org-roam nil t)
-    (if-let ((data (org-roam--extract-ref)))
-        (pcase-let* ((`(,type . ,ref) data))
-          (when (string= type "cite")
-            ref)))))
-
 (defvar bibtex-completion-key-at-point-functions
   (list #'bibtex-completion-get-key-bibtex
         #'bibtex-completion-get-key-reftex
-        #'bibtex-completion-get-key-org
-        #'bibtex-completion-get-key-org-roam)
+        #'bibtex-completion-get-key-org)
   "List of functions to use to find the BibTeX key.
 The functions should take no argument and return the BibTeX
 key.  Stops as soon as a function returns something.
