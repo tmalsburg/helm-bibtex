@@ -1561,6 +1561,11 @@ the value of `org-bibtex-key-property' (or default to
                       (modify-syntax-entry ?_ "_" temp-syn-table)
                       (with-syntax-table temp-syn-table
                         (thing-at-point 'symbol)))))))
+      (and (require 'org-roam nil t)
+           (if-let ((data (org-roam--extract-ref)))
+               (pcase-let* ((`(,type . ,ref) data))
+                 (when (string= type "cite")
+                   ref))))
       (and (eq major-mode 'org-mode)
            (let (key)
              (and (setq key (org-entry-get nil
