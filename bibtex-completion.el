@@ -1548,7 +1548,7 @@ buffer."
       (and (looking-at bibtex-entry-maybe-empty-head)
            (bibtex-key-in-head)))))
 
-(defun bibtex-completion-get-key-reftex ()
+(defun bibtex-completion-get-key-latex ()
   "Return the key of the BibTeX entry at point, nil otherwise.
 This function can be used by `bibtex-completion-key-at-point' to
 find the key of the BibTeX entry at point in a LaTeX buffer."
@@ -1564,7 +1564,7 @@ find the key of the BibTeX entry at point in a LaTeX buffer."
                (with-syntax-table temp-syn-table
                  (thing-at-point 'symbol))))))))
 
-(defun bibtex-completion-get-key-org ()
+(defun bibtex-completion-get-key-org-bibtex ()
   "Return the key of the BibTeX entry at point, nil otherwise.
 This function can be used by `bibtex-completion-key-at-point' to
 find the key of the BibTeX entry at point in an Org-mode buffer."
@@ -1582,8 +1582,8 @@ find the key of the BibTeX entry at point in an Org-mode buffer."
 
 (defvar bibtex-completion-key-at-point-functions
   (list #'bibtex-completion-get-key-bibtex
-        #'bibtex-completion-get-key-reftex
-        #'bibtex-completion-get-key-org)
+        #'bibtex-completion-get-key-latex
+        #'bibtex-completion-get-key-org-bibtex)
   "List of functions to use to find the BibTeX key.
 The functions should take no argument and return the BibTeX
 key.  Stops as soon as a function returns something.
