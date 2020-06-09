@@ -1552,7 +1552,8 @@ buffer."
   "Return the key of the BibTeX entry at point, nil otherwise.
 This function can be used by `bibtex-completion-key-at-point' to
 find the key of the BibTeX entry at point in a LaTeX buffer."
-  (when (require 'reftex-parse nil t)
+  (when (and (derived-mode-p 'latex-mode)
+             (require 'reftex-parse nil t))
     (save-excursion
       (skip-chars-backward "[:space:],;}")
       (let ((macro (reftex-what-macro 1)))
