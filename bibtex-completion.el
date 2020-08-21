@@ -479,7 +479,7 @@ for string replacement."
 (defun bibtex-completion-candidates ()
   "Read the BibTeX files and return a list of conses, one for each entry.
 The first element of these conses is a string containing authors,
-editors, title, year, type, and key of the entry.  This is string
+editors, title, year, type, and key of the entry.  This string
 is used for matching.  The second element is the entry (only the
 fields listed above) as an alist."
   (let ((files (nreverse (bibtex-completion-normalize-bibliography 'bibtex)))
