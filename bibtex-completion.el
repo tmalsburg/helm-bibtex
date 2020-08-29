@@ -339,6 +339,11 @@ editor names."
   :group 'bibtex-completion
   :type '(alist :key-type symbol :value-type string))
 
+(defcustom bibtex-completion-shorten-authors t
+  "If t, bibtex-completion shortens author names."
+  :group 'bibtex-completion
+  :type 'boolean)
+
 (defvar bibtex-completion-cross-referenced-entry-types
   '("proceedings" "mvproceedings" "book" "mvbook" "collection" "mvcollection")
   "The list of potentially cross-referenced entry types (in lowercase).
@@ -891,7 +896,7 @@ governed by the variable `bibtex-completion-display-formats'."
 
 (defun bibtex-completion-shorten-authors (authors)
   "Return a comma-separated list of the surnames in AUTHORS."
-  (if authors
+  (if (and authors bibtex-completion-shorten-authors)
       (cl-loop for a in (s-split " and " authors)
                for p = (s-split "," a t)
                for sep = "" then ", "
