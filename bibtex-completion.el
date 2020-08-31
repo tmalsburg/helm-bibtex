@@ -1537,41 +1537,65 @@ BibTeX files.  If this fails, return nil."
            (require 'reftex-cite nil t)
            (ignore-errors (reftex-get-bibfile-list)))))
 
+(defun bibtex-completion-get-key-bibtex ()
+  "Return the key of the BibTeX entry at point, nil otherwise.
+This function can be used by `bibtex-completion-key-at-point' to
+find the key of the BibTeX entry at point in a BibTeX-mode
+buffer."
+  (when (eq major-mode 'bibtex-mode)
+    (save-excursion
+      (bibtex-beginning-of-entry)
+      (and (looking-at bibtex-entry-maybe-empty-head)
+           (bibtex-key-in-head)))))
+
+(defun bibtex-completion-get-key-latex ()
+  "Return the key of the BibTeX entry at point, nil otherwise.
+This function can be used by `bibtex-completion-key-at-point' to
+find the key of the BibTeX entry at point in a LaTeX buffer."
+  (when (and (derived-mode-p 'latex-mode)
+             (require 'reftex-parse nil t))
+    (save-excursion
+      (skip-chars-backward "[:space:],;}")
+      (let ((macro (reftex-what-macro 1)))
+        (and (stringp (car macro))
+             (string-match "\\`\\\\cite\\|cite\\'" (car macro))
+             ;; allow '_' in citekeys
+             (let ((temp-syn-table (make-syntax-table)))
+               (modify-syntax-entry ?_ "_" temp-syn-table)
+               (with-syntax-table temp-syn-table
+                 (thing-at-point 'symbol))))))))
+
+(defun bibtex-completion-get-key-org-bibtex ()
+  "Return the key of the BibTeX entry at point, nil otherwise.
+This function can be used by `bibtex-completion-key-at-point' to
+find the key of the BibTeX entry at point in an Org-mode buffer."
+  (when (eq major-mode 'org-mode)
+    (let (key)
+      (and (setq key (org-entry-get nil
+                                    (if (boundp 'org-bibtex-key-property)
+                                        org-bibtex-key-property
+                                      "CUSTOM_ID")
+                                    t))
+           ;; KEY may be the empty string the the property is
+           ;; present but has no value
+           (> (length key) 0)
+           key))))
+
+(defvar bibtex-completion-key-at-point-functions
+  (list #'bibtex-completion-get-key-bibtex
+        #'bibtex-completion-get-key-latex
+        #'bibtex-completion-get-key-org-bibtex)
+  "List of functions to use to find the BibTeX key.
+The functions should take no argument and return the BibTeX
+key.  Stops as soon as a function returns something.
+See `bibtex-completion-key-at-point' for details.")
+
 (defun bibtex-completion-key-at-point ()
   "Return the key of the BibTeX entry at point.
-If the current file is a BibTeX file, return the key of the entry
-at point.  Otherwise, try to use `reftex' to check whether point
-is at a citation macro, and if so return the key at
-point.  Otherwise, if the current file is an org mode file, return
-the value of `org-bibtex-key-property' (or default to
-\"CUSTOM_ID\").  Otherwise, return nil."
-  (or (and (eq major-mode 'bibtex-mode)
-           (save-excursion
-             (bibtex-beginning-of-entry)
-             (and (looking-at bibtex-entry-maybe-empty-head)
-                  (bibtex-key-in-head))))
-      (and (require 'reftex-parse nil t)
-           (save-excursion
-             (skip-chars-backward "[:space:],;}")
-             (let ((macro (reftex-what-macro 1)))
-               (and (stringp (car macro))
-                    (string-match "\\`\\\\cite\\|cite\\'" (car macro))
-                    ;; allow '_' in citekeys
-                    (let ((temp-syn-table (make-syntax-table)))
-                      (modify-syntax-entry ?_ "_" temp-syn-table)
-                      (with-syntax-table temp-syn-table
-                        (thing-at-point 'symbol)))))))
-      (and (eq major-mode 'org-mode)
-           (let (key)
-             (and (setq key (org-entry-get nil
-                                           (if (boundp 'org-bibtex-key-property)
-                                               org-bibtex-key-property
-                                             "CUSTOM_ID")
-                                           t))
-                  ;; KEY may be the empty string the the property is
-                  ;; present but has no value
-                  (> (length key) 0)
-                  key)))))
+The functions used to match the keys are defined in
+`bibtex-completion-key-at-point-functions'."
+  (cl-some #'identity
+           (mapcar #'funcall bibtex-completion-key-at-point-functions)))
 
 (provide 'bibtex-completion)
 
