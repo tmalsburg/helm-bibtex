@@ -417,7 +417,7 @@ Also sets `bibtex-completion-display-formats-internal'."
                   (let* ((format-string (cdr format))
                          (fields-width 0)
                          (string-width
-                          (length
+                          (string-width
                            (s-format format-string
                                      (lambda (field)
                                        (setq fields-width
