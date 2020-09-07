@@ -266,6 +266,8 @@ Bibtex-completion creates citations based on the major mode in which the citatio
 - org-mode :: insert link for opening the entry in Ebib
 - latex-mode :: insert LaTeX citation command
 - markdown-mode :: insert Pandoc citation macro
+- python-mode :: insert sphinxcontrib-bibtex citation role
+- rst-mode :: insert sphinxcontrib-bibtex citation role
 - other modes :: insert plain BibTeX key
 
 The list of modes can be extended and the citation functions can be changed using the customization variable ~bibtex-completion-format-citation-functions~.  For example, people who don't use Ebib might prefer links to the PDFs instead of Ebib-links in org mode files:
