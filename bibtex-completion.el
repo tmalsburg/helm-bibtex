@@ -113,6 +113,8 @@ This should be a single character."
   '((org-mode      . bibtex-completion-format-citation-ebib)
     (latex-mode    . bibtex-completion-format-citation-cite)
     (markdown-mode . bibtex-completion-format-citation-pandoc-citeproc)
+    (python-mode   . bibtex-completion-format-citation-sphinxcontrib-bibtex)
+    (rst-mode      . bibtex-completion-format-citation-sphinxcontrib-bibtex)
     (default       . bibtex-completion-format-citation-default))
   "The functions used for formatting citations.
 The publication can be cited, for example, as \cite{key} or
@@ -1029,6 +1031,10 @@ only adds KEYS to it."
   "Format ebib references for keys in KEYS."
   (s-join ", "
           (--map (format "ebib:%s" it) keys)))
+
+(defun bibtex-completion-format-citation-sphinxcontrib-bibtex (keys)
+  "Format sphinxcontrib-bibtex references for keys in KEYS."
+  (format ":cite:`%s`" (s-join "," keys)))
 
 (defun bibtex-completion-format-citation-org-link-to-PDF (keys)
   "Format org-links to PDFs associated with entries in KEYS.
