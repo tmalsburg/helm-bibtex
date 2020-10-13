@@ -121,6 +121,9 @@ This is meant to be used as an action in `ivy-read`, with
             :caller 'ivy-bibtex-fallback
             :action (lambda (candidate) (bibtex-completion-fallback-action (cdr candidate) search-expression))))
 
+(defvar ivy-bibtex-history nil
+  "Search history for `ivy-bibtex'")
+
 ;;;###autoload
 (defun ivy-bibtex (&optional arg local-bib)
   "Search BibTeX entries using ivy.
@@ -146,6 +149,7 @@ from the local bibliography.  This is set internally by
               candidates
               :preselect preselect
               :caller 'ivy-bibtex
+              :history 'ivy-bibtex-history
               :action ivy-bibtex-default-action)))
 
 ;;;###autoload
