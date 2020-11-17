@@ -680,6 +680,17 @@ If LaTeX is used to write the article, grep and sed can be used to extract the c
 grep '\entry{' manuscript.bbl | sed 's/^.*\entry{\([^}]*\)}.*$/\1/'
 #+END_SRC
 
+** Create a list with the paths of all PDFs in your bibliography
+
+This can be useful if you’d like to transfer all your PDFs to another directory or similar.
+
+#+BEGIN_SRC elisp
+(flatten-tree
+ (mapcar
+  (lambda (entry) (bibtex-completion-find-pdf entry))
+  (bibtex-completion-candidates)))
+#+END_SRC
+
 ** Reverse order of entries
 
 Helm-bibtex and ivy-bibtex display entries in the order in which they appear in the BibTeX file reversed.  This way, entries that were added at the bottom of the BibTeX file show up at the top when searching.  There is currently no support for sorting but if you want to reverse the order of entries you can use the code below:
