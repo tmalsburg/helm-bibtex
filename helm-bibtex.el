@@ -94,6 +94,7 @@
 (require 'helm)
 (require 'helm-net)
 (require 'helm-easymenu)
+(require 'helm-files)
 (require 'bibtex-completion)
 
 ;; Silence the byte compiler
