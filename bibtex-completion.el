@@ -1202,7 +1202,7 @@ Return DEFAULT if FIELD is not present in ENTRY."
              ("year" (or value
                          (car (split-string (bibtex-completion-get-value "date" entry "") "-"))))
              (_ value))
-         "")))))
+         (or default ""))))))
 
 (defun bibtex-completion-apa-format-authors (value &optional abbrev)
   "Format author list in VALUE in APA style.
