@@ -5,7 +5,7 @@
 ;; URL: https://github.com/tmalsburg/embark-bibtex
 ;; Version: 1.0.0
 ;; Package-Requires: ((bibtex-completion "1.0.0") (embark "0.10")
-;; (cl-lib "0.5") (marginalia "0.2"))
+;; (cl-lib "0.5"))
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -64,7 +64,6 @@
 ;;; Code:
 
 (require 'embark)
-(require 'marginalia)
 (require 'bibtex-completion)
 
 (defcustom embark-bibtex-default-action 'embark-bibtex-open-any
@@ -94,10 +93,13 @@ passes it to ACTION."
 
 (defun embark-bibtex--get-candidates ()
   "Return all keys from bibtex-completion-candidates."
-  (mapcar (lambda (cand)
-            (cdr (assoc "=key=" cand)))
-          (bibtex-completion-candidates)))
+  (mapcar
+   (lambda (cand)
+     (cons (bibtex-completion-format-entry cand (1- (frame-width)))
+           (cdr (assoc "=key=" cand))))
+   (bibtex-completion-candidates)))
 
+;; TODO Broken, use (cdr (assoc (completing-read "bib" candidates) candidates)) form
 ;;;###autoload
 (defun embark-bibtex (bib-entry)
   "Search BibTeX entries using `completing-read' and embark
@@ -111,18 +113,6 @@ actions."
            '(metadata (category . bibtex))
          (complete-with-action action (embark-bibtex--get-candidates) string predicate))))))
   (apply embark-bibtex-default-action (list bib-entry)))
-
-(defun marginalia-annotate-bibtex (bib-key)
-  "Return completion annotations for a bibtex key."
-  (let ((bib-entry (bibtex-completion-get-entry bib-key)))
-    (concat
-     (marginalia--fields
-      ((cdr (assoc "title" bib-entry)) :width 70 :truncate 70)
-      ((cdr (assoc "author" bib-entry)) :width 30 :truncate 30)
-      ((cdr (assoc "year" bib-entry))  :width 5 :truncate 5)))))
-
-(add-to-list 'marginalia-annotators-light '(bibtex . marginalia-annotate-bibtex))
-(add-to-list 'marginalia-annotators-heavy '(bibtex . marginalia-annotate-bibtex))
 
 (embark-define-keymap embark-bibtex-map
   "Keymap for actions for bibtex."
