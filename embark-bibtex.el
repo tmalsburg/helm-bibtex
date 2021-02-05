@@ -4,8 +4,7 @@
 ;; Maintainer: Titus von der Malsburg <malsburg@posteo.de>
 ;; URL: https://github.com/tmalsburg/embark-bibtex
 ;; Version: 1.0.0
-;; Package-Requires: ((bibtex-completion "1.0.0") (embark "0.10")
-;; (cl-lib "0.5"))
+;; Package-Requires: ((bibtex-completion "1.0.0") (cl-lib "0.5"))
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -63,8 +62,21 @@
 
 ;;; Code:
 
-(require 'embark)
 (require 'bibtex-completion)
+
+(defvar embark-bibtex-map
+  (let ((map (make-sparse-keymap)))
+    (define-key map (kbd "p") 'embark-bibtex-open-pdf)
+    (define-key map (kbd "u") 'embark-bibtex-open-url-or-doi)
+    (define-key map (kbd "c") 'embark-bibtex-insert-citation)
+    (define-key map (kbd "r") 'embark-bibtex-insert-reference)
+    (define-key map (kbd "k") 'embark-bibtex-insert-key)
+    (define-key map (kbd "b") 'embark-bibtex-insert-bibtex)
+    (define-key map (kbd "a") 'embark-bibtex-add-PDF-attachment)
+    (define-key map (kbd "e") 'embark-bibtex-edit-notes)
+    (define-key map (kbd "s") 'embark-bibtex-show-entry)
+    (define-key map (kbd "l") 'embark-bibtex-add-pdf-to-library)
+    map))
 
 (defcustom embark-bibtex-default-action 'embark-bibtex-open-any
   "The default action for the `embark-bibtex` command."
@@ -76,7 +88,8 @@
 extracts the key from the candidate selected in embark and
 passes it to ACTION."
   `(defun ,name (cand)
-     (interactive "s ")
+     (interactive
+      (list (embark-bibtex--read "BibTeX entries: ")))
      (,action (list cand))))
 
 (embark-bibtex-embarkify-action bibtex-completion-open-any embark-bibtex-open-any)
@@ -99,35 +112,24 @@ passes it to ACTION."
            (cdr (assoc "=key=" cand))))
    (bibtex-completion-candidates)))
 
-;; TODO Broken, use (cdr (assoc (completing-read "bib" candidates) candidates)) form
+(defun embark-bibtex--read ()
+  "Read bibtex-completion entries for completion."
+  (completing-read
+   "BibTeX entries: "
+   (lambda (string predicate action)
+     (if (eq action 'metadata)
+         '(metadata (category . bibtex))
+       (complete-with-action action (embark-bibtex--get-candidates) string predicate)))))
+
 ;;;###autoload
 (defun embark-bibtex (bib-entry)
   "Search BibTeX entries using `completing-read' and embark
 actions."
   (interactive
-   (list
-    (completing-read
-     "BibTeX entries: "
-     (lambda (string predicate action)
-       (if (eq action 'metadata)
-           '(metadata (category . bibtex))
-         (complete-with-action action (embark-bibtex--get-candidates) string predicate))))))
+   (progn
+     (bibtex-completion-init)
+     (list (cdr (assoc (embark-bibtex--read) (embark-bibtex--get-candidates))))))
   (apply embark-bibtex-default-action (list bib-entry)))
-
-(embark-define-keymap embark-bibtex-map
-  "Keymap for actions for bibtex."
-  ("p" embark-bibtex-open-pdf)
-  ("u" embark-bibtex-open-url-or-doi)
-  ("c" embark-bibtex-insert-citation)
-  ("r" embark-bibtex-insert-reference)
-  ("k" embark-bibtex-insert-key)
-  ("b" embark-bibtex-insert-bibtex)
-  ("a" embark-bibtex-add-PDF-attachment)
-  ("e" embark-bibtex-edit-notes)
-  ("s" embark-bibtex-show-entry)
-  ("l" embark-bibtex-add-pdf-to-library))
-
-(add-to-list 'embark-keymap-alist '(bib . embark-bibtex-map))
 
 (provide 'embark-bibtex)
 
