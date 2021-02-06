@@ -36,17 +36,58 @@ passes it to ACTION."
         (list (cdr (assoc (bibtex-actions--read) (bibtex-actions--get-candidates)))))
        (,action (list cand)))))
 
-(bibtex-actions-define-action bibtex-completion-open-any "")
-(bibtex-actions-define-action bibtex-completion-open-pdf "")
-(bibtex-actions-define-action bibtex-completion-open-url-or-doi "")
-(bibtex-actions-define-action bibtex-completion-insert-citation "")
-(bibtex-actions-define-action bibtex-completion-insert-reference "")
-(bibtex-actions-define-action bibtex-completion-insert-key "")
-(bibtex-actions-define-action bibtex-completion-insert-bibtex "")
-(bibtex-actions-define-action bibtex-completion-add-PDF-attachment "")
-(bibtex-actions-define-action bibtex-completion-edit-notes "")
-(bibtex-actions-define-action bibtex-completion-show-entry "")
-(bibtex-actions-define-action bibtex-completion-add-pdf-to-library "")
+(bibtex-actions-define-action
+ bibtex-completion-open-any
+ "Open the PDFs associated with the BibTeX entry.
+If multiple PDFs are found, ask for the one to open using
+‘completion-read’. If no PDF is found, try to open a URL or DOI
+in the browser instead.")
+
+(bibtex-actions-define-action
+ bibtex-completion-open-pdf
+ "Open the PDFs associated with the BibTeX entry.
+If multiple PDFs are found, ask for the one to open using
+‘completion-read’.")
+
+(bibtex-actions-define-action
+ bibtex-completion-open-url-or-doi
+ "Open the URL or DOI associated with a BibTeX entry in a
+ browser.")
+
+(bibtex-actions-define-action
+ bibtex-completion-insert-citation
+ "Insert citation for BibTeX entry at point.")
+
+(bibtex-actions-define-action
+ bibtex-completion-insert-reference
+ "Insert reference for BibTeX entry at point.")
+
+(bibtex-actions-define-action
+ bibtex-completion-insert-key
+ "Insert key for BibTeX entry at point.")
+
+(bibtex-actions-define-action
+ bibtex-completion-insert-bibtex
+ "Insert entry for BibTeX entry at point.")
+
+(bibtex-actions-define-action
+ bibtex-completion-add-PDF-attachment
+ "Attach the PDF of a BibTeX entry where available.")
+
+(bibtex-actions-define-action
+ bibtex-completion-edit-notes
+ "Open the notes associated with a BibTeX entry using
+ ‘bibtex-completion-edit-notes-function’.")
+
+(bibtex-actions-define-action
+ bibtex-completion-show-entry
+ "Show the selected entry in the relevant BibTeX file.")
+
+(bibtex-actions-define-action
+ bibtex-completion-add-pdf-to-library
+ "Add a PDF to the library for the selected BibTeX entry.
+The PDF can be added either from an open buffer, a file, or a
+URL.")
 
 (defun bibtex-actions--get-candidates ()
   "Return all keys from bibtex-completion-candidates."
