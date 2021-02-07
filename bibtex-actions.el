@@ -18,10 +18,27 @@
     (define-key map (kbd "l") 'bibtex-actions-add-pdf-to-library)
     map))
 
-(defcustom bibtex-actions-default-action 'bibtex-actions-open-any
-  "The default action for the `bibtex-actions` command."
-  :group 'bibtex-completion
-  :type 'function)
+(defun bibtex-actions--get-candidates ()
+  "Return all keys from bibtex-completion-candidates."
+  (mapcar
+   (lambda (cand)
+     (cons (bibtex-completion-format-entry cand (1- (frame-width)))
+           (cdr (assoc "=key=" cand))))
+   (bibtex-completion-candidates)))
+
+(defun bibtex-actions--read ()
+  "Read bibtex-completion entries for completion."
+  (bibtex-completion-init)
+  (completing-read
+   "BibTeX entries: "
+   (lambda (string predicate action)
+     (if (eq action 'metadata)
+         '(metadata (category . bibtex))
+       (complete-with-action action (bibtex-actions--get-candidates) string predicate)))))
+
+(defun bibtex-completion--read ()
+  "Select BibTeX entries in completion system."
+  (cdr (assoc (bibtex-actions--read) (bibtex-actions--get-candidates))))
 
 (defmacro bibtex-actions-define-action (action doc)
   "Wraps the function ACTION in another function named NAME which
@@ -32,8 +49,7 @@ passes it to ACTION."
          (new-name (intern (concat "bibtex-actions" mid-name))))
     `(defun ,new-name (cand)
        ,doc
-       (interactive
-        (list (cdr (assoc (bibtex-actions--read) (bibtex-actions--get-candidates)))))
+       (interactive (list (bibtex-completion--read)))
        (,action (list cand)))))
 
 (bibtex-actions-define-action
@@ -88,32 +104,6 @@ If multiple PDFs are found, ask for the one to open using
  "Add a PDF to the library for the selected BibTeX entry.
 The PDF can be added either from an open buffer, a file, or a
 URL.")
-
-(defun bibtex-actions--get-candidates ()
-  "Return all keys from bibtex-completion-candidates."
-  (mapcar
-   (lambda (cand)
-     (cons (bibtex-completion-format-entry cand (1- (frame-width)))
-           (cdr (assoc "=key=" cand))))
-   (bibtex-completion-candidates)))
-
-(defun bibtex-actions--read ()
-  "Read bibtex-completion entries for completion."
-  (completing-read
-   "BibTeX entries: "
-   (lambda (string predicate action)
-     (if (eq action 'metadata)
-         '(metadata (category . bibtex))
-       (complete-with-action action (bibtex-actions--get-candidates) string predicate)))))
-
-;;;###autoload
-(defun bibtex-actions (bib-entry)
-  "Search BibTeX entries using `completing-read' and actions."
-  (interactive
-   (progn
-     (bibtex-completion-init)
-     (list (cdr (assoc (bibtex-actions--read) (bibtex-actions--get-candidates))))))
-  (apply bibtex-actions-default-action (list bib-entry)))
 
 (provide 'bibtex-actions)
 
