@@ -56,8 +56,23 @@
 (declare-function org-element-property "org-element")
 
 (defgroup bibtex-completion nil
-  "Helm plugin for searching entries in a BibTeX bibliography."
+  "Provides searching of entries in a BibTeX bibliography, and running actions on them."
   :group 'completion)
+
+(defvar bibtex-completion-map
+  "Keymap for bibtex-completion commands"
+  (let ((map (make-sparse-keymap)))
+    (define-key map (kbd "p") 'bibtex-completion-open-pdf)
+    (define-key map (kbd "u") 'bibtex-completion-open-url-or-doi)
+    (define-key map (kbd "c") 'bibtex-completion-insert-citation)
+    (define-key map (kbd "r") 'bibtex-completion-insert-reference)
+    (define-key map (kbd "k") 'bibtex-completion-insert-key)
+    (define-key map (kbd "b") 'bibtex-completion-insert-bibtex)
+    (define-key map (kbd "a") 'bibtex-completion-add-PDF-attachment)
+    (define-key map (kbd "e") 'bibtex-completion-edit-notes)
+    (define-key map (kbd "s") 'bibtex-completion-show-entry)
+    (define-key map (kbd "l") 'bibtex-completion-add-pdf-to-library)
+    map))
 
 (defcustom bibtex-completion-bibliography nil
   "The BibTeX file or list of BibTeX files.
@@ -477,6 +492,26 @@ for string replacement."
 
 (defvar bibtex-completion-cached-notes-keys nil
   "A cache storing notes keys obtained when the bibliography was last parsed.")
+
+(defun bibtex-completion--read ()
+  "Select BibTeX entries in completion system."
+  ;; define a completion function that defaults to completing-read, but can be overridden
+  (list (cdr (assoc (bibtex-completion--completing-read) (bibtex-completion--get-candidates)))))
+
+(defun bibtex-completion--completing-read ()
+  "Read bibtex-completion entries for completion using completing-read."
+  (bibtex-completion-init)
+  (completing-read
+   "BibTeX entries: "
+   (bibtex-completion--get-candidates)))
+
+(defun bibtex-completion--get-candidates ()
+  "Return all keys from bibtex-completion-candidates."
+  (mapcar
+   (lambda (cand)
+     (cons (bibtex-completion-format-entry cand (1- (frame-width)))
+           (cdr (assoc "=key=" cand))))
+   (bibtex-completion-candidates)))
 
 (defun bibtex-completion-candidates ()
   "Read the BibTeX files and return a list of conses, one for each entry.
@@ -910,6 +945,7 @@ governed by the variable `bibtex-completion-display-formats'."
 If multiple PDFs are found for an entry, ask for the one to open
 using `completion-read'.  If FALLBACK-ACTION is non-nil, it is
 called in case no PDF is found."
+  (interactive (list (bibtex-completion--read)))
   (dolist (key keys)
     (let ((pdf (bibtex-completion-find-pdf key bibtex-completion-find-additional-pdfs)))
       (cond
@@ -928,6 +964,7 @@ called in case no PDF is found."
 
 (defun bibtex-completion-open-url-or-doi (keys)
   "Open the URL or DOI associated with entries in KEYS in a browser."
+  (interactive (list (bibtex-completion--read)))
   (dolist (key keys)
     (let* ((entry (bibtex-completion-get-entry key))
            (url (bibtex-completion-get-value "url" entry))
@@ -1087,6 +1124,7 @@ The format depends on
   (let ((format-function
          (cdr (or (assoc major-mode bibtex-completion-format-citation-functions)
                   (assoc 'default   bibtex-completion-format-citation-functions)))))
+    (interactive (list (bibtex-completion--read)))
     (insert
      (funcall format-function keys))))
 
@@ -1096,6 +1134,7 @@ The format depends on
                 (s-word-wrap fill-column
                              (concat "\n- " (bibtex-completion-apa-format-reference it)))
                 keys)))
+    (interactive (list (bibtex-completion--read)))
     (insert "\n" (s-join "\n" refs) "\n")))
 
 (defun bibtex-completion-apa-format-reference (key)
@@ -1293,11 +1332,13 @@ Surrounding curly braces are stripped."
 
 (defun bibtex-completion-insert-key (keys)
   "Insert BibTeX KEYS at point."
+  (interactive (list (bibtex-completion--read)))
   (insert
    (funcall 'bibtex-completion-format-citation-default keys)))
 
 (defun bibtex-completion-insert-bibtex (keys)
   "Insert BibTeX entries for entries in KEYS at point."
+  (interactive (list (bibtex-completion--read)))
   (insert (s-join "\n" (--map (bibtex-completion-make-bibtex it) keys))))
 
 (defun bibtex-completion-make-bibtex (key)
@@ -1320,6 +1361,7 @@ Self-contained means that cross-referenced entries are merged."
 
 (defun bibtex-completion-add-PDF-attachment (keys)
   "Attach the PDFs of the entries with the given KEYS where available."
+  (interactive (list (bibtex-completion--read)))
   (dolist (key keys)
     (let ((pdf (bibtex-completion-find-pdf key bibtex-completion-find-additional-pdfs)))
       (if pdf
@@ -1442,10 +1484,12 @@ Creates new notes where none exist yet."
 
 (defun bibtex-completion-edit-notes (keys)
   "Open the notes associated with KEYS using `bibtex-completion-edit-notes-function'."
+  (interactive (list (bibtex-completion--read)))
   (funcall bibtex-completion-edit-notes-function keys))
 
 (defun bibtex-completion-show-entry (keys)
   "Show the first entry in KEYS in the relevant BibTeX file."
+  (interactive (list (bibtex-completion--read)))
   (catch 'break
     (dolist (bib-file (bibtex-completion-normalize-bibliography 'main))
       (let ((key (car keys))
@@ -1475,6 +1519,7 @@ Creates new notes where none exist yet."
   "Add a PDF to the library for the first entry in KEYS.
 The PDF can be added either from an open buffer, a file, or a
 URL."
+  (interactive (list (bibtex-completion--read)))
   (let* ((key (car keys))
          (source (char-to-string
                   (read-char-choice "Add pdf from [b]uffer, [f]ile, or [u]rl? " '(?b ?f ?u))))
