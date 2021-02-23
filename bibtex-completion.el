@@ -1288,7 +1288,9 @@ Surrounding curly braces are stripped."
         (replace-regexp-in-string
          "\\(^[[:space:]]*[\"{][[:space:]]*\\)\\|\\([[:space:]]*[\"}][[:space:]]*$\\)"
          ""
-         (s-collapse-whitespace value))
+         (if (equal bibtex-completion-pdf-field field)
+             value
+           (s-collapse-whitespace value)))
       default)))
 
 (defun bibtex-completion-insert-key (keys)
