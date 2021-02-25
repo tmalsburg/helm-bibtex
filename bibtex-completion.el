@@ -503,7 +503,11 @@ for string replacement."
   (bibtex-completion-init)
   (completing-read
    "BibTeX entries: "
-   (bibtex-completion--get-candidates)))
+   (lambda (string pred action)
+     (if (eq action 'metadata)
+         '(metadata
+           (category . bibtex))
+       (complete-with-action action (bibtex-completion--get-candidates) string pred)))))
 
 (defun bibtex-completion--get-candidates ()
   "Return all keys from bibtex-completion-candidates."
