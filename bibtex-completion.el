@@ -503,19 +503,23 @@ for string replacement."
   (bibtex-completion-init)
   (completing-read
    "BibTeX entries: "
-   (lambda (string pred action)
+   (lambda (string predicate action)
      (if (eq action 'metadata)
          '(metadata
+           ;; (annotation-function . bibtex-completion--annotation)
            (category . bibtex))
-       (complete-with-action action (bibtex-completion--get-candidates) string pred)))))
+       (complete-with-action action (bibtex-completion--get-candidates) string predicate)))))
 
 (defun bibtex-completion--get-candidates ()
   "Return all keys from bibtex-completion-candidates."
-  (mapcar
-   (lambda (cand)
-     (cons (bibtex-completion-format-entry cand (1- (frame-width)))
-           (cdr (assoc "=key=" cand))))
-   (bibtex-completion-candidates)))
+  (cl-loop
+   for candidate in (bibtex-completion-candidates)
+   collect
+   (cons
+    ;; Here use one string for display, and the other for search.
+    (propertize
+     (car candidate) 'display (bibtex-completion-format-entry candidate (1- (frame-width))))
+    (cdr (assoc "=key=" candidate)))))
 
 (defun bibtex-completion-candidates ()
   "Read the BibTeX files and return a list of conses, one for each entry.
