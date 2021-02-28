@@ -60,8 +60,8 @@
   :group 'completion)
 
 (defvar bibtex-completion-map
-  "Keymap for bibtex-completion commands"
   (let ((map (make-sparse-keymap)))
+    (define-key map (kbd "o") 'bibtex-completion-open-any)
     (define-key map (kbd "p") 'bibtex-completion-open-pdf)
     (define-key map (kbd "u") 'bibtex-completion-open-url-or-doi)
     (define-key map (kbd "c") 'bibtex-completion-insert-citation)
@@ -363,6 +363,10 @@ Only entries of these types are checked in order to resolve
 cross-references.  The default list is usually sufficient; adding
 more types can slow down resolution for large biblioraphies.")
 
+;; one can reset the backend function using fset; maybe there's a
+;; more elegant way to do this?
+(fset 'bibtex-completion-read-backend `bibtex-completion--completing-read)
+
 (defvar bibtex-completion-display-formats-internal nil
   "Stores `bibtex-completion-display-formats' together with the \"used width\" of each format string.
 This is set internally.")
@@ -379,7 +383,6 @@ bibliography file is reparsed.")
 (defvar bibtex-completion-string-hash-table nil
   "A hash table used for string replacements.")
 
-
 (defun bibtex-completion-normalize-bibliography (&optional type)
   "Return a list of bibliography file(s) in `bibtex-completion-bibliography'.
 If there are org mode bibliography-files, their corresponding
@@ -496,19 +499,22 @@ for string replacement."
 (defun bibtex-completion--read ()
   "Select BibTeX entries in completion system."
   ;; define a completion function that defaults to completing-read, but can be overridden
-  (list (cdr (assoc (bibtex-completion--completing-read) (bibtex-completion--get-candidates)))))
+  (list (bibtex-completion-read-backend)))
 
 (defun bibtex-completion--completing-read ()
   "Read bibtex-completion entries for completion using completing-read."
   (bibtex-completion-init)
-  (completing-read
-   "BibTeX entries: "
-   (lambda (string predicate action)
-     (if (eq action 'metadata)
-         '(metadata
-           ;; (annotation-function . bibtex-completion--annotation)
-           (category . bibtex))
-       (complete-with-action action (bibtex-completion--get-candidates) string predicate)))))
+  (when-let ((candidates (bibtex-completion--get-candidates))
+             (chosen
+              (completing-read
+               "BibTeX entries: "
+               (lambda (string predicate action)
+                 (if (eq action 'metadata)
+                     '(metadata
+                       ;; (annotation-function . bibtex-completion--annotation)
+                       (category . bibtex))
+                   (complete-with-action action candidates string predicate))))))
+    (cdr (assoc chosen candidates))))
 
 (defun bibtex-completion--get-candidates ()
   "Return all keys from bibtex-completion-candidates."
@@ -992,6 +998,7 @@ called in case no PDF is found."
 If multiple PDFs are found for an entry, ask for the one to open
 using `completion-read'.  If no PDF is found, try to open a URL
 or DOI in the browser instead."
+  (interactive (list (bibtex-completion--read)))
   (bibtex-completion-open-pdf keys 'bibtex-completion-open-url-or-doi))
 
 (defun bibtex-completion-format-citation-default (keys)
