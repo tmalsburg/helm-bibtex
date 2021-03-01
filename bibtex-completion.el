@@ -72,7 +72,9 @@
     (define-key map (kbd "e") 'bibtex-completion-edit-notes)
     (define-key map (kbd "s") 'bibtex-completion-show-entry)
     (define-key map (kbd "l") 'bibtex-completion-add-pdf-to-library)
-    map))
+    map)
+  "Keymap for bibtex-completion commands"
+  )
 
 (defcustom bibtex-completion-bibliography nil
   "The BibTeX file or list of BibTeX files.
