@@ -68,7 +68,7 @@
     (define-key map (kbd "r") 'bibtex-completion-insert-reference)
     (define-key map (kbd "k") 'bibtex-completion-insert-key)
     (define-key map (kbd "b") 'bibtex-completion-insert-bibtex)
-    (define-key map (kbd "a") 'bibtex-completion-add-PDF-attachment)
+    (define-key map (kbd "a") 'bibtex-completion-add-pdf-attachment)
     (define-key map (kbd "e") 'bibtex-completion-edit-notes)
     (define-key map (kbd "s") 'bibtex-completion-show-entry)
     (define-key map (kbd "l") 'bibtex-completion-add-pdf-to-library)
@@ -1379,9 +1379,15 @@ Self-contained means that cross-referenced entries are merged."
              concat
              (format "  %s = {%s},\n" name value)))))
 
-(defun bibtex-completion-add-PDF-attachment (keys)
+(defun bibtex-completion-add-pdf-attachment ()
+  ; this is basically a lowercase command alias for the function
+  ; ideally, that name should be deprecated in favor of this one
   "Attach the PDFs of the entries with the given KEYS where available."
   (interactive (list (bibtex-completion--read)))
+  (bibtex-completion-add-PDF-attachment))
+
+(defun bibtex-completion-add-PDF-attachment (keys)
+  "Attach the PDFs of the entries with the given KEYS where available."
   (dolist (key keys)
     (let ((pdf (bibtex-completion-find-pdf key bibtex-completion-find-additional-pdfs)))
       (if pdf
