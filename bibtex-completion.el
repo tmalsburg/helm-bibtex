@@ -1379,7 +1379,7 @@ Self-contained means that cross-referenced entries are merged."
              concat
              (format "  %s = {%s},\n" name value)))))
 
-(defun bibtex-completion-add-pdf-attachment ()
+(defun bibtex-completion-add-pdf-attachment (keys)
   ; this is basically a lowercase command alias for the function
   ; ideally, that name should be deprecated in favor of this one
   "Attach the PDFs of the entries with the given KEYS where available."
