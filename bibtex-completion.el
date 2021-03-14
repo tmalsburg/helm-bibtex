@@ -904,7 +904,12 @@ governed by the variable `bibtex-completion-display-formats'."
                concat (car p))
     nil))
 
-
+(defun bibtex-completion-shorten-title (title)
+  "Return a main title sans subtitle from a TITLE."
+  (let* ((question-mark (string-match-p "?" title))
+         (short-title (car (split-string title "[:|?|.]"))))
+    (if question-mark (concat short-title "?") short-title)))
+
 (defun bibtex-completion-open-pdf (keys &optional fallback-action)
   "Open the PDFs associated with the marked entries using the function specified in `bibtex-completion-pdf-open-function'.
 If multiple PDFs are found for an entry, ask for the one to open
