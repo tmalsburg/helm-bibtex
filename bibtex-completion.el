@@ -183,6 +183,12 @@ This should be a single character."
   :group 'bibtex-completion
   :type 'string)
 
+(defcustom bibtex-completion-link-symbol "🔗"
+  "Symbol to indicate a DOI or URL link is available for a publication.
+This should be a single character."
+  :group 'bibtex-completion
+  :type 'string)
+
 (defcustom bibtex-completion-fallback-options
   '(("CrossRef                                  (biblio.el)"
      . (lambda (search-expression) (biblio-lookup #'biblio-crossref-backend search-expression)))
