@@ -364,7 +364,6 @@ bibliography file is reparsed.")
 (defvar bibtex-completion-string-hash-table nil
   "A hash table used for string replacements.")
 
-
 (defun bibtex-completion-normalize-bibliography (&optional type)
   "Return a list of bibliography file(s) in `bibtex-completion-bibliography'.
 If there are org mode bibliography-files, their corresponding
@@ -415,21 +414,28 @@ Also sets `bibtex-completion-display-formats-internal'."
   ;; Pre-calculate minimal widths needed by the format strings for
   ;; various entry types:
   (setq bibtex-completion-display-formats-internal
-        (mapcar (lambda (format)
-                  (let* ((format-string (cdr format))
-                         (fields-width 0)
-                         (string-width
-                          (string-width
-                           (s-format format-string
-                                     (lambda (field)
-                                       (setq fields-width
-                                             (+ fields-width
-                                                (string-to-number
-                                                 (or (cadr (split-string field ":"))
-                                                     ""))))
-                                       "")))))
-                    (-cons* (car format) format-string (+ fields-width string-width))))
-                bibtex-completion-display-formats)))
+        (bibtex-completion-process-display-format
+         bibtex-completion-display-formats)))
+        ; BD: turn variable into alist?
+
+(defun bibtex-completion-process-display-format (formats)
+  "Pre-calculate minimal widths needed by the FORMATS strings for various entry types."
+  (cl-loop
+   for format in formats
+   collect
+   (let* ((format-string (cdr format))
+          (fields-width 0)
+          (string-width
+           (string-width
+            (s-format format-string
+                      (lambda (field)
+                        (setq fields-width
+                              (+ fields-width
+                                 (string-to-number
+                                  (or (cadr (split-string field ":"))
+                                      ""))))
+                        "")))))
+     (-cons* (car format) format-string (+ fields-width string-width)))))
 
 (defun bibtex-completion-clear-cache (&optional files)
   "Clears FILES from cache.
@@ -846,12 +852,12 @@ find a PDF file."
   (cl-remove-duplicates entry
                         :test (lambda (x y) (string= (s-downcase x) (s-downcase y)))
                         :key 'car :from-end t))
-
 
-(defun bibtex-completion-format-entry (entry width)
+(defun bibtex-completion-format-entry (entry width &optional alt-display-formats)
   "Formats a BibTeX ENTRY for display in results list.
-WIDTH is the width of the results list.  The display format is
-governed by the variable `bibtex-completion-display-formats'."
+WIDTH is the width of the results list. The display format is
+governed by the variable `bibtex-completion-display-formats', or
+by ALT-DISPLAY-FORMATS if present."
   (let* ((format
           (or (assoc-string (bibtex-completion-get-value "=type=" entry)
                             bibtex-completion-display-formats-internal
@@ -884,7 +890,7 @@ governed by the variable `bibtex-completion-display-formats'."
               (- width (cddr format)))
             0 ?\s)))))))
 
-
+
 (defun bibtex-completion-clean-string (s)
   "Remove quoting and superfluous white space from BibTeX field value in S."
   (if s (replace-regexp-in-string "[\n\t ]+" " "
