@@ -873,8 +873,6 @@ WIDTH is the width of the results list. The display format is
 governed by the variable `bibtex-completion-display-formats', or
 by ALT-DISPLAY-FORMATS if present."
   (let* ((format
-          ;; TODO: need to activate
-          ;; bibtex-completion-display-formats-suffix-internal
           (if alt-display-formats
               (or (assoc-string (bibtex-completion-get-value "=type=" entry)
                                 bibtex-completion-display-formats-suffix-internal
