@@ -875,10 +875,15 @@ by ALT-DISPLAY-FORMATS if present."
   (let* ((format
           ;; TODO: need to activate
           ;; bibtex-completion-display-formats-suffix-internal
-          (or (assoc-string (bibtex-completion-get-value "=type=" entry)
-                            bibtex-completion-display-formats-internal
-                            'case-fold)
-              (assoc t bibtex-completion-display-formats-internal)))
+          (if alt-display-formats
+              (or (assoc-string (bibtex-completion-get-value "=type=" entry)
+                                bibtex-completion-display-formats-suffix-internal
+                                'case-fold)
+                  (assoc t bibtex-completion-display-formats-suffix-internal))
+              (or (assoc-string (bibtex-completion-get-value "=type=" entry)
+                                bibtex-completion-display-formats-internal
+                                'case-fold)
+                  (assoc t bibtex-completion-display-formats-internal))))
          (format-string (cadr format)))
     (s-format
      format-string
