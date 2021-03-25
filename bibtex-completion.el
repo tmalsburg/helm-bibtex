@@ -341,6 +341,14 @@ editor names."
   :group 'bibtex-completion
   :type '(alist :key-type symbol :value-type string))
 
+(defcustom bibtex-completion-display-formats-suffix nil
+  "Same format as display-formats template.
+When set, will render separate suffix string."
+  ; start with this; if needed, can always turn into a more general alt template
+  ; alist
+  :group 'bibtex-completion
+  :type '(alist :key-type symbol :value-type string))
+
 (defvar bibtex-completion-cross-referenced-entry-types
   '("proceedings" "mvproceedings" "book" "mvbook" "collection" "mvcollection")
   "The list of potentially cross-referenced entry types (in lowercase).
@@ -859,6 +867,7 @@ WIDTH is the width of the results list. The display format is
 governed by the variable `bibtex-completion-display-formats', or
 by ALT-DISPLAY-FORMATS if present."
   (let* ((format
+          ;; TODO: need to activate alt-display-formats somehow, bd
           (or (assoc-string (bibtex-completion-get-value "=type=" entry)
                             bibtex-completion-display-formats-internal
                             'case-fold)
