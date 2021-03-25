@@ -360,6 +360,11 @@ more types can slow down resolution for large biblioraphies.")
   "Stores `bibtex-completion-display-formats' together with the \"used width\" of each format string.
 This is set internally.")
 
+
+(defvar bibtex-completion-display-formats-suffix-internal nil
+  "Stores `bibtex-completion-display-suffix-formats' together with the \"used width\" of each format string.
+This is set internally.")
+
 (defvar bibtex-completion-cache nil
   "A cache storing the hash of the bibliography content and the corresponding list of entries, for each bibliography file, obtained when the bibliography was last parsed.
 When the current bibliography hash is identical to the cached
@@ -419,12 +424,13 @@ Also sets `bibtex-completion-display-formats-internal'."
             (user-error "Bibliography file %s could not be found" file)))
             (bibtex-completion-normalize-bibliography))
 
-  ;; Pre-calculate minimal widths needed by the format strings for
-  ;; various entry types:
   (setq bibtex-completion-display-formats-internal
         (bibtex-completion-process-display-format
-         bibtex-completion-display-formats)))
-        ; BD: turn variable into alist?
+         bibtex-completion-display-formats))
+
+  (setq bibtex-completion-display-formats-suffix-internal
+        (bibtex-completion-process-display-format
+         bibtex-completion-display-formats-suffix)))
 
 (defun bibtex-completion-process-display-format (formats)
   "Pre-calculate minimal widths needed by the FORMATS strings for various entry types."
@@ -867,7 +873,8 @@ WIDTH is the width of the results list. The display format is
 governed by the variable `bibtex-completion-display-formats', or
 by ALT-DISPLAY-FORMATS if present."
   (let* ((format
-          ;; TODO: need to activate alt-display-formats somehow, bd
+          ;; TODO: need to activate
+          ;; bibtex-completion-display-formats-suffix-internal
           (or (assoc-string (bibtex-completion-get-value "=type=" entry)
                             bibtex-completion-display-formats-internal
                             'case-fold)
