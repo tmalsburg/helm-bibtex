@@ -825,10 +825,14 @@ fields.  If FIELDS is empty, all fields are kept.  Also add a
 DO-NOT-FIND-PDF is non-nil, this function does not attempt to
 find a PDF file."
   (when entry ; entry may be nil, in which case just return nil
-    (let* ((fields (when fields (append fields (list "=type=" "=key=" "=has-pdf=" "=has-note="))))
+    (let* ((fields (when fields (append fields (list "=has-link" "=type=" "=key=" "=has-pdf=" "=has-note="))))
            ; Check for PDF:
            (entry (if (and (not do-not-find-pdf) (bibtex-completion-find-pdf entry))
                       (cons (cons "=has-pdf=" bibtex-completion-pdf-symbol) entry)
+                    entry))
+           ; Check for link:
+           (entry (if (or (assoc "doi" entry) (assoc "url" entry))
+                      (cons (cons "=has-link=" bibtex-completion-link-symbol) entry)
                     entry))
            (entry-key (cdr (assoc "=key=" entry)))
            ; Check for notes:
