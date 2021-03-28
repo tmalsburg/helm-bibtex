@@ -341,9 +341,12 @@ editor names."
   :group 'bibtex-completion
   :type '(alist :key-type symbol :value-type string))
 
-(defcustom bibtex-completion-display-formats-suffix nil
-  "Same format as display-formats template.
-When set, will render separate suffix string."
+(defcustom bibtex-completion-display-formats-suffix
+    '((t . "${=has-pdf=:1}${=has-note=:1} ${=type=:7}"))
+  "For configuring a separate suffix display.
+This alist uses the same format as the display-formats template.  It can be
+used to render an affixation suffix or annotation, or simply a different
+face for this segment of the display."
   ; start with this; if needed, can always turn into a more general alt template
   ; alist
   :group 'bibtex-completion
