@@ -359,15 +359,6 @@ Only entries of these types are checked in order to resolve
 cross-references.  The default list is usually sufficient; adding
 more types can slow down resolution for large biblioraphies.")
 
-(defvar bibtex-completion-display-formats-internal nil
-  "Stores `bibtex-completion-display-formats' together with the \"used width\" of each format string.
-This is set internally.")
-
-
-(defvar bibtex-completion-display-formats-suffix-internal nil
-  "Stores `bibtex-completion-display-suffix-formats' together with the \"used width\" of each format string.
-This is set internally.")
-
 (defvar bibtex-completion-cache nil
   "A cache storing the hash of the bibliography content and the corresponding list of entries, for each bibliography file, obtained when the bibliography was last parsed.
 When the current bibliography hash is identical to the cached
@@ -404,8 +395,7 @@ their associated bibtex files."
   "List of file watches monitoring bibliography files for changes.")
 
 (defun bibtex-completion-init ()
-  "Check that the files and directories specified by the user actually exist.
-Also sets `bibtex-completion-display-formats-internal'."
+  "Check that the files and directories specified by the user actually exist."
 
   ;; Remove current watch-descriptors for bibliography files:
   (mapc (lambda (watch-descriptor)
@@ -425,15 +415,7 @@ Also sets `bibtex-completion-display-formats-internal'."
                 (setq bibtex-completion-file-watch-descriptors
                       (cons watch-descriptor bibtex-completion-file-watch-descriptors)))
             (user-error "Bibliography file %s could not be found" file)))
-            (bibtex-completion-normalize-bibliography))
-
-  (setq bibtex-completion-display-formats-internal
-        (bibtex-completion-process-display-format
-         bibtex-completion-display-formats))
-
-  (setq bibtex-completion-display-formats-suffix-internal
-        (bibtex-completion-process-display-format
-         bibtex-completion-display-formats-suffix)))
+            (bibtex-completion-normalize-bibliography)))
 
 (defun bibtex-completion-process-display-format (formats)
   "Pre-calculate minimal widths needed by the FORMATS strings for various entry types."
