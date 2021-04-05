@@ -24,7 +24,7 @@
 
 ;; A BibTeX backend for completion frameworks
 
-;; There are currently two fronends: helm-bibtex and ivy-bibtex.
+;; There are currently two frontends: helm-bibtex and ivy-bibtex.
 ;;
 ;; See the github page for details:
 ;;
