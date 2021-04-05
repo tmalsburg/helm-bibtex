@@ -875,16 +875,16 @@ find a PDF file."
 WIDTH is the width of the results list. The display format is
 governed by the variable `bibtex-completion-display-formats', or
 by ALT-DISPLAY-FORMATS if present."
-  (let* ((format
-          (if alt-display-formats
-              (or (assoc-string (bibtex-completion-get-value "=type=" entry)
-                                bibtex-completion-display-formats-suffix-internal
-                                'case-fold)
-                  (assoc t bibtex-completion-display-formats-suffix-internal))
-              (or (assoc-string (bibtex-completion-get-value "=type=" entry)
-                                bibtex-completion-display-formats-internal
-                                'case-fold)
-                  (assoc t bibtex-completion-display-formats-internal))))
+  (let* ((processed-format
+          (bibtex-completion-process-display-format
+           (or alt-display-formats bibtex-completion-display-formats)))
+         (format
+          (or
+           (assoc-string
+            (bibtex-completion-get-value "=type=" entry)
+            processed-format
+            'case-fold)
+           (assoc t processed-format)))
          (format-string (cadr format)))
     (s-format
      format-string
