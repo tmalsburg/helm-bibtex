@@ -1324,7 +1324,7 @@ Self-contained means that cross-referenced entries are merged."
              unless (member name
                             (append (-map (lambda (it) (if (symbolp it) (symbol-name it) it))
                                           bibtex-completion-no-export-fields)
-                             '("=type=" "=key=" "=has-pdf=" "=has-note=" "crossref")))
+                             '("=type=" "=key=" "=has-pdf=" "=has-note=" "=has-link=" "crossref")))
              concat
              (format "  %s = {%s},\n" name value)))))
 
