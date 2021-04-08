@@ -404,7 +404,7 @@ their associated bibtex files."
                 (setq bibtex-completion-file-watch-descriptors
                       (cons watch-descriptor bibtex-completion-file-watch-descriptors)))
             (user-error "Bibliography file %s could not be found" file)))
-            (bibtex-completion-normalize-bibliography)))
+        (bibtex-completion-normalize-bibliography)))
 
 (defun bibtex-completion-process-display-format (formats)
   "Pre-calculate minimal widths needed by the FORMATS strings for various entry types."
