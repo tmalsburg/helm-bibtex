@@ -638,9 +638,11 @@ the hash table."
 
 (defun bibtex-completion-make-candidate (entry)
   "Return a candidate for ENTRY."
-  (cons (bibtex-completion-clean-string
-         (s-join " " (-map #'cdr entry)))
-        entry))
+  (let* ((candidate (bibtex-completion-clean-string
+                     (s-join " " (-map #'cdr entry))))
+         (candidate (concat candidate " " (car (assoc "=has-pdf=" entry))))
+         (candidate (concat candidate " " (car (assoc "=has-note=" entry)))))
+    (cons candidate entry)))
 
 (defun bibtex-completion-parse-bibliography (&optional ht-strings)
   "Parse the BibTeX entries listed in the current buffer and return a list of entries in the order in which they appeared in the BibTeX file.

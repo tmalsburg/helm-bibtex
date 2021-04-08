@@ -7,6 +7,7 @@ Ivy-bibtex: [[http://melpa.org/#/ivy-bibtex][http://melpa.org/packages/ivy-bibte
 Helm-bibtex and ivy-bibtex allow you to search and manage your BibTeX bibliography.  They both share the same generic backend, bibtex-completion, but one uses the Helm completion framework and the other Ivy as a front-end.
 
 * News
+- 2021-04-08: It is now possible to search for entries with PDFs and notes by entering ~=has-pdf=~ and ~=has-note=~.
 - 2020-04-29: New commands ~helm-bibtex-with-notes~ and ~ivy-bibtex-with-noted~ for searching just within the entries that have notes.
 - 2018-06-09: Added virtual APA field ~author-or-editor~ for use in notes templates.
 - 2018-06-02: Reload bibliography proactively when bib files are changed.
@@ -107,7 +108,7 @@ If the BibTeX entries have a field that specifies the full path to the PDFs, tha
 
 If ~bibtex-completion-pdf-field~ is non-nil, bibtex-completion will first try to retrieve the file specified in this field.  If the field is not set for an entry or if the specified file does not exists, bibtex-completion falls back to the method described above (searching for key + ~.pdf~ in the directories listed in ~bibtex-completion-library-path~).
 
-File specifications can be bare paths or follow the format used by JabRef, Zotero, and Mendeley.  This format also allows the specification of multiple files (e.g., the main paper and supplementary material).  Examples:
+File specifications can be bare paths or follow the format used by JabRef, Zotero, Calibre, and Mendeley.  This format also allows the specification of multiple files (e.g., the main paper and supplementary material).  Examples:
 
 - ~File = {/path/to/article.pdf}~
 - ~File = {:/path/to/article.pdf:PDF}~
