@@ -831,7 +831,7 @@ find a PDF file."
                       (cons (cons "=has-pdf=" bibtex-completion-pdf-symbol) entry)
                     entry))
            ; Check for link:
-           (entry (if (or (assoc "doi" entry) (assoc "url" entry))
+           (entry (if (or (cdr (assoc "doi" entry)) (cdr (assoc "url" entry)))
                       (cons (cons "=has-link=" bibtex-completion-link-symbol) entry)
                     entry))
            (entry-key (cdr (assoc "=key=" entry)))
