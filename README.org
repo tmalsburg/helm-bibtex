@@ -491,6 +491,16 @@ By default bibtex-completion assumes that note files are in org-mode format.  Ho
 
 If the file type is set to something else than org-mode, the templates for new note files need to be adjusted as well.  See the section above for details.
 
+** Refresh bibliography when new PDFs and notes are added
+Bibtex-completion automatically reloads the bibliography when a ~.bib~ file is changed on disk.  However, bibtex-completion does not watch PDFs and notes.  Thus, when a new PDF or note is added, the bibliography must be manually reloaded to display the PDF and note symbols correctly (via prefix argument, e.g. ~C-u M-x helm-bibtex~).  Unfortunately, implementing automatic reloading for PDFs and notes is not entirely straightforward since bibtex completion is quite flexible in how PDFs and notes can be handled.  But for simple setups, there is an easy solution: just watch the ~bibtex-completion-library-path~ and ~bibtex-completion-notes-path~ directories and reload the bibliography when they change.  Example for the PDF directory:
+
+#+BEGIN_SRC emacs-lisp
+(setq tmalsburg-pdf-watch
+      (file-notify-add-watch bibtex-completion-library-path
+                             '(change)
+                             (lambda (event) (bibtex-completion-candidates))))
+#+END_SRC
+
 * Usage
 :PROPERTIES:
 :CUSTOM_ID: usage
