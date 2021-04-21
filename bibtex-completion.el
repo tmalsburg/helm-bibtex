@@ -183,6 +183,12 @@ This should be a single character."
   :group 'bibtex-completion
   :type 'string)
 
+(defcustom bibtex-completion-link-symbol "🔗"
+  "Symbol to indicate a DOI or URL link is available for a publication.
+This should be a single character."
+  :group 'bibtex-completion
+  :type 'string)
+
 (defcustom bibtex-completion-fallback-options
   '(("CrossRef                                  (biblio.el)"
      . (lambda (search-expression) (biblio-lookup #'biblio-crossref-backend search-expression)))
@@ -821,10 +827,14 @@ fields.  If FIELDS is empty, all fields are kept.  Also add a
 DO-NOT-FIND-PDF is non-nil, this function does not attempt to
 find a PDF file."
   (when entry ; entry may be nil, in which case just return nil
-    (let* ((fields (when fields (append fields (list "=type=" "=key=" "=has-pdf=" "=has-note="))))
+    (let* ((fields (when fields (append fields (list "=has-link" "=type=" "=key=" "=has-pdf=" "=has-note="))))
            ; Check for PDF:
            (entry (if (and (not do-not-find-pdf) (bibtex-completion-find-pdf entry))
                       (cons (cons "=has-pdf=" bibtex-completion-pdf-symbol) entry)
+                    entry))
+           ; Check for link:
+           (entry (if (or (cdr (assoc "doi" entry)) (cdr (assoc "url" entry)))
+                      (cons (cons "=has-link=" bibtex-completion-link-symbol) entry)
                     entry))
            (entry-key (cdr (assoc "=key=" entry)))
            ; Check for notes:
@@ -1319,7 +1329,7 @@ Self-contained means that cross-referenced entries are merged."
              unless (member name
                             (append (-map (lambda (it) (if (symbolp it) (symbol-name it) it))
                                           bibtex-completion-no-export-fields)
-                             '("=type=" "=key=" "=has-pdf=" "=has-note=" "crossref")))
+                             '("=type=" "=key=" "=has-pdf=" "=has-note=" "=has-link=" "crossref")))
              concat
              (format "  %s = {%s},\n" name value)))))
 
