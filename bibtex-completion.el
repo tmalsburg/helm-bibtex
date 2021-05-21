@@ -84,9 +84,21 @@
   "Face for `bibtex-completion-pdf-symbol' when entry has a pdf."
   :group 'bibtex-completion)
 
+(defface bibtex-completion-pdf-missing-face
+  '((t :inherit shadow))
+  "Face for `bibtex-completion-pdf-symbol' when entry doesn't have a pdf.
+Only used when `bibtex-completion-format-always-show-symbols' is non-nil."
+  :group 'bibtex-completion)
+
 (defface bibtex-completion-note-face
   '((t :inherit font-lock-type-face))
   "Face for `bibtex-completion-notes-symbol' when entry has a note."
+  :group 'bibtex-completion)
+
+(defface bibtex-completion-note-missing-face
+  '((t :inherit shadow))
+  "Face for `bibtex-completion-notes-symbol' when entry doesn't have a note.
+Only used when `bibtex-completion-format-always-show-symbols' is non-nil."
   :group 'bibtex-completion)
 
 (defcustom bibtex-completion-bibliography nil
@@ -138,6 +150,15 @@ having a PDF if \"<key>.<extension\" exists."
 This should be a single character."
   :group 'bibtex-completion
   :type 'string)
+
+(defcustom bibtex-completion-format-always-show-symbols nil
+  "When true `bibtex-completion-format-entry' will always render a symbol for
+`bibtex-completion-pdf-symbol' and `bibtex-completion-notes-symbol'. If the
+corresponding note or pdf doesn't exist the symbol will be propertized with
+the secondary `bibtex-completion-pdf-missing-face' and
+`bibtex-completion-pdf-missing-face' faces."
+  :group 'bibtex-completion
+  :type 'boolean)
 
 (defcustom bibtex-completion-format-citation-functions
   '((org-mode      . bibtex-completion-format-citation-ebib)
@@ -894,13 +915,15 @@ governed by the variable `bibtex-completion-display-formats'."
      format-string
      (lambda (field)
        (let* ((field (split-string field ":"))
-              field-value
               (field-name (car field))
-              (field-width (cadr field)))
+              (field-width (cadr field))
+              field-value
+              (field-value-exact (bibtex-completion-get-value field-name entry)))
+         ;; Extract the field from the object or choose an appropriate fallback.
          (setq field-value
                (bibtex-completion-clean-string
                 (or
-                 (bibtex-completion-get-value field-name entry)
+                 field-value-exact
                  (cond ((string= field-name "author")
                         (bibtex-completion-get-value "editor" entry))
                        ((string= field-name "year")
@@ -919,9 +942,21 @@ governed by the variable `bibtex-completion-display-formats'."
                      ((string= field-name "=type=")
                       (propertize field-value 'face 'bibtex-completion-type-face))
                      ((string= field-name "=has-pdf=")
-                      (propertize field-value 'face 'bibtex-completion-pdf-face))
+                      (propertize (if bibtex-completion-format-always-show-symbols
+                                      bibtex-completion-pdf-symbol
+                                    field-value)
+                                  'face
+                                  (if field-value-exact
+                                      'bibtex-completion-pdf-face
+                                    'bibtex-completion-pdf-missing-face)))
                      ((string= field-name "=has-note=")
-                      (propertize field-value 'face 'bibtex-completion-note-face))
+                      (propertize (if bibtex-completion-format-always-show-symbols
+                                      bibtex-completion-notes-symbol
+                                    field-value)
+                                  'face
+                                  (if field-value-exact
+                                      'bibtex-completion-note-face
+                                    'bibtex-completion-note-missing-face)))
                      (t field-value)))
          ;; Ensure field-value doesn't take up more than desired width.
          (if (not field-width)
