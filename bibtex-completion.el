@@ -79,6 +79,16 @@
   "Face for bibtex entry type in `bibtex-completion-format-entry'."
   :group 'bibtex-completion)
 
+(defface bibtex-completion-pdf-face
+  '((t :inherit font-lock-type-face))
+  "Face for `bibtex-completion-pdf-symbol' when entry has a pdf."
+  :group 'bibtex-completion)
+
+(defface bibtex-completion-note-face
+  '((t :inherit font-lock-type-face))
+  "Face for `bibtex-completion-notes-symbol' when entry has a note."
+  :group 'bibtex-completion)
+
 (defcustom bibtex-completion-bibliography nil
   "The BibTeX file or list of BibTeX files.
 Org-bibtex users can also specify org mode bibliography files, in
@@ -884,9 +894,9 @@ governed by the variable `bibtex-completion-display-formats'."
      format-string
      (lambda (field)
        (let* ((field (split-string field ":"))
+              field-value
               (field-name (car field))
-              (field-width (cadr field))
-              field-value)
+              (field-width (cadr field)))
          (setq field-value
                (bibtex-completion-clean-string
                 (or
@@ -908,6 +918,10 @@ governed by the variable `bibtex-completion-display-formats'."
                       (propertize field-value 'face 'bibtex-completion-title-face))
                      ((string= field-name "=type=")
                       (propertize field-value 'face 'bibtex-completion-type-face))
+                     ((string= field-name "=has-pdf=")
+                      (propertize field-value 'face 'bibtex-completion-pdf-face))
+                     ((string= field-name "=has-note=")
+                      (propertize field-value 'face 'bibtex-completion-note-face))
                      (t field-value)))
          ;; Ensure field-value doesn't take up more than desired width.
          (if (not field-width)
