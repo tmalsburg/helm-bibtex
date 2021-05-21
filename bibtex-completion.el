@@ -59,6 +59,26 @@
   "Helm plugin for searching entries in a BibTeX bibliography."
   :group 'completion)
 
+(defface bibtex-completion-author-face
+  '((t :inherit font-lock-keyword-face))
+  "Face for authors in `bibtex-completion-format-entry'."
+  :group 'bibtex-completion)
+
+(defface bibtex-completion-year-face
+  '((t :inherit font-lock-function-name-face))
+  "Face for bibtex entry year in `bibtex-completion-format-entry'."
+  :group 'bibtex-completion)
+
+(defface bibtex-completion-title-face
+  '((t :inherit default))
+  "Face for bibtex entry title in `bibtex-completion-format-entry'."
+  :group 'bibtex-completion)
+
+(defface bibtex-completion-type-face
+  '((t :inherit font-lock-string-face))
+  "Face for bibtex entry type in `bibtex-completion-format-entry'."
+  :group 'bibtex-completion)
+
 (defcustom bibtex-completion-bibliography nil
   "The BibTeX file or list of BibTeX files.
 Org-bibtex users can also specify org mode bibliography files, in
@@ -866,16 +886,30 @@ governed by the variable `bibtex-completion-display-formats'."
        (let* ((field (split-string field ":"))
               (field-name (car field))
               (field-width (cadr field))
-              (field-value (bibtex-completion-get-value field-name entry)))
-         (when (and (string= field-name "author")
-                    (not field-value))
-           (setq field-value (bibtex-completion-get-value "editor" entry)))
-         (when (and (string= field-name "year")
-                    (not field-value))
-           (setq field-value (car (split-string (bibtex-completion-get-value "date" entry "") "-"))))
-         (setq field-value (bibtex-completion-clean-string (or field-value " ")))
-         (when (member field-name '("author" "editor"))
-           (setq field-value (bibtex-completion-shorten-authors field-value)))
+              field-value)
+         (setq field-value
+               (bibtex-completion-clean-string
+                (or
+                 (bibtex-completion-get-value field-name entry)
+                 (cond ((string= field-name "author")
+                        (bibtex-completion-get-value "editor" entry))
+                       ((string= field-name "year")
+                        (car (split-string (bibtex-completion-get-value "date" entry "") "-"))))
+                 " ")))
+         ;; Apply any post-processing and face propertizing to the field-value.
+         (setq field-value
+               (cond ((member field-name '("author" "editor"))
+                      (propertize
+                       (bibtex-completion-shorten-authors field-value)
+                       'face 'bibtex-completion-author-face))
+                     ((string= field-name "year")
+                      (propertize field-value 'face 'bibtex-completion-year-face))
+                     ((string= field-name "title")
+                      (propertize field-value 'face 'bibtex-completion-title-face))
+                     ((string= field-name "=type=")
+                      (propertize field-value 'face 'bibtex-completion-type-face))
+                     (t field-value)))
+         ;; Ensure field-value doesn't take up more than desired width.
          (if (not field-width)
              field-value
            (setq field-width (string-to-number field-width))
