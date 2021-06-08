@@ -850,6 +850,20 @@ find a PDF file."
                         :key 'car :from-end t))
 
 
+(defun bibtex-completion-format-field (field-name entry)
+  "Return Formatted value of FIELD-NAME for ENTRY."
+  (let ((field-value (bibtex-completion-get-value field-name entry)))
+    (when (and (string= field-name "author")
+               (not field-value))
+      (setq field-value (bibtex-completion-get-value "editor" entry)))
+    (when (and (string= field-name "year")
+               (not field-value))
+      (setq field-value (car (split-string (bibtex-completion-get-value "date" entry "") "-"))))
+    (setq field-value (bibtex-completion-clean-string (or field-value " ")))
+    (when (member field-name '("author" "editor"))
+      (setq field-value (bibtex-completion-shorten-authors field-value)))
+    field-value))
+
 (defun bibtex-completion-format-entry (entry width)
   "Formats a BibTeX ENTRY for display in results list.
 WIDTH is the width of the results list.  The display format is
@@ -859,32 +873,34 @@ governed by the variable `bibtex-completion-display-formats'."
                             bibtex-completion-display-formats-internal
                             'case-fold)
               (assoc t bibtex-completion-display-formats-internal)))
-         (format-string (cadr format)))
-    (s-format
-     format-string
-     (lambda (field)
-       (let* ((field (split-string field ":"))
-              (field-name (car field))
-              (field-width (cadr field))
-              (field-value (bibtex-completion-get-value field-name entry)))
-         (when (and (string= field-name "author")
-                    (not field-value))
-           (setq field-value (bibtex-completion-get-value "editor" entry)))
-         (when (and (string= field-name "year")
-                    (not field-value))
-           (setq field-value (car (split-string (bibtex-completion-get-value "date" entry "") "-"))))
-         (setq field-value (bibtex-completion-clean-string (or field-value " ")))
-         (when (member field-name '("author" "editor"))
-           (setq field-value (bibtex-completion-shorten-authors field-value)))
-         (if (not field-width)
-             field-value
-           (setq field-width (string-to-number field-width))
-           (truncate-string-to-width
-            field-value
-            (if (> field-width 0)
-                field-width
-              (- width (cddr format)))
-            0 ?\s)))))))
+         (format-string (cadr format))
+         (l (length format-string))
+         (mb 0)
+         (me 0)
+         (align 0)
+         results field field-value field-width)
+    (while (and (< me l)
+                (string-match "\\${\\([^}]+\\)}" format-string me))
+      (setq mb (match-beginning 0))
+      (when (> mb me)
+        (setq results (cons (substring format-string me mb) results))
+        (setq align (+ align (- mb me))))
+      (setq me (match-end 0))
+      (setq field (split-string (match-string 1 format-string) ":"))
+      (setq field-value (bibtex-completion-format-field (car field) entry))
+      (setq field-width (cadr field))
+      (if (not field-width)
+          (setq results (cons field-value results))
+        (setq field-width (string-to-number field-width))
+        (if (zerop field-width)
+            (setq field-width (- width (cddr format))))
+        (setq align (+ align field-width))
+        (setq results (cons (propertize " " 'display `(space :align-to ,align))
+                            (cons (truncate-string-to-width field-value field-width)
+                                  results)))))
+    (when (< me l)
+      (setq results (cons (substring format-string me l) results)))
+    (apply #'concat (nreverse results))))
 
 
 (defun bibtex-completion-clean-string (s)
