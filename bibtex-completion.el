@@ -972,7 +972,8 @@ The third case, `bibtex-completion-notes-path' is nil (the default),
 this function will return nil. 
 "
   (let (keys)
-    (cond ((and (f-file? bibtex-completion-notes-path)
+    (cond ((null bibtex-completion-notes-path) nil)
+          ((and (f-file? bibtex-completion-notes-path)
                 (s-suffix-p bibtex-completion-notes-extension filename)
                 (f-same? filename bibtex-completion-notes-path))
            (with-temp-buffer
