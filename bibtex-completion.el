@@ -937,7 +937,12 @@ non-nil if notes exist for that entry.")
 (defun bibtex-completion-find-key-from-file (&optional filename-or-buffer)
   "Return key associated with FILENAME-OR-BUFFER.
 
-FILENAME-OR-BUFFER can be a file name or a name of a buffer displaying the file."
+FILENAME-OR-BUFFER can be a file name or a name of a buffer displaying the file.
+It passes FILENAME-OR-BUFFER to each function of
+`bibtex-completion-find-key-functions' so see their docstrings for
+more information. The result is the first non-nil value returned by
+any of the `bibtex-completion-find-key-functions' or nil if none of theem
+ returns non-nil."
   (let ((filename (or filename-or-buffer buffer-file-name)))
     (when (bufferp filename)
       (setq filename (buffer-file-name filename-or-buffer)))
@@ -945,30 +950,77 @@ FILENAME-OR-BUFFER can be a file name or a name of a buffer displaying the file.
                                       filename)))
 
 (defun bibtex-completion-find-key-from-note (filename)
-  "Find a key associated with FILENAME."
-  (let ((key (file-name-base filename)))
-    (when (and (s-suffix-p bibtex-completion-notes-extension filename)
-               (f-same? filename
-                        (run-hook-with-args-until-success 'bibtex-completion-find-note-functions key)))
-      (list key))))
+  "Return a list of keys associated with a note file FILENAME.
+
+The result can be in three cases, depending on the value of the file path of
+`bibtex-completion-notes-path': 1) It's a file 2) It's a directory 3) It's nil.
+
+The first, it's a file, this means that you take notes of every entry
+in your bibliography on this one file, so technically, all of your
+entry key are associated with this one note file. Therefore, this function
+will return all entry keys you have in your `bibtex-completion-bibliography'
+ONLY if the FILENAME given is the same file as `bibtex-completion-notes-path'.
+
+The second case, if `bibtex-completion-notes-path' is a directory,
+this function, on the assumption that all the note files in
+`bibtex-completion-notes-path' directory are named in
+bibtex-completion's way i.e. BibTeX key + a user-defined suffix (.org
+by default), will only return the base file name of FILENAME when
+there're a file in `bibtex-completion-notes-path' with the same name.
+
+The third case, `bibtex-completion-notes-path' is nil (the default),
+this function will return nil. 
+"
+  (let (keys)
+    (cond ((and (f-file? bibtex-completion-notes-path)
+                (s-suffix-p bibtex-completion-notes-extension filename)
+                (f-same? filename bibtex-completion-notes-path))
+           (with-temp-buffer
+             (mapc #'insert-file-contents (bibtex-completion-normalize-bibliography 'bibtex))
+             (goto-char (point-min))
+             (maphash #'(lambda (key val)
+                          (push key keys))
+                      (car (parsebib-parse-buffer))))
+           keys)
+          ((and (f-directory? bibtex-completion-notes-path)
+                (f-file? (f-join bibtex-completion-notes-path (file-name-nondirectory filename)))
+                (f-same? filename (f-join bibtex-completion-notes-path (file-name-nondirectory filename))))
+           (list (file-name-base filename))))))
 
 (defun bibtex-completion-find-key-from-pdf (filename)
-  "Find a key associated with FILENAME."
+  "Return a list of keys associated with FILENAME.
+
+The functions calls `bibtex-completion-get-entry-with-string' with FILENAME
+as its STRING argument, if it returns a list of entries, the results will
+be a list of key from each entry in the list.
+
+If `bibtex-completion-get-entry-with-string' returns nil i.e. there is
+no entry that has FILENAME in its fields, this function will, on the assumption
+that FILENAME is named in bibtex-completion's way with BibTex key +
+user-defined extension (see `bibtex-completion-pdf-extension') in its name,
+fall back on the assumed BibTex key part of FILENAME.
+
+Additionall, there is a double-checking mechanism where
+this function will return nil when the assumed BibTex key is invalid;
+Calling `bibtex-completion-find-pdf-in-library' with the assumed key as
+its argument to see if it returns nil or not."
   (let (keys)
     (when (string-match-p
            (concat ".*" (mapconcat 'regexp-quote
                                    (-flatten bibtex-completion-pdf-extension)
-                                   "\\|"))
-           filename)
+                                   "\\|")) filename)
       (setq keys (mapcar #'(lambda (entry)
-                             (bibtex-completion-get-value "=key=" entry))
-                         (bibtex-completion-get-entry-with-string filename)))
+                                (bibtex-completion-get-value "=key=" entry))
+                         (bibtex-completion-get-entry-with-string filename bibtex-completion-pdf-field)))
+      ;; Double check the Bibtex key part of this FILENAME.
       (when (and bibtex-completion-library-path
                  (not keys)
                  (bibtex-completion-find-pdf-in-library
                   (file-name-base filename)
                   bibtex-completion-find-additional-pdfs))
+        ;; If it's a valid key, return it in a list.
         (setq keys (list (file-name-base filename))))
+      
       keys)))
 
 (defun bibtex-completion-prepare-entry (entry &optional fields do-not-find-pdf)
