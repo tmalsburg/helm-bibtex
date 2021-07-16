@@ -694,6 +694,118 @@ Fields from crossreferenced entries are appended to the requested entry."
           (display-warning :warning (concat "Bibtex-completion couldn't find entry with key \"" entry-key "\"."))
           nil)))))
 
+(defun bibtex-completion-get-entry-with-string (string &optional field)
+  "Return a list of entries in every file in `bibtex-completion-bibliography' with STRING in its fields.
+
+The optional FIELD can be used to return entries with STRING as the
+value of FIELD.
+
+For example, I've set my `bibtex-completion-bibliography' to be
+'(\"/path/to/my/bib/a.bib\")
+
+and here is the content of /path/to/my/bib/a.bib,
+
+@article{ Nobody06,
+       author = \"Nobody Jr.\",
+       title = \"My Article\",
+       file = \"/path/to/my_article2006.pdf\",
+       year = \"2006\" }
+
+@book{ Nobody09,
+       author = \"Nobody Jr.\",
+       title = \"My diary\",
+       file = \"/path/to/my_diary2009.pdf\",
+       year = \"2009\" }
+
+@article{ Nobody99,
+       author = \"Nobody Sr.\",
+       title = \"My Article\",
+       file = \"/path/to/my_article1999.pdf\",
+       year = \"1999\" }
+
+@book{ Nodody92,
+       author = \"Nobody Sr.\",
+       title = \"My journal\",
+       file = \"/path/to/my_journal1992.epub\",
+       year = \"1992\" }
+
+If I wanted the key of any entry with the title \"My Article\" I would evaluate
+  (mapcar #'(lambda (entry)
+              (bibtex-completion-get-value \"=key=\" entry))
+        (bibtex-completion-get-entry-with-string \"My Article\"))
+
+   ==> (\"Nobody06\" \"Nobody99\")
+
+What it does is, list entries with \"My Article\" in their fields,
+then map the list by calling `bibtex-completion-get-value' with
+\"=key=\" field on every entry in the list. Return a list of the results.
+
+If I wanted the file path of entries from specifically Nobody Jr. I would evaluate
+  (mapcar #'(lambda (entry)
+              (bibtex-completion-get-value \"file\" entry)) 
+        (bibtex-completion-get-entry-with-string \"Nobody Jr.\"))
+
+  ==> (\"/path/to/my_article2006.pdf\" \"/path/to/my_diary2009.pdf\")"
+  (let ((bib (bibtex-completion-normalize-bibliography 'bibtex))
+        (regexp (concat "^[ \t]*@\\(" parsebib--bibtex-identifier
+                        "\\)[[:space:]]*[\(\{][[:space:]]*" "[^z-a@]*"
+                        (when field
+                          (concat field "[[:space:]]*" "=" "[^z-a@]*"))
+                        (regexp-quote string))))
+    (with-temp-buffer
+      (mapc #'insert-file-contents bib)
+      (goto-char (point-min))
+      ;; Count how many entries matches the regexp
+      (cond ((> (how-many regexp) 1)    ; More than one
+             (let (entries              
+                   matched)             ; Empty variables, will set later.
+               ;; VV Parse this buffer then assign all entries to ENTRIES
+               (maphash #'(lambda (key val)
+                            (push val entries))
+                        (car (parsebib-parse-buffer)))
+               
+               ;; For every alist of fields in ENTRIES do...
+               (dolist (alist-of-fields entries matched)
+                 ;; Did user specify FIELD?
+                 (if field
+                     ;; Yes, check these conditions VVV
+                     (when (and (assoc field alist-of-fields)
+                                ;; Does the alist has user's FIELD
+                                (equal
+                                 (cdr (assoc field alist-of-fields))
+                                 (concat "\"" string "\""))
+                                ;; Does user's FIELD has a value that
+                                ;; matches the STRING?
+                                )
+                       ;; All conditions are satisfied, store this alist
+                       ;; in MATCHED
+                       (push (reverse alist-of-fields) matched))
+                   ;; User doesn't specify FIELD, check this condition
+                   (when (rassoc (concat "\"" string "\"") alist-of-fields)
+                     ;; Does any field in the alist has the
+                     ;; STRING as its value?
+                     (push (reverse alist-of-fields) matched)
+                     ;; If yes, store the alist in MATCHED
+                     )))
+               ;; Done, return MATCHED.
+               ))  
+            ((= (how-many regexp) 1)    ; There's only one entry with STRING as its fields.
+             (goto-char (point-max))    ; Go to the buttom of the buffer
+             (re-search-backward regexp nil t) ; Search backward with the regexp
+             (let ((entry-type (match-string 1)))
+               ;; Parse the entry
+               (list (reverse
+                      (bibtex-completion-prepare-entry
+                       (parsebib-read-entry
+                        entry-type (point)
+                        bibtex-completion-string-hash-table) nil t)))))
+            ;; Done, return the entry.
+            (t                          ; No entries with this STRING
+             ;; Show error
+             (display-warning :warning (concat "Bibtex-completion couldn't find entry with \"" string "\" in its " field "field."))
+             ;; Return nil.
+             nil)))))
+
 (defun bibtex-completion-find-pdf-in-field (key-or-entry)
   "Return the path of the PDF specified in the field `bibtex-completion-pdf-field' if that file exists.
 Returns nil if no file is specified, or if the specified file
@@ -814,6 +926,31 @@ The single notes file is the one specified in
   "List of functions to use to find note files.
 The functions should accept one argument: the key of the BibTeX
 entry and return non-nil if notes exist for that entry.")
+
+(defvar bibtex-completion-find-key-functions
+  (list #'bibtex-completion-find-key-from-note
+        #'bibtex-completion-find-key-from-pdf)
+  "List of functions to use to find key.
+The functions should accept one argument: the filename and return
+non-nil if notes exist for that entry.")
+
+(defun bibtex-completion-find-key-from-file (&optional filename-or-buffer)
+  "Return key associated with FILENAME-OR-BUFFER.
+
+FILENAME-OR-BUFFER can be a file name or a name of a buffer displaying the file."
+  (let (filename (or filename-or-buffer buffer-file-name))
+    (when (bufferp filename)
+      (setq filename (buffer-file-name filename-or-buffer)))
+    (run-hook-with-args-until-success 'bibtex-completion-find-key-functions
+                                      filename)))
+
+(defun bibtex-completion-find-key-from-note (filename)
+  "Find a key associated with FILENAME."
+  (let ((key (file-name-base file-name)))
+    (when (and (s-suffix-p bibtex-completion-notes-extension filename)
+               (f-same? filename
+                        (run-hook-with-args-until-success 'bibtex-completion-find-note-functions key)))
+      key)))
 
 (defun bibtex-completion-prepare-entry (entry &optional fields do-not-find-pdf)
   "Prepare ENTRY for display.
