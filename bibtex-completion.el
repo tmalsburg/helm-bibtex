@@ -938,7 +938,7 @@ non-nil if notes exist for that entry.")
   "Return key associated with FILENAME-OR-BUFFER.
 
 FILENAME-OR-BUFFER can be a file name or a name of a buffer displaying the file."
-  (let (filename (or filename-or-buffer buffer-file-name))
+  (let ((filename (or filename-or-buffer buffer-file-name)))
     (when (bufferp filename)
       (setq filename (buffer-file-name filename-or-buffer)))
     (run-hook-with-args-until-success 'bibtex-completion-find-key-functions
@@ -946,11 +946,19 @@ FILENAME-OR-BUFFER can be a file name or a name of a buffer displaying the file.
 
 (defun bibtex-completion-find-key-from-note (filename)
   "Find a key associated with FILENAME."
-  (let ((key (file-name-base file-name)))
+  (let ((key (file-name-base filename)))
     (when (and (s-suffix-p bibtex-completion-notes-extension filename)
                (f-same? filename
                         (run-hook-with-args-until-success 'bibtex-completion-find-note-functions key)))
-      key)))
+      (list key))))
+
+(defun bibtex-completion-find-key-from-pdf (filename)
+  "Find a key associated with FILENAME."
+  (when (and (s-suffix-p bibtex-completion-pdf-extension filename)
+             (file-regular-p filename))
+    (mapcar #'(lambda (entry)
+                (bibtex-completion-get-value "=key=" entry))
+            (bibtex-completion-get-entry-with-string filename))))
 
 (defun bibtex-completion-prepare-entry (entry &optional fields do-not-find-pdf)
   "Prepare ENTRY for display.
