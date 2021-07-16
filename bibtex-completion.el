@@ -785,22 +785,26 @@ Returns nil if no PDF is found."
       (bibtex-completion-find-pdf-in-library key-or-entry find-additional)))
 
 (defun bibtex-completion-find-note-multiple-files (entry-key)
-  "Find note file associated with entry ENTRY-KEY in the default directory.
+  "Return note file associated with entry ENTRY-KEY in the default directory.
 The default directory is `bibtex-completion-notes-path'.  If the
 note file doesn’t exist, return nil."
-  (and bibtex-completion-notes-path
-       (f-directory? bibtex-completion-notes-path)
-       (f-file? (f-join bibtex-completion-notes-path
-                        (s-concat entry-key
-                                  bibtex-completion-notes-extension)))))
+  (when (and bibtex-completion-notes-path
+             (f-directory? bibtex-completion-notes-path)
+             (f-file? (f-join bibtex-completion-notes-path
+                              (s-concat entry-key
+                                        bibtex-completion-notes-extension))))
+    (f-join bibtex-completion-notes-path
+            (s-concat entry-key
+                      bibtex-completion-notes-extension))))
 
 (defun bibtex-completion-find-note-one-file (entry-key)
-  "Find notes associated with entry ENTRY-KEY in the single notes file.
+  "Return notes associated with entry ENTRY-KEY in the single notes file.
 The single notes file is the one specified in
 `bibtex-completion-notes-path'.  If no note exists, return nil."
-  (and bibtex-completion-notes-path
-       (f-file? bibtex-completion-notes-path)
-       (member entry-key bibtex-completion-cached-notes-keys)))
+  (when (and bibtex-completion-notes-path
+             (f-file? bibtex-completion-notes-path)
+             (member entry-key bibtex-completion-cached-notes-keys))
+    bibtex-completion-notes-path))
 
 ;; This defvar allows other packages like org-roam-bibtex to customize
 ;; the back-end for storing notes.
