@@ -954,11 +954,22 @@ FILENAME-OR-BUFFER can be a file name or a name of a buffer displaying the file.
 
 (defun bibtex-completion-find-key-from-pdf (filename)
   "Find a key associated with FILENAME."
-  (when (and (s-suffix-p bibtex-completion-pdf-extension filename)
-             (file-regular-p filename))
-    (mapcar #'(lambda (entry)
-                (bibtex-completion-get-value "=key=" entry))
-            (bibtex-completion-get-entry-with-string filename))))
+  (let (keys)
+    (when (string-match-p
+           (concat ".*" (mapconcat 'regexp-quote
+                                   (-flatten bibtex-completion-pdf-extension)
+                                   "\\|"))
+           filename)
+      (setq keys (mapcar #'(lambda (entry)
+                             (bibtex-completion-get-value "=key=" entry))
+                         (bibtex-completion-get-entry-with-string filename)))
+      (when (and bibtex-completion-library-path
+                 (not keys)
+                 (bibtex-completion-find-pdf-in-library
+                  (file-name-base filename)
+                  bibtex-completion-find-additional-pdfs))
+        (setq keys (list (file-name-base filename))))
+      keys)))
 
 (defun bibtex-completion-prepare-entry (entry &optional fields do-not-find-pdf)
   "Prepare ENTRY for display.
