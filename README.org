@@ -7,6 +7,7 @@ Ivy-bibtex: [[http://melpa.org/#/ivy-bibtex][http://melpa.org/packages/ivy-bibte
 Helm-bibtex and ivy-bibtex allow you to search and manage your BibTeX bibliography.  They both share the same generic backend, bibtex-completion, but one uses the Helm completion framework and the other Ivy as a front-end.
 
 * News
+- 2021-07-18: Added a citation function for Org’s new citation system: ~bibtex-completion-format-citation-org-cite~ (for use in configuration variable ~bibtex-completion-format-citation-functions~)
 - 2021-04-12: Added a section below explaining how the bibliography can be automatically reloaded when PDFs and notes are added.  See [[https://github.com/tmalsburg/helm-bibtex#refresh-bibliography-when-new-pdfs-and-notes-are-added][here]].
 - 2021-04-08: It is now possible to search for entries with PDFs and notes by entering ~=has-pdf=~ and ~=has-note=~.
 - 2020-04-29: New commands ~helm-bibtex-with-notes~ and ~ivy-bibtex-with-noted~ for searching just within the entries that have notes.

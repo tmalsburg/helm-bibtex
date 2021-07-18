@@ -122,7 +122,7 @@ ebib:key depending on the major mode of the current buffer.  Note
 that the functions should accept a list of keys as input.  With
 multiple marked entries one can insert multiple keys at once,
 e.g. \cite{key1,key2}.  See the functions
-`bibtex-completion-format-citation-ebib' and
+`bibtex-completion-format-citation-org-cite' and
 `bibtex-completion-format-citation-cite' as examples."
   :group 'bibtex-completion
   :type '(alist :key-type symbol :value-type function))
@@ -1046,6 +1046,12 @@ which no PDF is available are omitted."
                 for key in keys
                 for pdfs = (bibtex-completion-find-pdf key bibtex-completion-find-additional-pdfs)
                 append (with-no-warnings (--map (org-make-link-string it key) pdfs)))))
+
+(defun bibtex-completion-format-citation-org-cite (keys)
+  "Format org-links using Org mode's own cite syntax."
+  (format "[cite:%s]"
+    (s-join ";"
+            (--map (format "@%s" it) keys))))
 
 (defun bibtex-completion-format-citation-org-apa-link-to-PDF (keys)
   "Format org-links to PDF for entries in KEYS.
