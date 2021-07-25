@@ -245,8 +245,9 @@ frequent searches (e.g. your own publications)."
 (defun helm-bibtex-with-local-bibliography (&optional arg)
   "Search BibTeX entries with local bibliography.
 
-With a prefix ARG the cache is invalidated and the bibliography
-reread."
+If none is found the global bibliography is used instead.  With a
+prefix ARG the cache is invalidated and the bibliography
+reloaded."
   (interactive "P")
   (let* ((local-bib (bibtex-completion-find-local-bibliography))
          (bibtex-completion-bibliography (or local-bib
