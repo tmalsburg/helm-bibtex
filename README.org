@@ -562,7 +562,7 @@ article caplan !waters
 
 ** Search in the local bibliography
 
-Use ~helm-bibtex-with-local-bibliography~ or ~ivy-bibtex-with-local-bibliography~ to start a search in the current buffer's "local bibliography", instead of the "global bibliography" defined by ~bibtex-completion-bibliography~. These comands use the built-in reftex library to determine the local bibliography from the standard LaTeX bibliography commands ~\bibliography~ and ~\addbibresource~. They can be used not only in LaTeX buffers but also in org-mode buffers and in fact any buffer in which the LaTeX bibliography commands are used, and they take care of loading reftex if needed.
+Use ~helm-bibtex-with-local-bibliography~ or ~ivy-bibtex-with-local-bibliography~ to start a search in the current buffer's "local bibliography", instead of the "global bibliography" defined by ~bibtex-completion-bibliography~.  If the current file is a BibTeX file, that bibliography is going to be used.  If the current file is a LaTeX file, reftex will be used to determine the local bibliography from the standard LaTeX bibliography commands ~\bibliography~ and ~\addbibresource~.  If the file is an org file, the local and/or global org bibliography is used (as specified using the new ~#+BIBLIOGRAPHY:~ key word and the variable ~org-cite-global-bibliography~).  If no local bibliography can be found, the global bibliography (~bibtex-completion-bibliography~) will be used.
 
 ** Search in entries with notes
 
