@@ -243,7 +243,7 @@ If documents are referenced via the naming scheme ~bibtex-key.pdf~ but you are s
 If you store files in various formats, then you can specify a list instead of a single file type:
 
 #+BEGIN_SRC emacs-lisp
-(setq bibtex-completion-pdf-extension '(".pdf" ".djvu"))
+(setq bibtex-completion-pdf-extension '(".pdf" ".djvu", ".jpg"))
 #+END_SRC
 
 Extensions in this list are then tried sequentially until a file is found. Beware that this can reduce performance for large bibliographies.
