@@ -59,40 +59,22 @@
   "Helm plugin for searching entries in a BibTeX bibliography."
   :group 'completion)
 
-(defface bibtex-completion-author-face
-  '((t :inherit font-lock-keyword-face))
-  "Face for authors in `bibtex-completion-format-entry'."
-  :group 'bibtex-completion)
-
-(defface bibtex-completion-year-face
-  '((t :inherit font-lock-function-name-face))
-  "Face for bibtex entry year in `bibtex-completion-format-entry'."
-  :group 'bibtex-completion)
-
-(defface bibtex-completion-title-face
-  '((t :inherit default))
-  "Face for bibtex entry title in `bibtex-completion-format-entry'."
-  :group 'bibtex-completion)
-
-(defface bibtex-completion-type-face
-  '((t :inherit font-lock-string-face))
-  "Face for bibtex entry type in `bibtex-completion-format-entry'."
-  :group 'bibtex-completion)
-
-(defface bibtex-completion-pdf-face
-  '((t :inherit font-lock-type-face))
-  "Face for `bibtex-completion-pdf-symbol' when entry has a pdf."
+(defcustom bibtex-completion-field-faces
+  '(("author" . font-lock-keyword-face)
+    ("editor" . font-lock-keyword-face)
+    ("year" . font-lock-function-name-face)
+    ;; ("title" . default)
+    ("type" . font-lock-string-face)
+    ("=has-pdf=" . font-lock-type-face)
+    ("=has-note=" . font-lock-type-face))
+  "Alist mapping bibtex fields to faces to highlight them with."
+  :type '(alist :key-type string :value-type face)
   :group 'bibtex-completion)
 
 (defface bibtex-completion-pdf-missing-face
   '((t :inherit shadow))
   "Face for `bibtex-completion-pdf-symbol' when entry doesn't have a pdf.
 Only used when `bibtex-completion-format-always-show-symbols' is non-nil."
-  :group 'bibtex-completion)
-
-(defface bibtex-completion-note-face
-  '((t :inherit font-lock-type-face))
-  "Face for `bibtex-completion-notes-symbol' when entry has a note."
   :group 'bibtex-completion)
 
 (defface bibtex-completion-note-missing-face
@@ -917,10 +899,9 @@ governed by the variable `bibtex-completion-display-formats'."
        (let* ((field (split-string field ":"))
               (field-name (car field))
               (field-width (cadr field))
-              field-value
-              (field-value-exact (bibtex-completion-get-value field-name entry)))
-         ;; Extract the field from the object or choose an appropriate fallback.
-         (setq field-value
+              (field-value-exact (bibtex-completion-get-value field-name entry))
+              (field-value
+               ;; Extract the field from the object or choose an appropriate fallback.
                (bibtex-completion-clean-string
                 (or
                  field-value-exact
@@ -928,36 +909,29 @@ governed by the variable `bibtex-completion-display-formats'."
                         (bibtex-completion-get-value "editor" entry))
                        ((string= field-name "year")
                         (car (split-string (bibtex-completion-get-value "date" entry "") "-"))))
-                 " ")))
-         ;; Apply any post-processing and face propertizing to the field-value.
-         (setq field-value
-               (cond ((member field-name '("author" "editor"))
-                      (propertize
-                       (bibtex-completion-shorten-authors field-value)
-                       'face 'bibtex-completion-author-face))
-                     ((string= field-name "year")
-                      (propertize field-value 'face 'bibtex-completion-year-face))
-                     ((string= field-name "title")
-                      (propertize field-value 'face 'bibtex-completion-title-face))
-                     ((string= field-name "=type=")
-                      (propertize field-value 'face 'bibtex-completion-type-face))
-                     ((string= field-name "=has-pdf=")
-                      (propertize (if bibtex-completion-format-always-show-symbols
-                                      bibtex-completion-pdf-symbol
-                                    field-value)
-                                  'face
-                                  (if field-value-exact
-                                      'bibtex-completion-pdf-face
-                                    'bibtex-completion-pdf-missing-face)))
-                     ((string= field-name "=has-note=")
-                      (propertize (if bibtex-completion-format-always-show-symbols
-                                      bibtex-completion-notes-symbol
-                                    field-value)
-                                  'face
-                                  (if field-value-exact
-                                      'bibtex-completion-note-face
-                                    'bibtex-completion-note-missing-face)))
-                     (t field-value)))
+                 " "))))
+         ;; Apply any post-processing to the field-value including face highlighitng.
+         (when (member field-name '("author" "editor"))
+           (setq field-value (bibtex-completion-shorten-authors field-value)))
+
+         (cond
+          ;; When we always show a symbol and currently we don't.
+          ((and bibtex-completion-format-always-show-symbols
+                (string= field-name "=has-pdf=")
+                (not field-value-exact))
+           (setq field-value
+                 (propertize bibtex-completion-pdf-symbol 'face
+                             'bibtex-completion-pdf-missing-face)))
+          ((and bibtex-completion-format-always-show-symbols
+                (string= field-name "=has-note=")
+                (not field-value-exact))
+           (setq field-value
+                 (propertize bibtex-completion-notes-symbol 'face
+                             'bibtex-completion-note-missing-face)))
+          (t
+           (when-let ((face (cdr (assoc field-name bibtex-completion-field-faces))))
+             (setq field-value (propertize field-value 'face face)))))
+
          ;; Ensure field-value doesn't take up more than desired width.
          (if (not field-width)
              field-value
