@@ -89,10 +89,11 @@
   
 (defun ivy-bibtex-display-transformer (candidate)
   "Prepare bib entry CANDIDATE for display."
-  (let* ((width (1- (frame-width)))
-         (idx (get-text-property 0 'idx candidate))
-         (entry (cdr (nth idx (ivy-state-collection ivy-last)))))
-    (bibtex-completion-format-entry entry width)))
+  (let* ((width (- (frame-width) 2))
+	 (idx (get-text-property 1 'idx candidate))
+	 (entry (cdr (nth idx (ivy-state-collection ivy-last)))))
+    (s-concat (if (s-starts-with-p ivy-mark-prefix candidate) ivy-mark-prefix " ")
+	      (bibtex-completion-format-entry entry width))))
 
 (defmacro ivy-bibtex-ivify-action (action name)
   "Wraps the function ACTION in another function named NAME which extracts the key from the candidate selected in ivy and passes it to ACTION."
