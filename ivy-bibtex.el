@@ -152,7 +152,7 @@ This is meant to be used as an action in `ivy-read`, with
             :action (lambda (candidate) (bibtex-completion-fallback-action (cdr candidate) search-expression))))
 
 (defvar ivy-bibtex-history nil
-  "Search history for `ivy-bibtex'")
+  "Search history for `ivy-bibtex'.")
 
 ;;;###autoload
 (defun ivy-bibtex (&optional arg local-bib)
