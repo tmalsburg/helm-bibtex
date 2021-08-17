@@ -86,6 +86,11 @@
   "The default action for the `ivy-bibtex` command."
   :group 'bibtex-completion
   :type 'function)
+
+(defcustom ivy-bibtex-default-multi-action 'ivy-bibtex-open-any-multi
+  "The default multi-action for the `ivy-bibtex` command."
+  :group 'bibtex-completion
+  :type 'function)
   
 (defun ivy-bibtex-display-transformer (candidate)
   "Prepare bib entry CANDIDATE for display."
@@ -163,7 +168,8 @@ from the local bibliography.  This is set internally by
               :preselect preselect
               :caller 'ivy-bibtex
               :history 'ivy-bibtex-history
-              :action ivy-bibtex-default-action)))
+              :action ivy-bibtex-default-action
+              :multi-action ivy-bibtex-default-multi-action)))
 
 ;;;###autoload
 (defun ivy-bibtex-with-local-bibliography (&optional arg)
