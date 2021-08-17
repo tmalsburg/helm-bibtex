@@ -204,16 +204,16 @@ reread."
 
 (ivy-set-actions
  'ivy-bibtex
- '(("p" ivy-bibtex-open-pdf "Open PDF file (if present)")
-   ("u" ivy-bibtex-open-url-or-doi "Open URL or DOI in browser")
-   ("c" ivy-bibtex-insert-citation "Insert citation")
-   ("r" ivy-bibtex-insert-reference "Insert reference")
-   ("k" ivy-bibtex-insert-key "Insert BibTeX key")
-   ("b" ivy-bibtex-insert-bibtex "Insert BibTeX entry")
-   ("a" ivy-bibtex-add-PDF-attachment "Attach PDF to email")
-   ("e" ivy-bibtex-edit-notes "Edit notes")
-   ("s" ivy-bibtex-show-entry "Show entry")
-   ("l" ivy-bibtex-add-pdf-to-library "Add PDF to library")
+ '(("p" ivy-bibtex-open-pdf "Open PDF file (if present)" ivy-bibtex-open-pdf-multi)
+   ("u" ivy-bibtex-open-url-or-doi "Open URL or DOI in browser" ivy-bibtex-open-url-or-doi-multi)
+   ("c" ivy-bibtex-insert-citation "Insert citation" ivy-bibtex-insert-citation-multi)
+   ("r" ivy-bibtex-insert-reference "Insert reference" ivy-bibtex-insert-reference-multi)
+   ("k" ivy-bibtex-insert-key "Insert BibTeX key" ivy-bibtex-insert-key-multi)
+   ("b" ivy-bibtex-insert-bibtex "Insert BibTeX entry" ivy-bibtex-insert-bibtex-multi)
+   ("a" ivy-bibtex-add-PDF-attachment "Attach PDF to email" ivy-bibtex-add-PDF-attachment-multi)
+   ("e" ivy-bibtex-edit-notes "Edit notes" ivy-bibtex-edit-notes-multi)
+   ("s" ivy-bibtex-show-entry "Show entry" ivy-bibtex-show-entry-multi)
+   ("l" ivy-bibtex-add-pdf-to-library "Add PDF to library" ivy-bibtex-add-pdf-to-library-multi)
    ("f" (lambda (_candidate) (ivy-bibtex-fallback ivy-text)) "Fallback options")))
 
 (provide 'ivy-bibtex)
