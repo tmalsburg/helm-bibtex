@@ -4,7 +4,7 @@
 ;; Maintainer: Titus von der Malsburg <malsburg@posteo.de>
 ;; URL: https://github.com/tmalsburg/helm-bibtex
 ;; Version: 1.0.1
-;; Package-Requires: ((bibtex-completion "1.0.0") (swiper "0.7.0") (cl-lib "0.5"))
+;; Package-Requires: ((bibtex-completion "1.0.0") (ivy "0.13.0") (cl-lib "0.5"))
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
