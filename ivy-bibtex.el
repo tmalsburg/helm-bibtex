@@ -96,10 +96,22 @@
 	      (bibtex-completion-format-entry entry width))))
 
 (defmacro ivy-bibtex-ivify-action (action name)
-  "Wraps the function ACTION in another function named NAME which extracts the key from the candidate selected in ivy and passes it to ACTION."
-  `(defun ,name (candidate)
-     (let ((key (cdr (assoc "=key=" (cdr candidate)))))
-       (,action (list key)))))
+  "Wraps the function ACTION in two other functions named NAME and NAME-multi.
+
+The first extracts the key from the candidate selected in ivy and
+passes it to ACTION.
+
+The second extracts the list of keys in mark candidates selected
+in ivy and passes it to ACTION."
+  `(progn
+     (defun ,name (candidate)
+       ,(format "Ivy wrapper for `%s' applied to single CANDIDATE." action)
+       (let ((key (cdr (assoc "=key=" (cdr candidate)))))
+         (,action (list key))))
+     (defun ,(intern (format "%s-multi" name)) (candidates)
+       ,(format "Ivy wrapper for `%s' applied to multiple marked CANDIDATES." action)
+       (let ((keys (--map (cdr (assoc "=key=" (cdr it))) candidates)))
+         (,action keys)))))
 
 (ivy-bibtex-ivify-action bibtex-completion-open-any ivy-bibtex-open-any)
 (ivy-bibtex-ivify-action bibtex-completion-open-pdf ivy-bibtex-open-pdf)
