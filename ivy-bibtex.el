@@ -87,15 +87,11 @@
   :group 'bibtex-completion
   :type 'function)
 
-(defcustom ivy-bibtex-default-multi-action 'ivy-bibtex-open-any-multi
-  "The default multi-action for the `ivy-bibtex` command."
-  :group 'bibtex-completion
-  :type 'function)
+(defvar ivy-bibtex-default-multi-action 'ivy-bibtex-open-any-multi
+  "The default multi-action for the `ivy-bibtex` command.")
 
-(defcustom ivy-bibtex-use-extra-keymap t
-  "Non-nil if `ivy-bibtex' has keys for marking candidates."
-  :group 'bibtex-completion
-  :type 'boolean)
+(defvar ivy-bibtex-use-extra-keymap t
+  "Non-nil if `ivy-bibtex' has keys for marking candidates.")
 
 (defvar ivy-bibtex-extra-keymap
   (let ((map (make-sparse-keymap)))
