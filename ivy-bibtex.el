@@ -87,7 +87,7 @@
   :group 'bibtex-completion
   :type 'function)
 
-(defvar ivy-bibtex-default-multi-action 'ivy-bibtex-open-any-multi
+(defvar ivy-bibtex-default-multi-action 'ivy-bibtex-open-any
   "The default multi-action for the `ivy-bibtex` command.")
 
 (defvar ivy-bibtex-use-extra-keymap t
