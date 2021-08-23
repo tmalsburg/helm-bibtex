@@ -120,15 +120,12 @@ passes it to ACTION.
 
 The second extracts the list of keys in mark candidates selected
 in ivy and passes it to ACTION."
-  `(progn
-     (defun ,name (candidate)
-       ,(format "Ivy wrapper for `%s' applied to single CANDIDATE." action)
-       (let ((key (cdr (assoc "=key=" (cdr candidate)))))
-         (,action (list key))))
-     (defun ,(intern (format "%s-multi" name)) (candidates)
-       ,(format "Ivy wrapper for `%s' applied to multiple marked CANDIDATES." action)
-       (let ((keys (--map (cdr (assoc "=key=" (cdr it))) candidates)))
-         (,action keys)))))
+ `(defun ,name (candidates)
+   ,(format "Ivy wrapper for `%s' applied to one or more CANDIDATES." action)
+   (let ((keys (if (consp (car candidates))
+		  (--map (cdr (assoc "=key=" (cdr it))) candidates)
+		(list (cdr (assoc "=key=" (cdr candidates)))))))
+     (,action keys))))
 
 (ivy-bibtex-ivify-action bibtex-completion-open-any ivy-bibtex-open-any)
 (ivy-bibtex-ivify-action bibtex-completion-open-pdf ivy-bibtex-open-pdf)
@@ -215,16 +212,16 @@ reread."
 
 (ivy-set-actions
  'ivy-bibtex
- '(("p" ivy-bibtex-open-pdf "Open PDF file (if present)" ivy-bibtex-open-pdf-multi)
-   ("u" ivy-bibtex-open-url-or-doi "Open URL or DOI in browser" ivy-bibtex-open-url-or-doi-multi)
-   ("c" ivy-bibtex-insert-citation "Insert citation" ivy-bibtex-insert-citation-multi)
-   ("r" ivy-bibtex-insert-reference "Insert reference" ivy-bibtex-insert-reference-multi)
-   ("k" ivy-bibtex-insert-key "Insert BibTeX key" ivy-bibtex-insert-key-multi)
-   ("b" ivy-bibtex-insert-bibtex "Insert BibTeX entry" ivy-bibtex-insert-bibtex-multi)
-   ("a" ivy-bibtex-add-PDF-attachment "Attach PDF to email" ivy-bibtex-add-PDF-attachment-multi)
-   ("e" ivy-bibtex-edit-notes "Edit notes" ivy-bibtex-edit-notes-multi)
-   ("s" ivy-bibtex-show-entry "Show entry" ivy-bibtex-show-entry-multi)
-   ("l" ivy-bibtex-add-pdf-to-library "Add PDF to library" ivy-bibtex-add-pdf-to-library-multi)
+ '(("p" ivy-bibtex-open-pdf "Open PDF file (if present)" ivy-bibtex-open-pdf)
+   ("u" ivy-bibtex-open-url-or-doi "Open URL or DOI in browser" ivy-bibtex-open-url-or-doi)
+   ("c" ivy-bibtex-insert-citation "Insert citation" ivy-bibtex-insert-citation)
+   ("r" ivy-bibtex-insert-reference "Insert reference" ivy-bibtex-insert-reference)
+   ("k" ivy-bibtex-insert-key "Insert BibTeX key" ivy-bibtex-insert-key)
+   ("b" ivy-bibtex-insert-bibtex "Insert BibTeX entry" ivy-bibtex-insert-bibtex)
+   ("a" ivy-bibtex-add-PDF-attachment "Attach PDF to email" ivy-bibtex-add-PDF-attachment)
+   ("e" ivy-bibtex-edit-notes "Edit notes" ivy-bibtex-edit-notes)
+   ("s" ivy-bibtex-show-entry "Show entry" ivy-bibtex-show-entry)
+   ("l" ivy-bibtex-add-pdf-to-library "Add PDF to library" ivy-bibtex-add-pdf-to-library)
    ("f" (lambda (_candidate) (ivy-bibtex-fallback ivy-text)) "Fallback options")))
 
 (provide 'ivy-bibtex)
