@@ -7,7 +7,7 @@ Ivy-bibtex: [[http://melpa.org/#/ivy-bibtex][http://melpa.org/packages/ivy-bibte
 Helm-bibtex and ivy-bibtex allow you to search and manage your BibTeX bibliography.  They both share the same generic backend, bibtex-completion, but one uses the Helm completion framework and the other Ivy as a front-end.
 
 * News
-- 2021-08-25: It is now possible to mark and act on multiple entries in ~ivy-bitex~.  See [[#multi-actions][here]].
+- 2021-08-25: It is now possible to mark and act on multiple entries in ~ivy-bitex~.  See [[#apply-actions-to-multiple-entries][here]].
 - 2021-07-25: ~helm-bibtex-with-local-bibliography~ and ~ivy-bibtex-with-local-bibliography~ now also use locally and globally defined bibliographies in org files.  These are bibliographies specified using the new ~#+BIBLIOGRAPHY:~ key word and those in the variable ~org-cite-global-bibliography~.
 - 2021-07-18: Added a citation function for Org’s new citation system: ~bibtex-completion-format-citation-org-cite~ (for use in configuration variable ~bibtex-completion-format-citation-functions~)
 - 2021-04-12: Added a section below explaining how the bibliography can be automatically reloaded when PDFs and notes are added.  See [[https://github.com/tmalsburg/helm-bibtex#refresh-bibliography-when-new-pdfs-and-notes-are-added][here]].
@@ -407,7 +407,7 @@ If the last, numerical argument in ~helm-add-action-to-source~ is omitted, the n
 (helm-add-action-to-source "Insert BibTeX key" 'bibtex-completion-insert-key helm-source-bibtex 0)
 #+END_SRC
 
-*Ivy-bibtex*: The default action and the additional available actions are set separately. The default action is controlled by the variables ~ivy-bibtex-default-action~ and ~ivy-bibtex-default-multi-action~, with the latter intended for lists of marked entries (see [[#multi-actions][Apply actions to multiple entries]]). For example, the following code changes the default action to "insert BibTeX key":
+*Ivy-bibtex*: The default action and the additional available actions are set separately. The default action is controlled by the variables ~ivy-bibtex-default-action~ and ~ivy-bibtex-default-multi-action~, with the latter intended for lists of marked entries (see [[#apply-actions-to-multiple-entries][Apply actions to multiple entries]]). For example, the following code changes the default action to "insert BibTeX key":
 
 #+BEGIN_SRC emacs-lisp
 (setq ivy-bibtex-default-action 'ivy-bibtex-insert-key)
@@ -601,7 +601,7 @@ The available actions are:
 
 ** Apply actions to multiple entries
 :PROPERTIES:
-:CUSTOM_ID: multi-actions
+:CUSTOM_ID: apply-actions-to-multiple-entries
 :END:
 
 
