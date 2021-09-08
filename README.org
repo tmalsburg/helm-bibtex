@@ -7,6 +7,7 @@ Ivy-bibtex: [[http://melpa.org/#/ivy-bibtex][http://melpa.org/packages/ivy-bibte
 Helm-bibtex and ivy-bibtex allow you to search and manage your BibTeX bibliography.  They both share the same generic backend, bibtex-completion, but one uses the Helm completion framework and the other Ivy as a front-end.
 
 * News
+- 2021-08-25: It is now possible to mark and act on multiple entries in ~ivy-bitex~.  See [[#apply-actions-to-multiple-entries][here]].
 - 2021-07-25: ~helm-bibtex-with-local-bibliography~ and ~ivy-bibtex-with-local-bibliography~ now also use locally and globally defined bibliographies in org files.  These are bibliographies specified using the new ~#+BIBLIOGRAPHY:~ key word and those in the variable ~org-cite-global-bibliography~.
 - 2021-07-18: Added a citation function for Org’s new citation system: ~bibtex-completion-format-citation-org-cite~ (for use in configuration variable ~bibtex-completion-format-citation-functions~)
 - 2021-04-12: Added a section below explaining how the bibliography can be automatically reloaded when PDFs and notes are added.  See [[https://github.com/tmalsburg/helm-bibtex#refresh-bibliography-when-new-pdfs-and-notes-are-added][here]].
@@ -406,27 +407,35 @@ If the last, numerical argument in ~helm-add-action-to-source~ is omitted, the n
 (helm-add-action-to-source "Insert BibTeX key" 'bibtex-completion-insert-key helm-source-bibtex 0)
 #+END_SRC
 
-*Ivy-bibtex*:  The default action and the additional available actions are set separately. The default action is controlled by the variable ~ivy-bibtex-default-action~. For example, the following code changes the default action to "insert BibTeX key":
+*Ivy-bibtex*: The default action and the additional available actions are set separately. The default action is controlled by the variables ~ivy-bibtex-default-action~ and ~ivy-bibtex-default-multi-action~, with the latter intended for lists of marked entries (see [[#apply-actions-to-multiple-entries][Apply actions to multiple entries]]). For example, the following code changes the default action to "insert BibTeX key":
 
 #+BEGIN_SRC emacs-lisp
 (setq ivy-bibtex-default-action 'ivy-bibtex-insert-key)
 #+END_SRC
+
+In the same way, the following code sets the default action for lists of marked entries to "insert BibTeX key" which will insert a nice comma-separated list of keys:
+
+#+begin_src emacs-lisp
+(setq ivy-bibtex-default-multi-action 'ivy-bibtex-insert-key)
+#+end_src
 
 The additional actions are set by passing the desired action list to the command ~ivy-set-actions~. For instance, the following codes keeps only two available actions in addition to the default one:
 
 #+BEGIN_SRC emacs-lisp
 (ivy-set-actions
  'ivy-bibtex
- '(("p" ivy-bibtex-open-any "Open PDF, URL, or DOI")
-   ("e" ivy-bibtex-edit-notes "Edit notes")))
+ '(("p" ivy-bibtex-open-any "Open PDF, URL, or DOI" ivy-bibtex-open-any)
+   ("e" ivy-bibtex-edit-notes "Edit notes" ivy-bibtex-edit-notes)))
 #+END_SRC
 
-The letters ~p~ and ~e~ are the key bindings for the two actions in the action menu. The key binding ~o~ is reserved for the default action. If you only want to add new actions at the end of the action list, you can alternatively use the command ~ivy-add-actions~. For instance, the following adds a new action ~helm-bibtex-open-annotated-pdf~ (see [[#annotated][above]]) at the end of the action list:
+The letters ~p~ and ~e~ are the key bindings for the two actions in the action menu. The key binding ~o~ is reserved for the default action.  The second appearance of the action in this code alerts ~ivy~ that the action can handle lists of marked entries.  It can safely be omitted if the right thing to do is simply apply the action to each entry in turn.
+
+If you only want to add new actions at the end of the action list, you can alternatively use the command ~ivy-add-actions~. For instance, the following adds a new action ~ivy-bibtex-open-annotated-pdf~ (see [[#annotated][above]]) at the end of the action list:
 
 #+BEGIN_SRC emacs-lisp
 (ivy-add-actions
    'ivy-bibtex
-   '(("P" ivy-bibtex-open-annotated-pdf "Open annotated PDF (if present)")))
+   '(("P" ivy-bibtex-open-annotated-pdf "Open annotated PDF (if present)" ivy-bibtex-open-annotated-pdf)))
 #+END_SRC
 
 ** Create new actions
@@ -591,16 +600,20 @@ The available actions are:
 *Ivy-bibtex*: Select an entry and press ~<return>~ to execute the default action.  Alternatively, press ~M-o~ to see a list of all available actions, execute one of them and exit ivy-bibtex.
 
 ** Apply actions to multiple entries
+:PROPERTIES:
+:CUSTOM_ID: apply-actions-to-multiple-entries
+:END:
+
 
 *Helm-bibtex*: Start helm-bibtex, enter the search expression, move the cursor to the matching entry and enter ~C-<space>~ (control + space bar) to mark this entry, optionally change your search expression, mark more entries, finally press ~<return>~ or ~<tab>~ to execute an action for all selected entries at once and exit helm-bibtex.
 
-*Ivy-bibtex*: Start ivy-bibtex, enter the search expression, move the cursor to the matching entry and press ~M-<return>~ instead of ~<return>~ or ~C-M-o~ instead of ~M-o~ to execute an action for this entry without exiting ivy-bibtex, optionally change your search expression, move the cursor the new matching entry and press ~M-<return>~ or ~C-M-o~ to execute the same (not necessarily the default) or another action for this new entry, and so on, finally press ~<return>~ or ~C-o~ to execute the same or another action and exit ivy-bibtex.
+*Ivy-bibtex*: Start ivy-bibtex, enter the search expression, move the cursor to the matching entry and enter ~C-<space>~ (control + space bar) to mark this entry, optionally change your search expression, mark more entries, finally press ~<return>~ to execute the default action on all the selected entries or ~M-o~ to choose another action. Press ~S-<space>~ (shift + space bar) to un-mark a marked entry.
 
 ** A colleague asks for copies of your new papers
 
 *Helm-bibtex*: Start an email to your colleague (~C-x m~) and execute ~helm-bibtex~.  Search for your new publications and mark them with ~C-<space>~, then press ~<f7>~ to execute the action “Attach PDF to email”.  Then ~M-x helm-resume~ (the publications are still marked) and press ~<f6>~ to execute the action “Insert BibTeX entry”.  Optionally insert more human readable references using ~M-x helm-resume~ and ~<f4>~ to execute the action “Insert reference”.  Send email (~C-c C-c~).  Done.  This takes less than 10 seconds.
 
-*Ivy-bibtex*: Start an email to your colleague (~C-x m~) and execute ~ivy-bibtex~.  Search for your new publications and select the first one, then press ~C-M-o a~ to execute the action “Attach PDF to email”. Then press ~C-M-o b~ to execute the action “Insert BibTeX entry”. Optionally insert a more human readable reference using ~C-M-o r~ to execute the action “Insert reference”. Then select your next publication and again ~C-M-o a~, ~C-M-o b~ and, optionally, ~C-M-o r~. And so on.  Send email (~C-c C-c~).  Done.
+*Ivy-bibtex*: Start an email to your colleague (~C-x m~) and execute ~ivy-bibtex~.  Search for your new publications and and mark them with ~C-<space>~, then press ~C-M-o a~ to execute the action “Attach PDF to email” while keeping ivy open. Then press ~M-o b~ to execute the action “Insert BibTeX entry” or insert more human readable references using ~M-o r~ to execute the action “Insert reference”.  Send email (~C-c C-c~).  Done.  This takes less than 10 seconds.
 
  Of course, this assumes that you’re sending email from Emacs, e.g. via [[http://www.djcbsoftware.nl/code/mu/mu4e.html][Mu4e]].
 
@@ -646,7 +659,7 @@ Bibtex-completion caches the bibliography to prevent a costly reread when a new 
 
 *Helm-bibtex*: Start helm-bibtex and enter search terms.  Then select “CrossRef” in the section titled “Fallback options”.  (You can use the left and right arrow keys to switch between sections.)
 
-*Ivy-bibtex*: Start ivy-bibtex and enter search terms.  Then press ~M-o f~ to see the list of fallback options and and select "CrossRef".
+*Ivy-bibtex*: Start ivy-bibtex and enter search terms.  Then press ~M-o f~ to see the list of fallback options and select "CrossRef".
 
 This will use [[https://github.com/cpitclaudel/biblio.el][biblio.el]] to search the CrossRef database.  In the results list, place the cursor on the entry of interest and hit ~c~ to copy the BibTeX for that entry or ~i~ to insert it at point.  Press ~q~ to close the buffer with the search results.  See the [[https://github.com/cpitclaudel/biblio.el/blob/master/README.md][documentation of biblio.el]] for details.
 

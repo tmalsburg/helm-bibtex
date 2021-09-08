@@ -4,7 +4,7 @@
 ;; Maintainer: Titus von der Malsburg <malsburg@posteo.de>
 ;; URL: https://github.com/tmalsburg/helm-bibtex
 ;; Version: 1.0.1
-;; Package-Requires: ((bibtex-completion "1.0.0") (swiper "0.7.0") (cl-lib "0.5"))
+;; Package-Requires: ((bibtex-completion "1.0.0") (ivy "0.13.0") (cl-lib "0.5"))
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -86,19 +86,42 @@
   "The default action for the `ivy-bibtex` command."
   :group 'bibtex-completion
   :type 'function)
+
+(defvar ivy-bibtex-default-multi-action 'ivy-bibtex-open-any
+  "The default multi-action for the `ivy-bibtex` command.")
+
+(defvar ivy-bibtex-use-extra-keymap t
+  "Non-nil if `ivy-bibtex' has keys for marking candidates.")
+
+(defvar ivy-bibtex-extra-keymap
+  (let ((map (make-sparse-keymap)))
+    (define-key map (kbd "C-SPC") 'ivy-mark)
+    (define-key map (kbd "S-SPC") 'ivy-unmark)
+    map)
+  "Optional extra keymap for `ivy-bibtex'.")
   
 (defun ivy-bibtex-display-transformer (candidate)
   "Prepare bib entry CANDIDATE for display."
-  (let* ((width (1- (frame-width)))
-         (idx (get-text-property 0 'idx candidate))
-         (entry (cdr (nth idx (ivy-state-collection ivy-last)))))
-    (bibtex-completion-format-entry entry width)))
+  (let* ((width (- (frame-width) 2))
+	 (idx (get-text-property 1 'idx candidate))
+	 (entry (cdr (nth idx (ivy-state-collection ivy-last)))))
+    (s-concat (if (s-starts-with-p ivy-mark-prefix candidate) ivy-mark-prefix " ")
+	      (bibtex-completion-format-entry entry width))))
 
 (defmacro ivy-bibtex-ivify-action (action name)
-  "Wraps the function ACTION in another function named NAME which extracts the key from the candidate selected in ivy and passes it to ACTION."
-  `(defun ,name (candidate)
-     (let ((key (cdr (assoc "=key=" (cdr candidate)))))
-       (,action (list key)))))
+  "Wraps the function ACTION in two other functions named NAME and NAME-multi.
+
+The first extracts the key from the candidate selected in ivy and
+passes it to ACTION.
+
+The second extracts the list of keys in mark candidates selected
+in ivy and passes it to ACTION."
+ `(defun ,name (candidates)
+   ,(format "Ivy wrapper for `%s' applied to one or more CANDIDATES." action)
+   (let ((keys (if (consp (car candidates))
+		  (--map (cdr (assoc "=key=" (cdr it))) candidates)
+		(list (cdr (assoc "=key=" (cdr candidates)))))))
+     (,action keys))))
 
 (ivy-bibtex-ivify-action bibtex-completion-open-any ivy-bibtex-open-any)
 (ivy-bibtex-ivify-action bibtex-completion-open-pdf ivy-bibtex-open-pdf)
@@ -122,7 +145,7 @@ This is meant to be used as an action in `ivy-read`, with
             :action (lambda (candidate) (bibtex-completion-fallback-action (cdr candidate) search-expression))))
 
 (defvar ivy-bibtex-history nil
-  "Search history for `ivy-bibtex'")
+  "Search history for `ivy-bibtex'.")
 
 ;;;###autoload
 (defun ivy-bibtex (&optional arg local-bib)
@@ -150,7 +173,9 @@ from the local bibliography.  This is set internally by
               :preselect preselect
               :caller 'ivy-bibtex
               :history 'ivy-bibtex-history
-              :action ivy-bibtex-default-action)))
+              :action ivy-bibtex-default-action
+              :multi-action ivy-bibtex-default-multi-action
+              :keymap (when ivy-bibtex-use-extra-keymap ivy-bibtex-extra-keymap))))
 
 ;;;###autoload
 (defun ivy-bibtex-with-local-bibliography (&optional arg)
@@ -174,9 +199,7 @@ reread."
   (cl-letf* ((candidates (bibtex-completion-candidates))
              ((symbol-function 'bibtex-completion-candidates)
               (lambda ()
-                (seq-filter
-                 (lambda (candidate) (assoc "=has-note=" candidate))
-                 candidates))))
+                (--filter (assoc "=has-note=" it) candidates))))
     (ivy-bibtex arg)))
 
 (ivy-set-display-transformer
@@ -185,16 +208,16 @@ reread."
 
 (ivy-set-actions
  'ivy-bibtex
- '(("p" ivy-bibtex-open-pdf "Open PDF file (if present)")
-   ("u" ivy-bibtex-open-url-or-doi "Open URL or DOI in browser")
-   ("c" ivy-bibtex-insert-citation "Insert citation")
-   ("r" ivy-bibtex-insert-reference "Insert reference")
-   ("k" ivy-bibtex-insert-key "Insert BibTeX key")
-   ("b" ivy-bibtex-insert-bibtex "Insert BibTeX entry")
-   ("a" ivy-bibtex-add-PDF-attachment "Attach PDF to email")
-   ("e" ivy-bibtex-edit-notes "Edit notes")
-   ("s" ivy-bibtex-show-entry "Show entry")
-   ("l" ivy-bibtex-add-pdf-to-library "Add PDF to library")
+ '(("p" ivy-bibtex-open-pdf "Open PDF file (if present)" ivy-bibtex-open-pdf)
+   ("u" ivy-bibtex-open-url-or-doi "Open URL or DOI in browser" ivy-bibtex-open-url-or-doi)
+   ("c" ivy-bibtex-insert-citation "Insert citation" ivy-bibtex-insert-citation)
+   ("r" ivy-bibtex-insert-reference "Insert reference" ivy-bibtex-insert-reference)
+   ("k" ivy-bibtex-insert-key "Insert BibTeX key" ivy-bibtex-insert-key)
+   ("b" ivy-bibtex-insert-bibtex "Insert BibTeX entry" ivy-bibtex-insert-bibtex)
+   ("a" ivy-bibtex-add-PDF-attachment "Attach PDF to email" ivy-bibtex-add-PDF-attachment)
+   ("e" ivy-bibtex-edit-notes "Edit notes" ivy-bibtex-edit-notes)
+   ("s" ivy-bibtex-show-entry "Show entry" ivy-bibtex-show-entry)
+   ("l" ivy-bibtex-add-pdf-to-library "Add PDF to library" ivy-bibtex-add-pdf-to-library)
    ("f" (lambda (_candidate) (ivy-bibtex-fallback ivy-text)) "Fallback options")))
 
 (provide 'ivy-bibtex)
