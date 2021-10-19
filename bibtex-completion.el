@@ -68,6 +68,8 @@ different name, use a cons cell `(\"orgfile.org\" . \"bibfile.bib\")' instead."
   :group 'bibtex-completion
   :type '(choice file (repeat file)))
 
+;;;###autoload (put 'bibtex-completion-bibliography 'safe-local-variable 'stringp)
+
 (defcustom bibtex-completion-library-path nil
   "A directory or list of directories in which PDFs are stored.
 Bibtex-completion assumes that the names of these PDFs are
