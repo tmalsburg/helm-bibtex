@@ -1131,7 +1131,7 @@ The format depends on
              'bibtex-completion-apa-get-value entry))
            ("inbook"
             (s-format
-             "${author} (${year}). ${title}. In ${editor} (Eds.), ${booktitle} (pp. ${pages}). ${address}: ${publisher}."
+             "${author} (${year}). ${chapter}. In ${editor} (Eds.), ${title} (pp. ${pages}). ${address}: ${publisher}."
              'bibtex-completion-apa-get-value entry))
            ("incollection"
             (s-format
