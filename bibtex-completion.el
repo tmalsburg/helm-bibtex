@@ -486,7 +486,7 @@ The first element of these conses is a string containing authors,
 editors, title, year, type, and key of the entry.  This string
 is used for matching.  The second element is the entry (only the
 fields listed above) as an alist."
-  (let ((files (nreverse (bibtex-completion-normalize-bibliography 'bibtex)))
+  (let ((files (bibtex-completion-normalize-bibliography 'bibtex))
         (ht-strings (make-hash-table :test #'equal))
         reparsed-files)
 
@@ -567,10 +567,9 @@ fields listed above) as an alist."
 
     ;; Finally return the list of candidates:
     (message "Done (re)loading bibliography.")
-    (nreverse
-     (cl-loop
-      for file in files
-      append (cddr (assoc file bibtex-completion-cache))))))
+    (cl-loop
+     for file in files
+     append (cddr (assoc file bibtex-completion-cache)))))
 
 (defun bibtex-completion-resolve-crossrefs (files reparsed-files)
   "Expand all entries with fields from cross-referenced entries in FILES, assuming that only those files in REPARSED-FILES were reparsed whereas the other files in FILES were up-to-date."
