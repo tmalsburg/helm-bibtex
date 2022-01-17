@@ -738,7 +738,7 @@ Invoking ~helm-bibtex~ or ~ivy-bibtex~ when point is on an [[https://orgmode.org
 (setq org-cite-follow-processor 'my-bibtex-org-cite-follow)
 #+END_SRC
 
-Note in the case of an org citations with multiple keys, the above code will not preselect any entry when the ~[cite:~ portion is selected.
+Note in the case of an org citation with multiple keys, the above code will not preselect any entry when the ~[cite:~ portion is selected.
 
 * Troubleshooting
 
