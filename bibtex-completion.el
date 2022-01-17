@@ -1609,10 +1609,20 @@ find the key of the BibTeX entry at point in an Org-mode buffer."
            (> (length key) 0)
            key))))
 
+(defun bibtex-completion-get-key-org-cite ()
+  "Return the org-cite key at point, nil otherwise.
+This function can be used by `bibtex-completion-key-at-point' to
+find the org-cite key at point in an Org-mode buffer."
+  (when (eq major-mode 'org-mode)
+    (let ((el (org-element-context)))
+      (when (eq (car el) 'citation-reference)
+        (plist-get (cadr el) :key)))))
+
 (defvar bibtex-completion-key-at-point-functions
   (list #'bibtex-completion-get-key-bibtex
         #'bibtex-completion-get-key-latex
-        #'bibtex-completion-get-key-org-bibtex)
+        #'bibtex-completion-get-key-org-bibtex
+        #'bibtex-completion-get-key-org-cite)
   "List of functions to use to find the BibTeX key.
 The functions should take no argument and return the BibTeX
 key.  Stops as soon as a function returns something.
