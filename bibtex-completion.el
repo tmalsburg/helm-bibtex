@@ -1153,66 +1153,64 @@ The format depends on
 
 (defun bibtex-completion-apa-get-value (field entry &optional default)
   "Return FIELD or ENTRY formatted following the APA guidelines.
-Return DEFAULT if FIELD is not present in ENTRY."
-  ;; Virtual fields:
-  (pcase field
-    ("author-or-editor"
-     ;; Avoid if-let and when-let because they're not working reliably
-     ;; in all versions of Emacs that we currently support:
-     (let ((value (bibtex-completion-get-value "author" entry)))
-       (if value
-           (bibtex-completion-apa-format-authors value)
-         (bibtex-completion-apa-format-editors
-          (bibtex-completion-get-value "editor" entry)))))
-    ("author-or-editor-abbrev"
-     (let* ((value (bibtex-completion-get-value "author" entry)))
-       (if value
-           (bibtex-completion-apa-format-authors-abbrev value)
-         (bibtex-completion-apa-format-editors-abbrev
-          (bibtex-completion-get-value "editor" entry)))))
-    ("author-abbrev"
-     (let ((value (bibtex-completion-get-value "author" entry)))
-       (when value
-         (bibtex-completion-apa-format-authors-abbrev value))))
-    ("editor-abbrev"
-     (let ((value (bibtex-completion-get-value "editor" entry)))
-       (when value
-         (bibtex-completion-apa-format-editors-abbrev value))))
-    (_
-     ;; Real fields:
-     (let ((value (bibtex-completion-get-value field entry)))
-       (if value
-           (pcase field
-             ;; https://owl.english.purdue.edu/owl/resource/560/06/
-             ("author" (bibtex-completion-apa-format-authors value))
-             ("editor" (bibtex-completion-apa-format-editors value))
-             ;; When referring to books, chapters, articles, or Web pages,
-             ;; capitalize only the first letter of the first word of a
-             ;; title and subtitle, the first word after a colon or a dash
-             ;; in the title, and proper nouns.  Do not capitalize the first
-             ;; letter of the second word in a hyphenated compound word.
-             ("title" (replace-regexp-in-string ; remove braces
-                       "[{}]"
-                       ""
-                       (replace-regexp-in-string ; remove macros
-                        "\\\\[[:alpha:]]+{"
+Return DEFAULT if FIELD is not present in ENTRY.  Return empty
+string if FIELD is not present in ENTRY and DEFAULT is nil."
+  (or
+   (pcase field
+     ;; Virtual fields:
+     ("author-or-editor"
+      ;; Avoid if-let and when-let because they're not working reliably
+      ;; in all versions of Emacs that we currently support:
+      (if-let ((value (bibtex-completion-get-value "author" entry)))
+          (bibtex-completion-apa-format-authors value)
+        (when-let ((value (bibtex-completion-get-value "editor" entry)))
+          (bibtex-completion-apa-format-editors value))))
+     ("author-or-editor-abbrev"
+      (if-let ((value (bibtex-completion-get-value "author" entry)))
+          (bibtex-completion-apa-format-authors-abbrev value)
+        (when-let ((value (bibtex-completion-get-value "editor" entry)))
+          (bibtex-completion-apa-format-editors-abbrev value))))
+     ("author-abbrev"
+      (when-let ((value (bibtex-completion-get-value "author" entry)))
+        (bibtex-completion-apa-format-authors-abbrev value)))
+     ("editor-abbrev"
+      (when-let ((value (bibtex-completion-get-value "editor" entry)))
+        (bibtex-completion-apa-format-editors-abbrev value)))
+     (_
+      ;; Real fields:
+      (let ((value (bibtex-completion-get-value field entry)))
+        (if value
+            (pcase field
+              ;; https://owl.english.purdue.edu/owl/resource/560/06/
+              ("author" (bibtex-completion-apa-format-authors value))
+              ("editor" (bibtex-completion-apa-format-editors value))
+              ;; When referring to books, chapters, articles, or Web pages,
+              ;; capitalize only the first letter of the first word of a
+              ;; title and subtitle, the first word after a colon or a dash
+              ;; in the title, and proper nouns.  Do not capitalize the first
+              ;; letter of the second word in a hyphenated compound word.
+              ("title" (replace-regexp-in-string ; remove braces
+                        "[{}]"
                         ""
-                        (replace-regexp-in-string ; upcase initial letter
-                         "^[[:alpha:]]"
-                         'upcase
-                         (replace-regexp-in-string ; preserve stuff in braces from being downcased
-                          "\\(^[^{]*{\\)\\|\\(}[^{]*{\\)\\|\\(}.*$\\)\\|\\(^[^{}]*$\\)"
-                          (lambda (x) (downcase (s-replace "\\" "\\\\" x)))
-                          value)))))
-             ("booktitle" value)
-             ;; Maintain the punctuation and capitalization that is used by
-             ;; the journal in its title.
-             ("pages" (s-join "–" (s-split "[^0-9]+" value t)))
-             ("doi" (s-concat " http://dx.doi.org/" value))
-             ("year" (or value
-                         (car (split-string (bibtex-completion-get-value "date" entry "") "-"))))
-             (_ value))
-         (or default ""))))))
+                        (replace-regexp-in-string ; remove macros
+                         "\\\\[[:alpha:]]+{"
+                         ""
+                         (replace-regexp-in-string ; upcase initial letter
+                          "^[[:alpha:]]"
+                          'upcase
+                          (replace-regexp-in-string ; preserve stuff in braces from being downcased
+                           "\\(^[^{]*{\\)\\|\\(}[^{]*{\\)\\|\\(}.*$\\)\\|\\(^[^{}]*$\\)"
+                           (lambda (x) (downcase (s-replace "\\" "\\\\" x)))
+                           value)))))
+              ("booktitle" value)
+              ;; Maintain the punctuation and capitalization that is used by
+              ;; the journal in its title.
+              ("pages" (s-join "–" (s-split "[^0-9]+" value t)))
+              ("doi" (s-concat " http://dx.doi.org/" value))
+              ("year" (or value
+                          (car (split-string (bibtex-completion-get-value "date" entry "") "-"))))
+              (_ value))))))
+   default ""))
 
 (defun bibtex-completion-apa-format-authors (value &optional abbrev)
   "Format author list in VALUE in APA style.
