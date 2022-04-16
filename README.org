@@ -405,7 +405,7 @@ If the last, numerical argument in ~helm-add-action-to-source~ is omitted, the n
 
 #+BEGIN_SRC emacs-lisp
 (helm-delete-action-from-source "Insert BibTeX key" helm-source-bibtex)
-(helm-add-action-to-source "Insert BibTeX key" 'bibtex-completion-insert-key helm-source-bibtex 0)
+(helm-add-action-to-source "Insert BibTeX key" 'helm-bibtex-insert-key helm-source-bibtex 0)
 #+END_SRC
 
 *Ivy-bibtex*: The default action and the additional available actions are set separately. The default action is controlled by the variables ~ivy-bibtex-default-action~ and ~ivy-bibtex-default-multi-action~, with the latter intended for lists of marked entries (see [[#apply-actions-to-multiple-entries][Apply actions to multiple entries]]). For example, the following code changes the default action to "insert BibTeX key":
