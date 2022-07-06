@@ -269,6 +269,38 @@ reread."
                  candidates))))
     (helm-bibtex)))
 
+;; Helm-bibtex follow processor:
+
+(defvar helm-bibtex-follow-actions-alist
+  '(("Open PDF, URL or DOI"       . bibtex-completion-open-pdf)
+    ("Open URL or DOI in browser" . bibtex-completion-open-url-or-doi)
+    ("Edit notes"                 . bibtex-completion-edit-notes)
+    ("Show entry"                 . bibtex-completion-show-entry)
+    ("Add PDF to library"         . bibtex-completion-add-pdf-to-library)))
+
+
+(defvar helm-bibtex-follow-full-frame nil
+  "Non-nil means open ‘helm-bibtex-follow’ using the entire window.
+When nil, the window will split below.")
+
+;;;###autoload
+(defun helm-bibtex-follow (citation &optional args)
+  (let* ((key (plist-get (cadr citation) :key))
+         (item-info
+          (format "%s\t\t%s"
+                  (bibtex-completion-apa-get-value
+                   "title" (bibtex-completion-get-entry key))
+                  (bibtex-completion-apa-get-value
+                   "author" (bibtex-completion-get-entry key)))))
+    (helm :sources
+          (helm-build-sync-source item-info
+            :candidates helm-bibtex-follow-actions-alist
+            :action (lambda (x) (funcall x (list key))))
+          :full-frame helm-bibtex-follow-full-frame
+          :buffer "*helm bibtex*")))
+
+
+
 (provide 'helm-bibtex)
 
 ;; Local Variables:
