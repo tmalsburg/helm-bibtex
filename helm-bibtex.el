@@ -300,6 +300,9 @@ When nil, the window will split below.")
           :buffer "*helm bibtex*")))
 
 
+(org-cite-register-processor 'helm-bibtex-org-cite-follow
+  :follow 'helm-bibtex-follow)
+
 
 (provide 'helm-bibtex)
 
