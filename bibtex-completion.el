@@ -366,7 +366,6 @@ bibliography file is reparsed.")
 (defvar bibtex-completion-string-hash-table nil
   "A hash table used for string replacements.")
 
-
 (defun bibtex-completion-normalize-bibliography (&optional type)
   "Return a list of bibliography file(s) in `bibtex-completion-bibliography'.
 If there are org mode bibliography-files, their corresponding
@@ -381,7 +380,18 @@ their associated bibtex files."
                       bib-file)
     for bibtex-file = (if (consp bib-file)
                           (cdr bib-file)
-                        (concat (file-name-sans-extension main-file) ".bib"))
+                        (cond
+                         ((string= (file-name-extension main-file) "bib") main-file)
+                         ((string= (file-name-extension main-file) "org")
+                          (concat (file-name-sans-extension main-file) "bib"))
+                         ((and (string= (file-name-extension main-file) "gpg")
+                               (string= (file-name-extension
+                                         (file-name-sans-extension main-file)) "bib")) main-file)
+                         ((and (string= (file-name-extension main-file) "gpg")
+                               (string= (file-name-extension
+                                         (file-name-sans-extension main-file)) "org"))
+                          (concat (file-name-sans-extension
+                                   (file-name-sans-extension main-file)) ".bib.gpg"))))
     unless (equal type 'bibtex)
     collect main-file
     unless (equal type 'main)
