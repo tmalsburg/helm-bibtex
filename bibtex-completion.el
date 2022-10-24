@@ -579,7 +579,7 @@ fields listed above) as an alist."
     (message "Done (re)loading bibliography.")
     (cl-loop
      for file in files
-     append (cddr (assoc file bibtex-completion-cache)))))
+     append (reverse (cddr (assoc file bibtex-completion-cache))))))
 
 (defun bibtex-completion-resolve-crossrefs (files reparsed-files)
   "Expand all entries with fields from cross-referenced entries in FILES, assuming that only those files in REPARSED-FILES were reparsed whereas the other files in FILES were up-to-date."
