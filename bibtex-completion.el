@@ -59,6 +59,11 @@
   "Helm plugin for searching entries in a BibTeX bibliography."
   :group 'completion)
 
+(defcustom bibtex-reference-style "apa"
+  "The reference style used when writing the reference."
+  :group 'bibtex-completion
+  :type '(choice "apa" "apa-preserve-title-case"))
+
 (defcustom bibtex-completion-bibliography nil
   "The BibTeX file or list of BibTeX files.
 Org-bibtex users can also specify org mode bibliography files, in
@@ -1113,55 +1118,55 @@ The format depends on
   "Insert references for entries in KEYS."
   (let* ((refs (--map
                 (s-word-wrap fill-column
-                             (concat "\n- " (bibtex-completion-apa-format-reference it)))
+                             (concat "\n- " (bibtex-completion-format-reference it)))
                 keys)))
     (insert "\n" (s-join "\n" refs) "\n")))
 
-(defun bibtex-completion-apa-format-reference (key)
-  "Return a plain text reference in APA format for the publication specified by KEY."
+(defun bibtex-completion-format-reference (key)
+  "Return a plain text reference in the format defined by `bibtex-reference-style' for the publication specified by KEY."
   (let*
    ((entry (bibtex-completion-get-entry key))
     (ref (pcase (downcase (bibtex-completion-get-value "=type=" entry))
            ("article"
             (s-format
              "${author} (${year}). ${title}. ${journal}, ${volume}(${number}), ${pages}.${doi}"
-             'bibtex-completion-apa-get-value entry))
+             'bibtex-completion-get-value entry))
            ("inproceedings"
             (s-format
              "${author} (${year}). ${title}. In ${editor}, ${booktitle} (pp. ${pages}). ${address}: ${publisher}."
-             'bibtex-completion-apa-get-value entry))
+             'bibtex-completion-get-value entry))
            ("book"
             (s-format
              "${author} (${year}). ${title}. ${address}: ${publisher}."
-             'bibtex-completion-apa-get-value entry))
+             'bibtex-completion-get-value entry))
            ("phdthesis"
             (s-format
              "${author} (${year}). ${title} (Doctoral dissertation). ${school}, ${address}."
-             'bibtex-completion-apa-get-value entry))
+             'bibtex-completion-get-value entry))
            ("inbook"
             (s-format
              "${author} (${year}). ${chapter}. In ${editor} (Eds.), ${title} (pp. ${pages}). ${address}: ${publisher}."
-             'bibtex-completion-apa-get-value entry))
+             'bibtex-completion-get-value entry))
            ("incollection"
             (s-format
              "${author} (${year}). ${title}. In ${editor} (Eds.), ${booktitle} (pp. ${pages}). ${address}: ${publisher}."
-             'bibtex-completion-apa-get-value entry))
+             'bibtex-completion-get-value entry))
            ("proceedings"
             (s-format
              "${editor} (Eds.). (${year}). ${booktitle}. ${address}: ${publisher}."
-             'bibtex-completion-apa-get-value entry))
+             'bibtex-completion-get-value entry))
            ("unpublished"
             (s-format
              "${author} (${year}). ${title}. Unpublished manuscript."
-             'bibtex-completion-apa-get-value entry))
+             'bibtex-completion-get-value entry))
            (_
             (s-format
              "${author} (${year}). ${title}."
-             'bibtex-completion-apa-get-value entry)))))
+             'bibtex-completion-get-value entry)))))
    (replace-regexp-in-string "\\([.?!]\\)\\." "\\1" ref))) ; Avoid sequences of punctuation marks.
 
-(defun bibtex-completion-apa-get-value (field entry &optional default)
-  "Return FIELD or ENTRY formatted following the APA guidelines.
+(defun bibtex-completion-get-value (field entry &optional default)
+  "Return FIELD or ENTRY formatted following the format defined by `bibtex-reference-style'.
 Return DEFAULT if FIELD is not present in ENTRY.  Return empty
 string if FIELD is not present in ENTRY and DEFAULT is nil."
   (or
@@ -1209,7 +1214,12 @@ string if FIELD is not present in ENTRY and DEFAULT is nil."
                           'upcase
                           (replace-regexp-in-string ; preserve stuff in braces from being downcased
                            "\\(^[^{]*{\\)\\|\\(}[^{]*{\\)\\|\\(}.*$\\)\\|\\(^[^{}]*$\\)"
-                           (lambda (x) (downcase (s-replace "\\" "\\\\" x)))
+                           (lambda (x) (let ((escaped-title (s-replace "\\" "\\\\" x)))
+                                         (if (equal bibtex-reference-style "apa")
+                                             (downcase escaped-title) ; apa
+                                           escaped-title ;  apa-preserve-title-case
+                                           )
+                                         ))
                            value)))))
               ("booktitle" value)
               ;; Maintain the punctuation and capitalization that is used by
