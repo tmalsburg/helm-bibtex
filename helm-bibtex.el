@@ -279,9 +279,11 @@ reread."
     ("Add PDF to library"         . bibtex-completion-add-pdf-to-library)))
 
 
-(defvar helm-bibtex-follow-full-frame nil
+(defcustom helm-bibtex-follow-full-frame nil
   "Non-nil means open ‘helm-bibtex-follow’ using the entire window.
-When nil, the window will split below.")
+When nil, the window will split below."
+  :group 'bibtex-completion
+  :type 'boolean)
 
 ;;;###autoload
 (defun helm-bibtex-follow (&optional citation args)
