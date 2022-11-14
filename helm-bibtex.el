@@ -284,8 +284,11 @@ reread."
 When nil, the window will split below.")
 
 ;;;###autoload
-(defun helm-bibtex-follow (citation &optional args)
-  (let* ((key (plist-get (cadr citation) :key))
+(defun helm-bibtex-follow (&optional citation args)
+  (interactive)
+  (let* ((key (if citation
+                  (plist-get (cadr citation) :key)
+                (bibtex-completion-key-at-point)))
          (item-info
           (format "%s\t\t%s"
                   (bibtex-completion-apa-get-value
@@ -297,7 +300,7 @@ When nil, the window will split below.")
             :candidates helm-bibtex-follow-actions-alist
             :action (lambda (x) (funcall x (list key))))
           :full-frame helm-bibtex-follow-full-frame
-          :buffer "*helm bibtex*")))
+          :buffer "*helm bibtex follow*")))
 
 
 (org-cite-register-processor 'helm-bibtex-org-cite-follow
