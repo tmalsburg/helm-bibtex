@@ -137,6 +137,16 @@ The names of these files consist of the BibTeX key plus a user-defined suffix (~
 
 At this point most people will be ready to go.  Skip to [[#usage][Usage]] below to see how to use helm-bibtex and ivy-bibtex.
 
+** Follow processor for helm
+
+Invoking ~helm-bibtex~ or ~ivy-bibtex~ when point is on an [[https://orgmode.org/manual/Citation-handling.html][org-mode citation]] will automatically select that key. However, the default ~org-open-at-point~ on a org citation will take you to the corresponding bibliography entry. The following code will change this behavior to instead open ~helm-bibtex-follow~ when following an org citation by entering ~RET~ or clicking on it:
+
+#+BEGIN_SRC elisp
+(setq org-cite-follow-processor 'helm-bibtex-org-cite-follow)
+#+END_SRC
+
+Note in the case of an org citation with multiple keys, the above code will not preselect any entry when the ~[cite:~ portion is selected. See [[https://github.com/tmalsburg/helm-bibtex#use-ivy-bibtex-as-an-org-cite-follow-processor][here]] for the ivy alternative.
+
 * Advanced configuration
 ** Customize layout of search results
 
@@ -728,18 +738,16 @@ Helm-bibtex and ivy-bibtex display entries in the order in which they appear in 
             :filter-return 'reverse)
 #+END_SRC
 
-** Use ~helm-bibtex~ or ~ivy-bibtex~ as an ~org-cite-follow-processor~
+** Use ~ivy-bibtex~ as an ~org-cite-follow-processor~
 
-Invoking ~helm-bibtex~ or ~ivy-bibtex~ when point is on an [[https://orgmode.org/manual/Citation-handling.html][org-mode citation]] will automatically select that key. However, the default ~org-open-at-point~ on a org citation will take you to the corresponding bibliography entry. The following code will change this behavior to instead open ~helm-bibtex~ when following an org citation by entering ~RET~ or clicking on it:
+As mentioned [[https://github.com/tmalsburg/helm-bibtex#follow-processor-for-helm][here]], the default ~org-open-at-point~ on a org citation will take you to the corresponding bibliography entry. The following code will change this behavior to instead open ~ivy-bibtex~ when following an org citation by entering ~RET~ or clicking on it:
 
 #+BEGIN_SRC elisp
-(org-cite-register-processor 'my-bibtex-org-cite-follow
-  :follow (lambda (_ _) (helm-bibtex)))
+(org-cite-register-processor 'my-ivy-bibtex-org-cite-follow
+  :follow (lambda (_ _) (ivy-bibtex)))
 
-(setq org-cite-follow-processor 'my-bibtex-org-cite-follow)
+(setq org-cite-follow-processor 'my-ivy-bibtex-org-cite-follow)
 #+END_SRC
-
-Note in the case of an org citation with multiple keys, the above code will not preselect any entry when the ~[cite:~ portion is selected.
 
 * Troubleshooting
 
