@@ -107,7 +107,7 @@ having a PDF if \"<key>.<extension\" exists."
 
 (defcustom bibtex-completion-pdf-symbol "⌘"
   "Symbol used to indicate that a PDF file is available for a publication.
-This should be a single character."
+This should be a single character or the empty string."
   :group 'bibtex-completion
   :type 'string)
 
@@ -181,7 +181,7 @@ directory (not a file)."
 
 (defcustom bibtex-completion-notes-symbol "✎"
   "Symbol used to indicate that a publication has notes.
-This should be a single character."
+This should be a single character or the empty string."
   :group 'bibtex-completion
   :type 'string)
 
@@ -834,15 +834,19 @@ find a PDF file."
   (when entry ; entry may be nil, in which case just return nil
     (let* ((fields (when fields (append fields (list "=type=" "=key=" "=has-pdf=" "=has-note="))))
            ; Check for PDF:
-           (entry (if (and (not do-not-find-pdf) (bibtex-completion-find-pdf entry))
+           (entry (if (and (not do-not-find-pdf)
+                           (not (string= "" bibtex-completion-pdf-symbol))
+                           (bibtex-completion-find-pdf entry))
                       (cons (cons "=has-pdf=" bibtex-completion-pdf-symbol) entry)
                     entry))
            (entry-key (cdr (assoc "=key=" entry)))
            ; Check for notes:
-           (entry (if (cl-some #'identity
-                               (mapcar (lambda (fn)
-                                         (funcall fn entry-key))
-                                       bibtex-completion-find-note-functions))
+           (entry (if (and
+                       (not (string= "" bibtex-completion-notes-symbol))
+                       (cl-some #'identity
+                                (mapcar (lambda (fn)
+                                          (funcall fn entry-key))
+                                        bibtex-completion-find-note-functions)))
                       (cons (cons "=has-note=" bibtex-completion-notes-symbol) entry)
                     entry))
            ; Remove unwanted fields:
