@@ -332,8 +332,6 @@ For quick access to the bibliography, bind the search command, ~helm-bibtex~ or 
 *Helm-bibtex*:  I use the [[http://farm1.static.flickr.com/68/167224406_166a1bf2e5.jpg][menu key]] as the prefix key for all helm commands and bind ~helm-bibtex~ to ~b~.  Helm-bibtex can then be started using ~<menu> b~.  It is also useful to bind ~helm-resume~ to ~<menu>~ in ~helm-command-map~.  With this binding, ~<menu> <menu>~ can be used to reopen the last helm search.
 
 #+BEGIN_SRC R emacs-lisp
-(require 'helm-config)
-
 (global-set-key (kbd "<menu>") 'helm-command-prefix)
 
 (define-key helm-command-map "b" 'helm-bibtex)
