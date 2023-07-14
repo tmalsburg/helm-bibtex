@@ -1185,6 +1185,9 @@ string if FIELD is not present in ENTRY and DEFAULT is nil."
      ("editor-abbrev"
       (when-let ((value (bibtex-completion-get-value "editor" entry)))
         (bibtex-completion-apa-format-editors-abbrev value)))
+     ((or "journal" "journaltitle")
+      (or (bibtex-completion-get-value "journal" entry)
+          (bibtex-completion-get-value "journaltitle" entry)))
      (_
       ;; Real fields:
       (let ((value (bibtex-completion-get-value field entry)))
