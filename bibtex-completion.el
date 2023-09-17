@@ -1219,9 +1219,11 @@ string if FIELD is not present in ENTRY and DEFAULT is nil."
               ;; the journal in its title.
               ("pages" (s-join "–" (s-split "[^0-9]+" value t)))
               ("doi" (s-concat " http://dx.doi.org/" value))
-              ("year" (or value
-                          (car (split-string (bibtex-completion-get-value "date" entry "") "-"))))
-              (_ value))))))
+              ("year" value)
+              (_ value))
+          (pcase field
+            ("year" (car (split-string (bibtex-completion-get-value "date" entry "") "-"))))
+          ))))
    default ""))
 
 (defun bibtex-completion-apa-format-authors (value &optional abbrev)
