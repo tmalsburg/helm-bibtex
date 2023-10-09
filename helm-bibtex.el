@@ -288,21 +288,27 @@ When nil, the window will split below."
 ;;;###autoload
 (defun helm-bibtex-follow (&optional citation args)
   (interactive)
-  (let* ((key (if citation
-                  (plist-get (cadr citation) :key)
-                (bibtex-completion-key-at-point)))
-         (item-info
-          (format "%s\t\t%s"
-                  (bibtex-completion-apa-get-value
-                   "title" (bibtex-completion-get-entry key))
-                  (bibtex-completion-apa-get-value
-                   "author" (bibtex-completion-get-entry key)))))
-    (helm :sources
-          (helm-build-sync-source item-info
-            :candidates helm-bibtex-follow-actions-alist
-            :action (lambda (x) (funcall x (list key))))
-          :full-frame helm-bibtex-follow-full-frame
-          :buffer "*helm bibtex follow*")))
+  (let ((candidates (bibtex-completion-candidates))
+        (key (if citation
+                 (org-element-property :key citation)
+               (bibtex-completion-key-at-point))))
+    (unless (cl-find-if (lambda (cand)
+                          (member (cons "=key=" key)
+                                  (cdr cand)))
+                        candidates)
+      (user-error "Bibtex-completion couldn't find entry with key \"%s\"." key))
+    (let ((item-info
+           (format "%s\t\t%s"
+                   (bibtex-completion-apa-get-value
+                    "title" (bibtex-completion-get-entry key))
+                   (bibtex-completion-apa-get-value
+                    "author" (bibtex-completion-get-entry key)))))
+      (helm :sources
+            (helm-build-sync-source item-info
+              :candidates helm-bibtex-follow-actions-alist
+              :action (lambda (x) (funcall x (list key))))
+            :full-frame helm-bibtex-follow-full-frame
+            :buffer "*helm bibtex follow*"))))
 
 
 (org-cite-register-processor 'helm-bibtex-org-cite-follow
