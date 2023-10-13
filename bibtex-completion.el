@@ -77,6 +77,12 @@ composed of the BibTeX-key plus a \".pdf\" suffix."
   :group 'bibtex-completion
   :type '(choice directory (repeat directory)))
 
+=(defcustom bibtex-completion-watch-bibliography t
+  "If non-nil (the default) the bibliography is reloaded
+proactively every time any of the BibTeX files changes."
+  :group 'bibtex-completion
+  :type 'boolean)
+
 (defcustom bibtex-completion-pdf-open-function 'find-file
   "The function used for opening PDF files.
 This can be an arbitrary function that takes one argument: the
@@ -414,7 +420,7 @@ Also sets `bibtex-completion-display-formats-internal'."
   ;; watches for automatic reloading of the bibliography when a file
   ;; is changed:
   (mapc (lambda (file)
-          (if (f-file? file)
+          (if (and (f-file? file) bibtex-completion-watch-bibliography)
               (let ((watch-descriptor
                      (file-notify-add-watch file
                                             '(change)
