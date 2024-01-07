@@ -1185,9 +1185,6 @@ string if FIELD is not present in ENTRY and DEFAULT is nil."
      ("editor-abbrev"
       (when-let ((value (bibtex-completion-get-value "editor" entry)))
         (bibtex-completion-apa-format-editors-abbrev value)))
-     ((or "journal" "journaltitle")
-      (or (bibtex-completion-get-value "journal" entry)
-          (bibtex-completion-get-value "journaltitle" entry)))
      (_
       ;; Real fields:
       (let ((value (bibtex-completion-get-value field entry)))
@@ -1214,15 +1211,21 @@ string if FIELD is not present in ENTRY and DEFAULT is nil."
                            "\\(^[^{]*{\\)\\|\\(}[^{]*{\\)\\|\\(}.*$\\)\\|\\(^[^{}]*$\\)"
                            (lambda (x) (downcase (s-replace "\\" "\\\\" x)))
                            value)))))
-              ("booktitle" value)
+              ("journal"
+               (replace-regexp-in-string "[{}]" "" value))
+              ("booktitle"
+               (replace-regexp-in-string "[{}]" "" value))
               ;; Maintain the punctuation and capitalization that is used by
               ;; the journal in its title.
               ("pages" (s-join "–" (s-split "[^0-9]+" value t)))
               ("doi" (s-concat " http://dx.doi.org/" value))
               ("year" value)
               (_ value))
+          ;; If field does not exist, try to retrieve value from
+          ;; alternative field (possibly a biblatex field):
           (pcase field
-            ("year" (car (split-string (bibtex-completion-get-value "date" entry "") "-"))))
+            ("year" (car (split-string (bibtex-completion-get-value "date" entry "") "-")))
+            ("journal" (bibtex-completion-get-value "journaltitle" entry "")))
           ))))
    default ""))
 
@@ -1303,18 +1306,9 @@ When ABBREV is non-nil, format in abbreviated APA style instead."
   (bibtex-completion-apa-format-editors value t))
 
 (defun bibtex-completion-get-value (field entry &optional default)
-  "Return the value for FIELD in ENTRY or DEFAULT if the value is not defined.
-Surrounding curly braces are stripped."
+  "Return the value for FIELD in ENTRY or DEFAULT if the value is not defined."
   (let ((value (cdr (assoc-string field entry 'case-fold))))
-    (if value
-        (replace-regexp-in-string
-         "\\(^[[:space:]]*[\"{][[:space:]]*\\)\\|\\([[:space:]]*[\"}][[:space:]]*$\\)"
-         ""
-         ;; Collapse whitespaces when the content is not a path:
-         (if (equal bibtex-completion-pdf-field field)
-             value
-           (s-collapse-whitespace value)))
-      default)))
+    (or value default)))
 
 (defun bibtex-completion-insert-key (keys)
   "Insert BibTeX KEYS at point."
