@@ -7,6 +7,7 @@ Ivy-bibtex: [[http://melpa.org/#/ivy-bibtex][http://melpa.org/packages/ivy-bibte
 Helm-bibtex and ivy-bibtex allow you to search and manage your BibTeX bibliography.  They both share the same generic backend, bibtex-completion, but one uses the Helm completion framework and the other Ivy as a front-end.
 
 * News
+- 2024-01-09: New customization variable ~bibtex-completion-watch-bibliography~.  Can be used to deactivate automatic reloading of the bibliography.
 - 2022-01-17: More support for org-mode citations, see [[https://github.com/tmalsburg/helm-bibtex#use-helm-bibtex-or-ivy-bibtex-as-an-org-cite-follow-processor][here]].  (Thanks to [[https://github.com/akirakyle][akirakyle]].)
 - 2021-08-25: It is now possible to mark and act on multiple entries in ~ivy-bitex~.  See [[#apply-actions-to-multiple-entries][here]].
 - 2021-07-25: ~helm-bibtex-with-local-bibliography~ and ~ivy-bibtex-with-local-bibliography~ now also use locally and globally defined bibliographies in org files.  These are bibliographies specified using the new ~#+BIBLIOGRAPHY:~ key word and those in the variable ~org-cite-global-bibliography~.
@@ -274,6 +275,9 @@ User-defined functions can be used, too:
 (setq bibtex-completion-browser-function
   (lambda (url _) (start-process "firefox" "*firefox*" "firefox" url)))
 #+END_SRC
+
+** Prevent automatic reloading of bibliography when it was changed
+Automatic reloading can be configured using ~bibtex-completion-watch-bibliography~.
 
 ** Format of citations
 

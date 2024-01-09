@@ -1240,8 +1240,7 @@ string if FIELD is not present in ENTRY and DEFAULT is nil."
           ;; alternative field (possibly a biblatex field):
           (pcase field
             ("year" (car (split-string (bibtex-completion-get-value "date" entry "") "-")))
-            ("journal" (bibtex-completion-get-value "journaltitle" entry "")))
-          ))))
+            ("journal" (bibtex-completion-get-value "journaltitle" entry "")))))))
    default ""))
 
 (defun bibtex-completion-apa-format-authors (value &optional abbrev)
