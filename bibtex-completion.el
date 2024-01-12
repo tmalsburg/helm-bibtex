@@ -200,6 +200,11 @@ This should be a single character."
   :group 'bibtex-completion
   :type 'string)
 
+(defcustom bibtex-completion-replace-tex nil
+  "Make use of parsebib's ability to parse TeX and replace it by unicode characters."
+  :group 'bibtex-completion
+  :type 'boolean)
+
 (defcustom bibtex-completion-fallback-options
   '(("CrossRef                                  (biblio.el)"
      . (lambda (search-expression) (biblio-lookup #'biblio-crossref-backend search-expression)))
@@ -686,7 +691,7 @@ If HT-STRINGS is provided it is assumed to be a hash table."
    for entry-type = (parsebib-find-next-item)
    while entry-type
    if (not (member-ignore-case entry-type '("preamble" "string" "comment")))
-   collect (let* ((entry (parsebib-read-entry nil ht-strings))
+   collect (let* ((entry (parsebib-read-entry nil ht-strings bibtex-completion-replace-tex))
                   (fields (append
                            (list (if (assoc-string "author" entry 'case-fold)
                                      "author"
