@@ -174,12 +174,18 @@ comes out in the right buffer."
 
 ;; Helm sources:
 
+(defcustom helm-bibtex-ignore-diacritics nil
+  "Ignore diacritics when searching."
+  :group 'bibtex-completion
+  :type 'boolean)
+
 (defvar helm-source-bibtex
   (helm-build-sync-source "BibTeX entries"
     :header-name (lambda (name)
                    (format "%s%s: " name (if helm-bibtex-local-bib " (local)" "")))
     :candidates 'helm-bibtex-candidates
     :filtered-candidate-transformer 'helm-bibtex-candidates-formatter
+    :diacritics helm-bibtex-ignore-diacritics
     :action (helm-make-actions
              "Open PDF, URL or DOI"       'helm-bibtex-open-any
              "Open URL or DOI in browser" 'helm-bibtex-open-url-or-doi
