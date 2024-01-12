@@ -684,26 +684,29 @@ Also do some preprocessing of the entries.
 
 If HT-STRINGS is provided it is assumed to be a hash table."
   (goto-char (point-min))
-  (cl-loop
-   with fields = (append '("title" "crossref")
-                         (-map (lambda (it) (if (symbolp it) (symbol-name it) it))
-                               bibtex-completion-additional-search-fields))
-   for entry-type = (parsebib-find-next-item)
-   while entry-type
-   if (not (member-ignore-case entry-type '("preamble" "string" "comment")))
-   collect (let* ((entry (parsebib-read-entry nil ht-strings bibtex-completion-replace-tex))
-                  (fields (append
-                           (list (if (assoc-string "author" entry 'case-fold)
-                                     "author"
-                                   "editor")
-                                 (if (assoc-string "date" entry 'case-fold)
-                                     "date"
-                                   "year"))
-                           fields)))
-             (-map (lambda (it)
-                     (cons (downcase (car it)) (cdr it)))
-                   (bibtex-completion-prepare-entry entry fields)))
-   else do (forward-line 1)))
+
+  (cl-letf (((symbol-function 'parsebib--convert-tex-italics) (lambda (str) str))
+            ((symbol-function 'parsebib--convert-tex-bold) (lambda (str) str)))
+    (cl-loop
+     with fields = (append '("title" "crossref")
+                           (-map (lambda (it) (if (symbolp it) (symbol-name it) it))
+                                 bibtex-completion-additional-search-fields))
+     for entry-type = (parsebib-find-next-item)
+     while entry-type
+     if (not (member-ignore-case entry-type '("preamble" "string" "comment")))
+     collect (let* ((entry (parsebib-read-entry nil ht-strings bibtex-completion-replace-tex))
+                    (fields (append
+                             (list (if (assoc-string "author" entry 'case-fold)
+                                       "author"
+                                     "editor")
+                                   (if (assoc-string "date" entry 'case-fold)
+                                       "date"
+                                     "year"))
+                             fields)))
+               (-map (lambda (it)
+                       (cons (downcase (car it)) (cdr it)))
+                     (bibtex-completion-prepare-entry entry fields)))
+     else do (forward-line 1))))
 
 (defun bibtex-completion-get-entry (entry-key)
   "Given a BibTeX key this function scans all bibliographies listed in `bibtex-completion-bibliography' and returns an alist of the record with that key.
