@@ -295,6 +295,7 @@ browser in `helm-browse-url-default-browser-alist'"
 "Autocite" "autocite*" "Autocite*" "citeauthor" "Citeauthor"
 "citeauthor*" "Citeauthor*" "citetitle" "citetitle*" "citeyear"
 "citeyear*" "citedate" "citedate*" "citeurl" "nocite" "fullcite"
+"citet" "citep" "citet*" "citep*"
 "footfullcite" "notecite" "Notecite" "pnotecite" "Pnotecite"
 "fnotecite")
   "The list of LaTeX cite commands.
