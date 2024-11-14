@@ -5,7 +5,7 @@
 ;; Maintainer: Titus von der Malsburg <malsburg@posteo.de>
 ;; URL: https://github.com/tmalsburg/helm-bibtex
 ;; Version: 1.0.0
-;; Package-Requires: ((parsebib "1.0") (s "1.9.0") (dash "2.6.0") (f "0.16.2") (cl-lib "0.5") (biblio "0.2") (emacs "26.1"))
+;; Package-Requires: ((parsebib "6.0") (s "1.9.0") (dash "2.6.0") (f "0.16.2") (cl-lib "0.5") (biblio "0.2") (emacs "26.1"))
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -494,7 +494,7 @@ for string replacement."
                    for entry-type = (parsebib-find-next-item)
                    while entry-type
                    if (string= (downcase entry-type) "string")
-                   collect (let ((entry (parsebib-read-string (point) ht)))
+                   collect (let ((entry (parsebib-read-string ht)))
                              (puthash (car entry) (cdr entry) ht)
                              entry))))
     (-filter (lambda (x) x) strings)))
@@ -685,7 +685,7 @@ If HT-STRINGS is provided it is assumed to be a hash table."
    for entry-type = (parsebib-find-next-item)
    while entry-type
    unless (member-ignore-case entry-type '("preamble" "string" "comment"))
-   collect (let* ((entry (parsebib-read-entry entry-type (point) ht-strings))
+   collect (let* ((entry (parsebib-read-entry nil ht-strings))
                   (fields (append
                            (list (if (assoc-string "author" entry 'case-fold)
                                      "author"
@@ -717,7 +717,7 @@ Fields from crossreferenced entries are appended to the requested entry."
                              nil t)
           (let ((entry-type (match-string 1)))
             (reverse (bibtex-completion-prepare-entry
-                      (parsebib-read-entry entry-type (point) bibtex-completion-string-hash-table) nil do-not-find-pdf)))
+                      (parsebib-read-entry nil bibtex-completion-string-hash-table) nil do-not-find-pdf)))
         (progn
           (display-warning :warning (concat "Bibtex-completion couldn't find entry with key \"" entry-key "\"."))
           nil)))))
