@@ -496,7 +496,8 @@ for string replacement."
                    if (string= (downcase entry-type) "string")
                    collect (let ((entry (parsebib-read-string ht)))
                              (puthash (car entry) (cdr entry) ht)
-                             entry))))
+                             entry)
+                   else do (forward-line 1))))
     (-filter (lambda (x) x) strings)))
 
 (defun bibtex-completion-update-strings-ht (ht strings)
@@ -684,7 +685,7 @@ If HT-STRINGS is provided it is assumed to be a hash table."
                                bibtex-completion-additional-search-fields))
    for entry-type = (parsebib-find-next-item)
    while entry-type
-   unless (member-ignore-case entry-type '("preamble" "string" "comment"))
+   if (not (member-ignore-case entry-type '("preamble" "string" "comment")))
    collect (let* ((entry (parsebib-read-entry nil ht-strings))
                   (fields (append
                            (list (if (assoc-string "author" entry 'case-fold)
@@ -696,7 +697,8 @@ If HT-STRINGS is provided it is assumed to be a hash table."
                            fields)))
              (-map (lambda (it)
                      (cons (downcase (car it)) (cdr it)))
-                   (bibtex-completion-prepare-entry entry fields)))))
+                   (bibtex-completion-prepare-entry entry fields)))
+   else do (forward-line 1)))
 
 (defun bibtex-completion-get-entry (entry-key)
   "Given a BibTeX key this function scans all bibliographies listed in `bibtex-completion-bibliography' and returns an alist of the record with that key.
