@@ -717,7 +717,8 @@ Fields from crossreferenced entries are appended to the requested entry."
                                      "\\)[[:space:]]*[\(\{][[:space:]]*"
                                      (regexp-quote entry-key) "[[:space:]]*,")
                              nil t)
-          (let ((entry-type (match-string 1)))
+          (progn
+            (goto-char (match-beginning 0))
             (reverse (bibtex-completion-prepare-entry
                       (parsebib-read-entry nil bibtex-completion-string-hash-table) nil do-not-find-pdf)))
         (progn
