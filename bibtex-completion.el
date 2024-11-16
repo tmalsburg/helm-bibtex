@@ -1208,7 +1208,7 @@ string if FIELD is not present in ENTRY and DEFAULT is nil."
      (_
       ;; Real fields:
       (let ((value (bibtex-completion-get-value field entry)))
-        (if value
+	(if (or value (and field (string= field "year")))
             (pcase field
               ;; https://owl.english.purdue.edu/owl/resource/560/06/
               ("author" (bibtex-completion-apa-format-authors value))
