@@ -5,7 +5,7 @@
 ;; Maintainer: Titus von der Malsburg <malsburg@posteo.de>
 ;; URL: https://github.com/tmalsburg/helm-bibtex
 ;; Version: 1.0.0
-;; Package-Requires: ((parsebib "6.0") (s "1.9.0") (dash "2.6.0") (f "0.16.2") (cl-lib "0.5") (biblio "0.2") (emacs "26.1"))
+;; Package-Requires: ((parsebib "6.2") (s "1.9.0") (dash "2.6.0") (f "0.16.2") (cl-lib "0.5") (biblio "0.2") (emacs "26.1"))
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -199,6 +199,11 @@ directory (not a file)."
 This should be a single character."
   :group 'bibtex-completion
   :type 'string)
+
+(defcustom bibtex-completion-replace-tex nil
+  "Make use of parsebib's ability to parse TeX and replace it by unicode characters."
+  :group 'bibtex-completion
+  :type 'boolean)
 
 (defcustom bibtex-completion-fallback-options
   '(("CrossRef                                  (biblio.el)"
@@ -679,26 +684,27 @@ Also do some preprocessing of the entries.
 
 If HT-STRINGS is provided it is assumed to be a hash table."
   (goto-char (point-min))
-  (cl-loop
-   with fields = (append '("title" "crossref")
-                         (-map (lambda (it) (if (symbolp it) (symbol-name it) it))
-                               bibtex-completion-additional-search-fields))
-   for entry-type = (parsebib-find-next-item)
-   while entry-type
-   if (not (member-ignore-case entry-type '("preamble" "string" "comment")))
-   collect (let* ((entry (parsebib-read-entry nil ht-strings))
-                  (fields (append
-                           (list (if (assoc-string "author" entry 'case-fold)
-                                     "author"
-                                   "editor")
-                                 (if (assoc-string "date" entry 'case-fold)
-                                     "date"
-                                   "year"))
-                           fields)))
-             (-map (lambda (it)
-                     (cons (downcase (car it)) (cdr it)))
-                   (bibtex-completion-prepare-entry entry fields)))
-   else do (forward-line 1)))
+  (let ((parsebib-TeX-cleanup-target 'plain))
+    (cl-loop
+     with fields = (append '("title" "crossref")
+                           (-map (lambda (it) (if (symbolp it) (symbol-name it) it))
+                                 bibtex-completion-additional-search-fields))
+     for entry-type = (parsebib-find-next-item)
+     while entry-type
+     if (not (member-ignore-case entry-type '("preamble" "string" "comment")))
+     collect (let* ((entry (parsebib-read-entry nil ht-strings bibtex-completion-replace-tex))
+                    (fields (append
+                             (list (if (assoc-string "author" entry 'case-fold)
+                                       "author"
+                                     "editor")
+                                   (if (assoc-string "date" entry 'case-fold)
+                                       "date"
+                                     "year"))
+                             fields)))
+               (-map (lambda (it)
+                       (cons (downcase (car it)) (cdr it)))
+                     (bibtex-completion-prepare-entry entry fields)))
+     else do (forward-line 1))))
 
 (defun bibtex-completion-get-entry (entry-key)
   "Given a BibTeX key this function scans all bibliographies listed in `bibtex-completion-bibliography' and returns an alist of the record with that key.
