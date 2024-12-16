@@ -684,7 +684,6 @@ Also do some preprocessing of the entries.
 
 If HT-STRINGS is provided it is assumed to be a hash table."
   (goto-char (point-min))
-
   (let ((parsebib-TeX-cleanup-target 'plain))
     (cl-loop
      with fields = (append '("title" "crossref")
