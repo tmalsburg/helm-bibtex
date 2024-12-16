@@ -5,7 +5,7 @@
 ;; Maintainer: Titus von der Malsburg <malsburg@posteo.de>
 ;; URL: https://github.com/tmalsburg/helm-bibtex
 ;; Version: 1.0.0
-;; Package-Requires: ((parsebib "6.0") (s "1.9.0") (dash "2.6.0") (f "0.16.2") (cl-lib "0.5") (biblio "0.2") (emacs "26.1"))
+;; Package-Requires: ((parsebib "6.2") (s "1.9.0") (dash "2.6.0") (f "0.16.2") (cl-lib "0.5") (biblio "0.2") (emacs "26.1"))
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -685,8 +685,7 @@ Also do some preprocessing of the entries.
 If HT-STRINGS is provided it is assumed to be a hash table."
   (goto-char (point-min))
 
-  (cl-letf (((symbol-function 'parsebib--convert-tex-italics) (lambda (str) str))
-            ((symbol-function 'parsebib--convert-tex-bold) (lambda (str) str)))
+  (let ((parsebib-TeX-cleanup-target 'plain))
     (cl-loop
      with fields = (append '("title" "crossref")
                            (-map (lambda (it) (if (symbolp it) (symbol-name it) it))
